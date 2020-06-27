@@ -1,0 +1,1065 @@
+= GTK4 for Graphical User Interfaces
+with the Nim Programming Language
+(C) Dr. Stefan Salewski 2020
+//v0.1, 27-JUN-2020
+:doctype: book
+:toc: left
+:icons: font
+//:experimental:
+:imagesdir: http://ssalewski.de/gtkimages
+//:imagesdir: /home/stefan/GtkProgrammingBook
+:source-highlighter: pygments
+:pygments-style: monokai
+:stylesheet: nimbook.css
+
+:cpp: C++
+:ios: iOS
+:macos: macOS
+:os: operating system
+:gtk2: GTK{nbsp}2
+:gtk3: GTK{nbsp}3
+:gtk4: GTK{nbsp}4
+:gtks: GTK's
+:ebassi: Emmanuele Bassi
+
+////
+
+asciidoctor -a stylesheet=asciidoctor.css gtkprogramming.adoc
+
+we are using these custom roles for clean semantic markup:
+
+[.new]##
+[.term] terminal text
+[.user] user input
+[.ndef] new unknown entity
+[.code] inline source code segment
+[.imp] important
+
+We use
+
+<<section title>> for cross references
+[[anchor]] for anchors
+{nbsp}
++->+ disable replacements
+GDK_DPI_SCALE=0.5 ./simplegtk3
+
+////
+
+This book gives an introduction into design and creation of graphical user interfaces
+using the GTK widget tool kit and the Nim programming language. The book has its
+focus on the Linux operating system. While the Nim programming language does support
+all mayor operating systems, GTK has it main emphasis on the Linux {os}. Windows and
+{macos} are supported by GTK, but without true native look and feel. Android and
+{ios} is not supported by GTK.
+
+//[.normal]
+
+== Introduction
+
+GTK is the name of a toolkit for the design and the creation of graphical user
+interfaces (GUIs) that allows users to interact with computer programs by use of
+graphical elements like buttons, sliders, drop-down menus and input fields. These
+elements are called widgets. Widgets can be grouped to build larger entities like
+file or message dialogs. The top level widget is generally a rectangular container
+called a window that contains all the other widgets. The initial release of GTK
+appeared in the year 1998 named [.new]#GIMP tool kit# and was labeled GTK+. As the
+Name GTK implies it was closely bound to the famous [.new]#GIMP# drawing program (GNU
+image manipulation program) and was intended to replace the older Motif Unix GUI for
+GIMP.
+
+Graphical user interfaces were introduced already a few decades after the invention
+of computers with the goal to simplify the interaction between humans and computers
+by replacing the traditional terminal based textual user interfaces. GUIs allowed
+even untrained people the intuitive interaction with computers without the need to
+learn and remember many textual command. Closely coupled to graphical user interfaces
+is the computer mouse, a small gadget that rests on the table and maps its movements
+to a pointer on the computer screen allowing the interaction with the widgets. Today
+the computer mouse is often supported or substituted by touch pads or touch displays.
+
+After the release of GTK that toolkit was used by other software too, and in 2002
+Version 2.0 of GTK appeared. GTK 2 had already a more modular design and was not that
+tight couple to GIMP. In 2011 GTK 3.0 appeared, which provided many new features.
+Most important was a new customizable design supported by [.new]#cascading style
+sheets# (CSS), and the use of libraries like [.new]#cairo# for drawing the graphical
+elements and of [.new]#pango# for font rendering. In late 2020 official release of
+GTK 4 will appear, which has again an improved internal design, an improved
+[.new]#application programming interface# (API) and which supports [.new]#OpenGL# and
+[.new]#Vulkan# hardware drawing for the widgets to maximize performance while keeping
+CPU load low.
+
+While GTK can be used on Windows and {macos} computers, it is generally used on
+Linux, and there often in conjunction with the [.new]#Gnome desktop environment#. The
+Gnome foundation is the most important supporter of GTK development. GTK does not
+support the Android or {ios} operating systems for mobile devices. The GTK related
+libraries uses the LGPL software license, while the Nim compiler and most of Nim's
+external packages are using the MIT software license. Both licenses allows the
+creation of proprietary closed source software, as long as for the LGPL licensed
+libraries dynamic linking is used.
+
+Like most traditional GUI toolkits GTK uses a retained mode, where the graphical
+scene is updated and redrawn only when necessary. In contrast to retained mode GUIs
+in the last years immediate mode GUIs has become popular. These GUIs often have their
+origin in simple GUIs for games and redraw the whole scene permanently, generally
+synchronized with the screen refresh rate. The permanent redraws create some CPU load
+of course, but for games that does generally not matter, as CPU and GPU load are
+dominated by the game itself, and with OpenGL or Vulkan hardware support drawing the
+GUI does not cause high CPU load. And finally the modern retained mode GUIs like GTK
+are not really that static any more as they contain many animations. So the
+distinction between retained and immediate mode GUIs is not that sharp.
+
+The GTK toolkit has a modular design with these main components:
+
+// description list
+GTK:: Initialy GTK+, the GIMP tool kit. The GTK module builds the core of the GTK
+widget tool kit and contains all the widgets.
+
+GDK:: The gimp drawing kit. High level drawing related functions and data types.
+
+GdkPixbuf:: Loading and manipulation of images.
+
+GObject:: The GObject module provides an API for [.new]#object orientated programming# (OOP) in the
+C programming language.
+
+GLib:: GLib provides many supporting functions and advanced data types.
+
+GIO:: Support for input and output operations including asynchronous operations.
+
+GSK:: The GTK Scene Graph Kit is used to optimize the drawing and the widget refresh.
+
+Graphene:: Math support like vectors and matrices.
+
+ATK:: Accessibility support like screen readers or text magnifiers.
+
+Other GTK related modules are [.new]#GtkSourceView# for advanced text layout support
+as used for text editors like [.new]#gedit#, the [.new]#rsvg# module for support of
+[.new]#scaleable vector graphics# (SVG) and the [.new]#VTE# module for the creation
+of terminal windows. GtkSourceView and VTE are not yet available for GTK4.
+
+Additional GTK uses these libraries for drawing and font rendering:
+
+Cairo:: Scaleable vector drawing
+
+Pango:: Font rendering
+
+OpenGL, Vulkan:: GPU supported graphics
+
+For Linux there is one more abstraction layer between the GTK toolkit and the
+computer hardware, which is the [.new]#wayland# display server, a modern
+implementation of the original [.new]#X Window System#.
+
+All these components are written in the C programming language. C is a very old,
+restricted and sometimes unsecure language, which can lead to very verbose code,
+which is difficult to maintain. As GTK has an object-orientated design, but C
+languages does not support OOP style, a whole object system called gobject was
+written for GTK from scratch. And as C does not support high level data structures
+like resizeable strings, hash maps, asynchronous in out operations and much more
+important functionality which modern languages generally provide, this was also
+written from scratch and is provided in supporting libraries like glib and gio. As C
+does not support automatic memory management, in GTK it is sometimes necessary to
+release memory manually, which may lead to the well known problems like memory leaks
+or use after free issues.
+
+It seems to be obvious that all these bloated legacy stuff is nearly unmaintainable
+considering the tiny GTK and Gnome community. And today when we have so many nice
+modern languages available nearly no one intends to write apps in C. When we take
+into account the fact that GTK does not even supports the popular Android OS for
+mobile devices, we may ask why we should care for GTK at all still.
+
+Indeed a popular competitor of GTK is the Qt GUI toolkit with its KDE Linux desktop
+environment. Qt appeared already in 1995 with a license model not well suited for
+free open source software (FOSS), and is now available in version 5 with much less
+restricted licenses. Qt is written in C++ and is unfortunately even much more bloated
+than GTK, and it uses a so called meta object compiler (MOC) as some sort of C++
+preprocessor. Qt is really very large and includes a lot stuff which is not really
+GUI related like network, web and database functionality or support for many custom
+data types. All that is also available by modern C++ or specialized libraries, so Qt
+can be regarded as a bloated application framework that is nearly a whole operating
+system. The advantage of Qt is that it is active developed and supports all important
+operating systems including the mobile Android and {ios} systems with a native look
+and feel.
+
+As the proprietary {os}s like Windows, {macos}, Android and {ios} have all their own
+native GUI, we do not need a separate toolkit when we plan to develop apps for only
+one of these systems. And indeed users generally prefer apps that only use the native
+GUI and avoid additional layers like GTK or Qt.
+
+For many Windows or {macos} users GTK has the disadvantage that GTK draws all it
+widgets itself, it does not use the native graphical elements of the proprietary
+systems. GTK allows theming by use of cascading style sheets (CSS) so it can be tuned
+to look not too strange on Windows and {macos}, but look and feel generally does not
+really map to native apps. Qt draws its widgets itself on Linux, but can try to use
+native elements on Windows or {macos} since version 4.0, which may provide a more
+native look and feel.
+
+One more important GUI toolkit is [.new]#wxWidgets#, which uses GTK on Linux and
+native GUI elements on Windows and {macos}. Some people like wxWidgets as it is a
+really cross platform GUI toolkit with native look and feel, but at least for Linux
+it is just one more layer on top of GTK. And it does not support the mobile {os}
+Android and {ios}.
+
+Beside the large toolkits Qt and GTK there exists many more smaller ones, as the
+already mentioned wxWidgets, the FLTK toolkit written in {cpp}, or the old and plain
+ones like LessTif or TK.
+
+And finally we have always the option not to use a GUI toolkit at all but to create a
+GUI based on HTML and JavaScript which can be used with web browsers.
+
+The fact that GTK is written in C and so is very hard to maintain is at the same time
+a large benefit: As C is a simple languages without advanced concepts like classes,
+templates, inheritance or automatic memory managements it is generally very easy to
+create bindings to C libraries from other programming languages. For GTK this fact is
+even supported by the GTK [.new]#gobject-introspection# database which allows to
+create bindings to all the GTK related libraries in a semi-automatic process.
+
+So the majority of all the new modern computer programming languages have bindings to
+the GTK toolkit. For Qt which is written in {cpp} it is much more difficult to create
+bindings, as C++ concepts like C++ classes, templates and the MOC preprocessor makes
+automatic bindings generation difficult.
+
+So Qt is mostly used direct from {cpp}, or its well supported Python bindings are
+used. Qt language bindings for many other programming languages exists, but it is
+hard to keep them up to date. Sometimes Qt GUIs are also created with [.new]#QML#,
+which allows to create user interfaces in a declarative manner. QML bindings are
+available for various programming languages.
+
+While GTK is still used often directly from C, it provides a larger set of official
+supported languages bindings which include C++ (gtkmm), JavaScript, Python, Rust,
+Perl and Vala. D and Go are also well supported, and for many other programming
+languages at least bindings for a subset of GTK exists.
+
+In this book we will use gobject-introspection based bindings to write GTK apps in
+the Nim programming languages. Nim is a modern compiled statically typed language,
+that can generate fast native executables from clean high level source code. As Nim
+does not enforce OOP design with inheritance as languages like Java do, our Nim
+examples follow the original C examples provided by GTK core developers. Some other
+modern languages like Go or Rust use generally a similar approach and do not enforce
+OOP and inheritance, while classical OOP languages like Java, Python or Ruby
+generally enforce the use of classes and inheritance for GTK apps. C++ with its gtkmm
+GTK bindings also push its users to OOP design.
+
+We will use for this book semi-automatic generated GTK4 and GTK3 bindings which are
+generated by the [.new]#gintro# package, where g stands for all the gtk related
+libraries and intro for introspection as the bindings are generated by use of
+gobject-introspection.
+
+You should be aware that for the Nim programming language many more GUI toolkits are
+available, some based also on GTK but with a different API design, and some based on
+other libraries or written directly in Nim like the NimX module.
+
+wNim:: Nim's Microsoft Windows GUI Framework
+
+wxnim:: Nim wrapper for wxWidgets
+
+fidget:: Figma based cross platform UI library
+
+nigui:: Cross-platform desktop GUI toolkit
+
+genui:: Cross-platform native UI toolkit
+
+nimx:: Cross-platform GUI framework in pure Nim
+
+webgui:: Web Technologies based Crossplatform GUI Framework
+
+nimgui:: Cimgui bindings (dear imgui immediate mode lib)
+
+nfltk:: A wrapper for the Fast Light Toolkit
+
+iup:: Iup wrapper for Nim
+
+nimqml:: Qt Qml bindings
+
+ui:: Beginnings of what might become Nim's official UI library
+
+uibuilder:: UI prototyping with Glade
+
+Some of these bindings may currently not compile with the latest Nim compiler or may
+not support the new [.new]#ARC# memory management. But we recommend to investigate
+them before you decide to use gintro, maybe one of them fits better you purpose. wNim
+should be a good choice when you intent to develop for windows only, nimx may be the
+most fun as it is pure Nim, fidget looks really nice, nigui supports native look for
+Windows, and finally nimgui is a bindings to the dear imgui immediate mode library.
+Most of above bindings are hosted at github, you can use github, google or nimble
+search to locate the packages.
+
+== Chapter 1
+
+Note that we assume for this book that you are already familiar with computer
+programming in general and with the Nim programming language. At least you should be
+able to open a terminal window and to enter and execute some commands. Some basic
+knowledge of the C language would also help, as we sometimes use C code as a starting
+point for our Nim programs. 
+
+GTK is an event driven toolkit. That is we create widgets like buttons or text entry
+fields and connect them with one or multiple functions, which are then automatically
+called when an input event like a button press or a text entry is discovered by GTK.
+
+For creating a GUI we create and arrange all our widgets, and then connect widget
+actions with our handler functions, called callbacks. The callback can perform
+arbitrary task, this includes modifying the GUI by changing the appearance of
+widgets, or by removing widgets or by adding new widgets.
+
+Generally GTK does manage the actual layout of the widgets automatically for us, that
+is widgets are automatically arranged and resized to create a clean nice look, and
+when we resize the top level window or add or remove widgets, the layout adapts
+automatically. This behavior is archived by the boxes in boxes concept represented by
+GtkBox -- we create vertical or horizontal boxes, which we can fill with widgets, and
+we can put these boxes again in other larger boxes in a recursive manner. In this way
+we can specify the desired layout, but the concrete layout is done automatically. For
+example buttons can resize automatically when the label text or font size change. The
+horizontal or vertical boxes are supported by two dimensional grids or by special
+containers like header bars. We can tune the layout by specifying margins or
+distances between widgets, or we can modify the visual appearance with CSS. But
+generally we do not create layouts where we specify exact pixel positions for GUI
+elements. GTK also offers a fixed positioning and sizing model, using the GtkFixed
+and the GtkLayout containers, but that is used only in rare cases. Recently GTK also
+got a new constraint-based layout manager developed by {ebassi}, which may allow to
+easily create even more flexible layouts.
+
+We can create the desired widgets directly in our Nim source code, for example by a
+call of newButton("Sort List"), or we can decide to create all the widgets in a
+declarative fashion in external XML files. In the XML files we can arrange and group
+all of our widgets in hierarchical layouts, and we can attach attributes like size,
+color or textual labels to the widgets. We can create that XML file manually, or we
+can decide to use the interactive Glade tool to create the XML file.
+
+Using XML files and the Glade tool may appear simpler, more intuitive and more
+flexible. When we create GTK programs directly in C languages that may be true, as C
+is a cryptic and verbose languages, which makes changes really difficult. For high
+level languages like Nim or Python that is not really the case, so it is not always
+clear if use of external XML files really have a benefit. XML based layouts have the
+advantage that the GUI layout can be modified without recompiling the program source
+code, so even users that do not have the source code of a program can modify the GUI
+layout. But this is only an advantage when we do ship our software without source
+code, and when we use the XML files in its original form as external text files. But
+in most cases we integrate the XML files again into our main executable to simplify
+the deployment. An additional disadvantage of the use of XML files is that the Glade
+tool may not support all widget types and their properties well, so that manual
+modifications of the XML files can be necessary.
+
+So for the first part of this book we will create our GUI layout directly in the Nim
+source code. Later we will introduce the use and layout of the XML files, and we will
+describe how the GTK builder library component is used to import the XML files and to
+access the widgets.
+
+=== Installation of GTK
+
+When you are interested in using GTK with Nim, them we should assume that you have
+both already installed on your computer and played with them.
+
+For Nim you will find detailed installation instructions on the Nim homepage:
+https://nim-lang.org/install.html
+
+On Linux computers GTK is generally installed by default, or at least available by
+the package manager of your Linux distribution. If you should still have an old Linux
+system which does not yet provide GTK4, you may install it beside your GTK3.  For
+example you may install the latest GTK4 from git which these commands entered in a
+Linux terminal window:
+
+----
+# https://discourse.gnome.org/t/installing-gtk4-for-testing-on-opt-ii/3349/4
+git clone https://gitlab.gnome.org/GNOME/gtk.git
+cd gtk
+meson --prefix /opt/gtk builddir
+ninja -C builddir
+ninja -C builddir install
+
+# maybe also necessary:
+export GI_TYPELIB_PATH=/opt/gtk/lib64/girepository-1.0
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/gtk/lib64/
+export PKG_CONFIG_PATH="/opt/gtk/lib64/pkgconfig/"
+
+# you may test your installation with:
+GSETTINGS_SCHEMA_DIR=/opt/gtk/share/glib-2.0/schemas /opt/gtk/bin/gtk4-demo
+----
+
+The installation of GTK for Microsoft Windows is described on the GTK home page:
+
+https://www.gtk.org/docs/installations/windows/
+
+
+and for {macos}:
+
+https://www.gtk.org/docs/installations/macos/
+
+If you have problems with the installation then you may ask for support at the GTK
+internet forum:
+
+https://discourse.gnome.org/
+
+In the rest of this book we assume that you have also installed the Nim compiler and
+a C compiler like gcc or clang.
+
+When you have not yet installed the Nim GTK bindings then you may enter in a terminal
+window:
+
+----
+nimble install gintro
+----
+
+The gintro package generates the bindings between GTK and the Nim languages locally
+on your computer by querying the gobject-introspection data base. The generated
+modules depend on your {os} (Linux, Windows, Mac, 32 bit, 64 bit) and on the
+available GTK version. If you update your GTK system it may be necessary to update
+gintro by [.term]#nimble uninstall gintro; nimble install gintro#. Executing that
+sequence is also recommended when a new gintro release is available. You can also use
+[.term]#nimble install gintro@head# to get the latest gintro with latest, less tested
+fixes. 
+
+=== Legacy program layout
+
+GTK3 introduces the GtkApplication framework, which is continued by GTK4 and is
+generally the recommended way to create GTK applications. Programs based on
+GtkApplication seems to be a bit more complicated than the ones with legacy GTK2
+startup code, but the GtkApplication style offers some benefits like management of
+multiple program instances, parameter passing, and it enables new modern layouts with
+header bars and hamburger menus. So we will use the GtkApplication style in the rest
+of this book.
+
+As you will still find many example programs that still uses the old GTK2 program
+startup code, we will present that program shape here first. The following C program
+called simplegtk3.c uses the old gtk2 style and can be compiled with this command:
+
+----
+gcc -o simplegtk3 simplegtk3.c `pkg-config --libs --cflags gtk+-3.0`
+---- 
+
+You can run it from a terminal window with this command:
+
+----
+./simplegtk3
+----
+
+The program will open a tiny window with a push button. Clicking that button will
+write a message to the terminal window. You can terminate the program by clicking
+with the mouse on the cross on the upper right corner of the program window.
+
+// GDK_DPI_SCALE=0.5 ./simplegtk3
+image::simplegtk3c.png[]
+
+[[simplegtk3.c]]
+[source,c]
+.simplegtk3.c
+----
+// based on https://gitlab.gnome.org/GNOME/gtk/-/blob/master/tests/simple.c
+// gcc -o simplegtk3 simplegtk3.c `pkg-config --libs --cflags gtk+-3.0`
+
+#include <gtk/gtk.h>
+
+static void
+hello (void)
+{
+  g_print ("hello world\n");
+}
+
+int
+main (int argc, char *argv[])
+{
+  GtkWidget *window, *button;
+  gtk_init(&argc, &argv);
+  window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  gtk_window_set_title (GTK_WINDOW (window), "hello world");
+  gtk_window_set_resizable (GTK_WINDOW (window), FALSE);
+  g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+  button = gtk_button_new ();
+  gtk_button_set_label (GTK_BUTTON (button), "hello world");
+  gtk_widget_set_margin_top (button, 10);
+  gtk_widget_set_margin_bottom (button, 10);
+  gtk_widget_set_margin_start (button, 10);
+  gtk_widget_set_margin_end (button, 10);
+  g_signal_connect (button, "clicked", G_CALLBACK (hello), NULL);
+  gtk_container_add (GTK_CONTAINER (window), button);
+  gtk_widget_show_all (window);
+  gtk_main();
+  return 0;
+}
+----
+
+The source code has the typical structure of {gtk2} programs written in C language:
+The first two lines are only comments, it follows an include directive to make the
+gtk library available. The program consists of two functions, the C main() function
+which is executed at program startup and a callback function called hello(). As usual
+for C programs the main() function has two parameters, an array of optional command
+line parameters and the number of parameters. These two parameters are passed to the
+gtk_init() function which has to be called at the beginning of an old style gtk
+program. In the main() function a new top level window instance is created by calling
+gtk_window_new(). Then we set the window title and we set the resizable property to
+false to give that window a fixed size. Then the function g_signal_connect() is used
+to connect the "destroy" signal to the predefined callback function gtk_main_quit()
+provided by gtk. The destroy signal is emitted for the window by GTK when we click
+with the mouse on the window close symbol. In this case gtk_main_quit() terminates
+the whole program. After this we create a button instance and set some properties of
+the button like its label text and its margins to reserve some space between the
+button and the border of the enclosing window. We connect the clicked signal of the
+button instance to our hello() callback and add the button to the window. We have to
+call gtk_widget_show_all() to make the window and its parents visible. Finally we
+call gtk_main() to transfer control to the GTK main loop. That loop now runs as some
+form of supervisor waiting for user actions and calling the connected callback when
+appropriate. When the user clicks the close button of the window the program
+terminates, the top level window is closed, the GTK main loops stops and the last
+line of the C main() function returns the value 0 to the {os} to indicate that no
+error has occurred.
+
+A few remarks to above program: The GTK widgets are all pointers, and build a
+hierarchy with parent/child inheritance in OOP fashion. The GTK widget is a sub class
+of gobject, and other widgets like windows or buttons are again sub classes of
+widget.  In GTK C code the widget is generally used as the static base type. So when
+a button widget is used, then a variable of type widget is declared and
+gtk_button_new() returns not a button instance, but the plain widget type. This has
+the consequence that whenever we use a button function on that instance, we have to
+cast the widget to a button type as in [.code]#gtk_button_set_label (GTK_BUTTON
+(button), "hello world)"#. That is a convention chosen by the initial GTK creators.
+Note that in C casts like GTK_BUTTON() do type checks at runtime and give runtime
+warnings when the types do not match. We may wonder if we have to free widgets when
+we do not need them any longer. Indeed in C code that can be necessary in some cases.
+GTK uses reference counting for its objects, that is that each object has a reference
+counter. In C we can increase that counter to reference an object, that is to ensure
+that it is kept alive and is not destroyed by GTK. When we do not need that object
+any more we can decrease the reference counter. If the reference counter drops to
+zero then GTK destroys the object, that is GTK frees its memory and closes related
+resources. But often we do not have to really care for that. The reason for that is
+that GTK uses a special variant of reference counting: When we create a widget with a
+constructor like gtk_button_new() we get an instance which is market as "floating"
+indicating that the instance is not already owned by someone. Generally we insert
+each widget that we create into another widget, like a window or another container
+widget, and that container widget then takes ownership of its child. When the program
+terminates and the top level window is destroyed, then all its children are
+automatically freed. So we have not to care about all that memory management in this
+case. But there are exceptions to this process, so C programmers sometimes have to
+carefully check when they have to ref() and unref() resources. Fortunately high level
+languages like Nim or Python have a garbage collector which frees all objects when
+appropriate, so we have not to care for this. Nim with gintro supports even the new
+ARC memory management, which is deterministic and scope based: When a widget or
+another object goes out of scope it is immediately freed and all related resources
+are closed or released.
+
+In the code above we use the function g_signal_connect() to connect widgets to a user
+defined callback function. The signal type like "clicked" is not an enumeration type
+as we may have expected but a string. The string data type shall enable extending of
+the signal system, with enums that would not be possible. The g_signal_connect()
+function allows to pass additional user data in form of a plain void pointer to the
+callback functions. If there is no data parameter then NULL is passed. Fortunately in
+Nim we can do the optional parameter passing in a type save way.
+
+Another aspect that we should discuss is the margin size which we have specified for
+our button. The margin is the void area around a widget. The literal value 10 used in
+the set_margin() functions is a pixel size, as the GTK API is for historic reason
+pixel based. Today where displays with very high DPI resolution are available, the
+pixel is not always a good size unit. Distances like margins are generally related to
+text size, so size units like em or ex for the size of letters as used in HTML and
+CSS would be a more flexible size unit. To allow using of GTK on screens with very
+high DPI value GTK3 and GTK4 use logical pixels, as opposed to physical ones. This
+is, the user can configure the desktop environment to scale the pixel size, generally
+by factor 1 for ordinary displays and by 2 for high DPI displays. Fractional scaling
+factors are not yet supported, so this does not really allow a fine tuning of the
+visual layout. Generally you should know that what really matters is not the DPI
+value but viewing angle: When you have a large display with low DPI value and you
+move it away from your eyes, it will appear like a smaller display with higher DPI
+value.
+
+Now let us investigate how above C program looks for GTK4:
+
+[[simple.c]]
+[source,c]
+.simple.c
+----
+// https://gitlab.gnome.org/GNOME/gtk/-/blob/master/tests/simple.c
+// gcc -Wall simple.c -o simple `pkg-config --cflags --libs gtk4`
+
+#include <gtk/gtk.h>
+
+static void
+hello (void)
+{
+  g_print ("hello world\n");
+}
+
+static void
+quit_cb (GtkWidget *widget,
+         gpointer data)
+{
+  gboolean *done = data;
+  *done = TRUE;
+  g_main_context_wakeup (NULL);
+}
+
+int
+main (int argc, char *argv[])
+{
+  GtkWidget *window, *button;
+  gboolean done = FALSE;
+  gtk_init ();
+  window = gtk_window_new ();
+  gtk_window_set_title (GTK_WINDOW (window), "hello world");
+  gtk_window_set_resizable (GTK_WINDOW (window), FALSE);
+  g_signal_connect (window, "destroy", G_CALLBACK (quit_cb), &done);
+  button = gtk_button_new ();
+  gtk_button_set_label (GTK_BUTTON (button), "hello world");
+  gtk_widget_set_margin_top (button, 10);
+  gtk_widget_set_margin_bottom (button, 10);
+  gtk_widget_set_margin_start (button, 10);
+  gtk_widget_set_margin_end (button, 10);
+  g_signal_connect (button, "clicked", G_CALLBACK (hello), NULL);
+  gtk_window_set_child (GTK_WINDOW (window), button);
+  gtk_widget_show (window);
+  while (!done)
+    g_main_context_iteration (NULL, TRUE);
+  return 0;
+}
+----
+
+The most important difference is the fact that gtk_main() is not called at the end of
+the C main() function, but g_main_context_iteration() is called in a loop. The user
+has to provide a way to terminate that loop to exit the program. Above program does
+that by calling an additional function called quit_cb(), that is called when the top
+level window is going to be destroyed (user clicks on the x symbol of the main
+window) and that sets the done variable of the C main() function to the value true.
+The function g_main_context_iteration() has two parameters, a GMainContext for which
+we pass NULL to get the default one and a boolean value which determines if that
+function may block or not. In the quit_cb() callback the function
+g_main_context_wakeup() is called. That functions also has a parameter named context
+of type GMainContext -- here NULL is again passed to use the default one. The
+function g_main_context_wakeup() ensures that context is not blocking in the
+g_main_context_iteration function.
+
+Other less important differences are that gtk_init() and gtk_window_new() do not have
+function parameters in GTK4, that gtk_window_set_child() is used instead of
+gtk_container_add() to set the child widget of the top level window, and that
+gtk_widget_show() is used instead of gtk_widget_show_all() to make the widgets
+visible.
+
+Now let us create a Nim version of the C code above: We may use the tool c2nim to
+generate a nimified version of the C source code, and tune it a bit manually
+resulting in this program:
+
+[[simple.nim]]
+[source,nim]
+.simple.nim
+----
+##  https://gitlab.gnome.org/GNOME/gtk/-/blob/master/tests/simple.c
+##  nim c simple.nim
+
+import gintro/[gtk4, glib, gobject]
+
+proc hello(b: Button) =
+  echo "hello world"
+
+proc quit_cb(window: Window; done: ref bool) =
+  done[] = true
+  wakeup(defaultMainContext())
+
+proc main =
+  var done = new bool
+  gtk4.init()
+  let window = newWindow()
+  window.title = "hello world"
+  window.resizable = false
+  window.connect("destroy", quit_cb, done)
+  let button = newButton()
+  button.label = "hello world"
+  button.marginTop = 10
+  button.marginBottom = 10
+  button.marginStart = 10
+  button.marginEnd = 10
+  button.connect("clicked", hello)
+  window.setChild(button)
+  window.show
+  while not done[]:
+    discard iteration(defaultMainContext(), mayBlock = true)
+
+main()
+----
+
+The program structure follows closely the C program, there is no need to press the
+code in classes. The first two lines are only comments. It follows an import
+statement, we import the modules gtk4, glib and gobject unqualified into the global
+name space, as common for Nim. We have decided to call the function that contains the
+largest code part main(), but that name can be freely selected in Nim. And we have to
+call that function explicitly, there is no function that is called automatically in
+Nim. Most statements in the Nim program directly corresponds to the statements in the
+C code. We used method call syntax for most function calls as common in Nim, that is
+instead of setChild(window, button) we write window.setChild(button). That may look
+like OOP style, but it is at the end just a syntax variant. The gintro module uses
+generally short unqualified function names, that is newWindow() instead of
+gtk_window_new(). We could use a module qualifier like gtk4.newWindow(), but that is
+only necessary if some of the imported modules export the same symbol (with same
+signature) so that name conflicts occur. The Nim compiler reports the rare name
+conflicts as errors, and we can add module prefixes in our Nim source code then. For
+the init() function of the gtk4 module we have decided to use a module prefix from
+the beginning -- for functions without parameters and with very short trivial names
+the chance for name conflicts increase. And sometimes it is useful to indicate the
+origin of a function by use of a module qualifier. For GTK objects and widgets, which
+are pointer types in C, we have proxy ref objects in Nim. Constructors like
+newWindow() or newButton() create a Nim proxy object on the heap and return its
+reference, which is automatically de-allocated when it is not needed any longer by
+our Nim code and by GTK itself. The proxy object contains a pointer to the GTK object
+and some more fields for internal use. Opposite to GTK itself the gintro constructors
+do not always return a plain widget, but they return the actual type like button or
+window. For connecting GTK signals the type safe connect() macro call is used, which
+accepts an optional typed argument. Currently that optional argument can be a plain
+value like int or a ref object, but var parameters are currently not supported. So we
+had to use a ref bool for the parameter of the quit_cb() callback function, as we
+want to modify the boolean value in the quit_cb() callback and access the modified
+value in the main() procedure. We have to de-reference the done variable by the
+dereference operator [] to access the content. The var parameter type should be
+needed only in very rare cases as the optional parameter of the connect macro --
+maybe gintro will support them later.  The gintro connect macro is type safe, the
+data types of all parameters have to match with the data types used in the connected
+callback function.  That is we have to pass a window or button parameter in the code
+above.  The data type of the optional parameter has to match also of course. For most
+GTK signals the parameter list of the callbacks consists only of the object itself
+and optional one more parameter, but there exists some signals which have more
+parameters. One way to learn about these signals is to inspect the GTK C API. But we
+have to remember that the GTK widget family build a hierarchy, so we may have to look
+for the signals also in parent classes. For example when we inspect the GtkButton API
+we will find only two signals, clicked and activate:
+https://developer.gnome.org/gtk4/stable/GtkButton.html#GtkButton.signals But as
+GtkButton is a child of GtkWidget we could also use signals from
+https://developer.gnome.org/gtk4/stable/GtkWidget.html#GtkWidget.signals for our
+button.
+
+When we set properties or attributes we have generally various options, we can use
+function or method call syntax and we can assign the value using the equal sign. For
+the setter procedures we can generally use the short name without the set name
+component:
+
+----
+setTitle(window, "Hello")
+title(window, "Hello")
+window.setTitle("Hello")
+window.title("Hello")
+window.title = "Hello"
+----
+
+The Nim code above looks a bit bloated still due to the 4 set margin calls, each with
+the same literal value 10. Well that program shape is a result of the initial C code,
+and often the 4 values may be not really all identical. But when such code fragments
+should occur often in our code we would define our own setMargin() procedure that
+would get one parameter and assign all four values for us, and we may define another
+proc with for parameters to assign all 4 margins, we could call it with
+button.setMartin(10) and button.setMargin(top = 5, bottom = 5, left = 20, right =
+20). Note that Nim support default values for procedure parameters. The gintro
+package uses that fact for boolean properties which generally have the default value
+true, so we can use a plain window.setResizable instead of window.setResizable(true).
+To set that property to false we still have to use window.setResizable(false) or
+window.resizable = false.
+
+=== Application Style
+
+Now let us investigate the new application program style that was introduced with
+GTK3 and is continued in GTK4 nearly unchanged. We start with the GTK4 variant of the
+example that is presented at the GTK homepage, its C code has this shape:
+
+[[hello-world.c]]
+[source,c]
+.hello-world.c
+----
+// https://gitlab.gnome.org/GNOME/gtk/-/blob/master/examples/hello-world.c
+// gcc -Wall hello-world.c -o hello-world `pkg-config --cflags --libs gtk4`
+#include <gtk/gtk.h>
+
+static void
+print_hello (GtkWidget *widget, gpointer data)
+{
+  g_print ("Hello World\n");
+}
+
+static void
+activate (GtkApplication *app, gpointer user_data)
+{
+  GtkWidget *window;
+  GtkWidget *button;
+  GtkWidget *box;
+  window = gtk_application_window_new (app);
+  gtk_window_set_title (GTK_WINDOW (window), "Window");
+  gtk_window_set_default_size (GTK_WINDOW (window), 20, 20);
+  box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_window_set_child (GTK_WINDOW (window), box);
+  button = gtk_button_new_with_label ("Hello World");
+  g_signal_connect (button, "clicked", G_CALLBACK (print_hello), NULL);
+  g_signal_connect_swapped (button, "clicked", G_CALLBACK (gtk_window_destroy), window);
+  gtk_box_append (GTK_BOX (box), button);
+  gtk_widget_show (window);
+}
+
+int
+main (int argc, char **argv)
+{
+  GtkApplication *app;
+  int status;
+  app = gtk_application_new ("org.gtk.example", G_APPLICATION_FLAGS_NONE);
+  g_signal_connect (app, "activate", G_CALLBACK (activate), NULL);
+  status = g_application_run (G_APPLICATION (app), argc, argv);
+  g_object_unref (app);
+  return status;
+}
+----
+
+The main difference of the new application program style to the old GTK2 style is,
+that the C main() function now creates an application, connects the application to
+various callbacks and then calls g_application_run() to execute it. The most
+important callback is the activate callback that creates the application window with
+all its widgets and connects callback functions to the widgets.
+
+We can compile and run above C program when we enter these
+commands in the terminal window:
+
+----
+gcc -Wall hello-world.c -o hello-world `pkg-config --cflags --libs gtk4`
+./hello-world
+----
+
+image::hello_world.png[]
+
+The GTK3 variant of above program is nearly identical, instead of
+gtk_window_set_child(GTK_WINDOW(window), box) we would use the old
+gtk_container_add(GTK_CONTAINER(window), box) to set the box as content for the
+window, and to set the button as content of the box we would replace
+gtk_box_append(GTK_BOX(box), button) by gtk_container_add(GTK_CONTAINER(box),
+button). Another small difference is that GTK3 uses gtk_widget_destroy() instead of
+gtk_window_destroy() and gtk_widget_show_all() instead of gtk_widget_show().
+
+After applying that modifications you could compile the program for GTK3 with
+
+----
+gcc -Wall hello-world-gtk3.c -o hello-world-gtk3 `pkg-config --cflags --libs gtk+-3.0`
+----
+
+Note that we do not have to call gtk_init() when we use the application style.
+
+In the C main() function we create our application by calling the function
+gtk_application_new(). We pass a string which is used as an application id and some
+flag parameter. After we have connected the application variable to our activate
+callback function we run the application by galling g_application_run() of the gio
+library. The application then runs until the application window is closed or until we
+call gtk_window_destroy() on it. We can pass the command line arguments as parameters
+to g_application_run(). The function returns an integer value as status result, which
+is used as the return value of the main() function and passed to the {os} as the
+result of the program execution. In the C code g_object_unref(app) is called before
+the status value is returned to the OS and the program is terminated.  Earlier we
+said that even in C code we generally do not have to free objects or resources,
+because most objects like widgets are initially unowned after creation, and when we
+add them to containers the container takes ownership. For top level windows or the
+GTK application that is not the case, so their constructors return a none floating
+object with reference count set to one, and we have to destroy or unref them.
+
+In the activate() callback we call gtk_application_window_new(app) to create a top
+level application window, which is a subclass of a GTK window. In the activate()
+callback we create a box as a container for out button widget. Containers like boxes
+are used to arrange and group widgets. The GTK box constructor gtk_box_new() has two
+parameters, an orientation and a spacing value. The orientation determines if the
+contained widgets should be arranged vertically or horizontally. The spacing is an
+integer value which determines the distance between the contained widgets, the value
+is given in logical pixels. The box widget is then set as a child of the application
+window by calling the function gtk_window_set_child(). After that we create a button
+widget with a "Hello World" label text and connect that button to a callback function
+called print_hello() which shall print a message to the terminal window when we click
+with the mouse on that button. This program connects another callback function to our
+button in a very special fashion: We want that our application window is closed and
+the program terminates when we click on the button. For that we want to directly call
+the gtk_window_destroy() function on our application window as a callback function.
+The problem is, that when we connect a callback function to a button, then GTK would
+pass the button instance to the callback as first parameter. But we intent to call
+gtk_window_destroy() as callback with our application window as parameter. For this
+rarely used special case GTK offers a variant of g_signal_connect() which is called
+g_signal_connect_swapped() and which passes the optional user_data parameter to the
+callback. In this way we can pass the application window as user_data parameter
+directly to the gtk_window_destroy() function. In Nim this form of swapped parameter
+passing is currently not supported, so we have to define our own function, which gets
+the window as optional parameter and then calls destroy() on it. After we have
+connected all the callback functions to our button we call gtk_box_append() to insert
+the button widget into the box. Finally we call gtk_widget_show() on our application
+window to make it and all of its children visible and we are done.
+
+We have created our application window, a box widget and a button widget. We inserted
+the box as child into the window, and we inserted the button widget into the box.
+Note that the order in which we build that hierarchy is not important, we can first
+insert the button into the box, or first insert the box into the window. Also note
+that we can connect multiple callback functions to the same widget. In this case the
+order is important, as the callback functions are called in the order as they were
+connected. For our button, if we had connected the print_hello() callback function
+last, that one would never get called, as the window would be destroyed before. Also
+note that we can connect different widgets to the same callback function, i.e. we
+could create multiple button widgets and connect them all to our print_hello()
+callback function.
+
+Now let use see how the above program looks in the Nim programming language by using
+the gintro bindings. We applied the conversion tool c2nim on above C code and
+slightly edited the result manually:
+
+----
+c2nim -o hello_world.nim hello-world.c
+----
+
+[[hello_world.nim]]
+[source,nim]
+.hello_world.nim
+----
+##  https://gitlab.gnome.org/GNOME/gtk/-/blob/master/examples/hello-world.c
+##  nim c helloWorld.nim
+
+import gintro/[gtk4, gobject, gio]
+
+proc destroyWindow(b: Button; w: gtk4.ApplicationWindow) =
+  gtk4.destroy(w)
+
+proc printHello(widget: Button) =
+  echo("Hello World")
+
+proc activate(app: gtk4.Application) =
+  let window = newApplicationWindow(app)
+  window.title = "Window"
+  window.defaultSize = (20, 20)
+  let box = newBox(Orientation.horizontal, 0)
+  window.setChild( box)
+  let button = newButton("Hello World")
+  button.connect("clicked", printHello)
+  button.connect("clicked", destroyWindow, window)
+  box.append(button)
+  window.show
+
+proc main =
+  let app = newApplication("org.gtk.example", {})
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+The Nim source code fully match the C code. We use in most cases method call syntax,
+and for window title and default size we use an assignment instead of a procedure
+call to set the properties. For the newApplication() call we explicitly specify the
+empty set for the flag parameter, but we could have leave that out as it is the
+default. In the C code gtk_application_new() passes plain integer flag values which
+can be combined by bit wise or operations, and G_APPLICATION_FLAGS_NONE is passed
+when no bit flag should be set. In Nim we use a bitset with a {} default for the
+empty set.  Finally we used the quit procedure of system module to return the status
+result to the OS. The only small difference of the Nim code to the C code is that we
+do not use connectSwapped() but call an intermediate destroyWindow() procedure that
+obtains the application window as an additional parameter and calls destroy() on it
+to close the top level window and to terminate the program. Providing a type safe
+connectSwapped() procedure for the Nim bindings seems to be hard, and we would need
+it only in rare cases in real world code. Note that for the connect() macro the type
+of the optional parameter has to match exactly the data type used in the callback
+signature, that is while the body of the destroyWindow() procedure would work with a
+plain GTK window, which is a parent type of GTK application window, we have to use
+still GTK application window in the procedure signature, otherwise the compiler would
+complain about incompatible types. That is a limitation of current gintro bindings
+and results from the fact that the connect macro simple enforce type matching, it
+does not actually invest the actual types of the provided callback function and
+checks for type compatibility. If we have to use a plain GTK window type for the
+second parameter of the destroyWindow() callback for some reason, then we can make it
+work again with a type conversion like button.connect("clicked", destroyWindow,
+gtk4.Window(window)).
+
+We can compile and run our Nim program with following commands from a terminal
+window:
+
+----
+nim c hello_world.nim
+./hello_world
+----
+
+The above compiler invocation builds the executable in the default debug mode with a
+lot of runtime checks enabled and without enabled optimizations for the C compiler
+back end, so the executable size is large and the program would run not very fast.
+Generally we compile our Nim programs with the option -d:release to restrict checks
+to most important ones and to enable back end optimizations after we have tested our
+program well in debug mode. That results in a smaller and faster executable. We can
+further reduce the executable size by compiling our Nim program with the new Nim ARC
+memory management and by enabling link time optimization for the C compiler back end:
+
+----
+nim c -d:release --gc:arc -d:useMalloc --passC:-flto hello_world.nim
+---- 
+
+Here we additional use -d:useMalloc to use plain malloc() instead of Nim's own memory
+allocation. That commands gives us an executable size of about 40 kByte with gcc 10
+back end, which is still larger than the C executable, but not that much. We could
+disable all checks by specifying -d:danger instead of -d:release to further decrease
+the executable size. Note that with above options our program is compiled for optimal
+performance. If executable size is more important than performance then we could try
+other compiler options like --opt:size, but for GUI desktops applications that makes
+not much sense.
+
+=== Nim API docs
+
+Unfortunately it is nearly impossible to provide a full set of commented API docs for
+the gintro Nim GTK bindings. The GTK related modules consists of more than 10000
+functions and about 2000 data types, constants and enums. It is planed to list them
+all on some HTML pages, but that would provide only the symbol names and the
+signature for procedures. Copying the C comments verbatim would not make much sense,
+and rewriting all comments for Nim would be a gigantic effort. Generally the best
+solution for Nim is to follow the C API docs, which are generated by GTK directly
+from the GTK C source code. The C API docs are in most cases of good quality and not
+outdated, and the differences to the Nim API are generally obvious. For example if
+you are interested in using GTK buttons, you can enter "GtkButton", "GTKButton gtk4"
+or "GTKButton API" into the search field of a internet search engine and you should
+get the matching GTK API page like
+https://developer.gnome.org/gtk4/stable/GtkButton.html. You may also consider
+installing the GTK devhelp tool which provides the GTK C API without generating
+Internet traffic.
+
+For stubborn cases it may be useful to use the Linux grep tool from the terminal
+window. Let us assume that you want to create a new button widget with a label and
+you know that for C
+https://developer.gnome.org/gtk4/stable/GtkButton.html#gtk-button-new-with-label is
+used for that. So maybe you tried from Nim [.code]#let button =
+newButtonWithLabel("Run program")# but the Nim compiler tells you that this function
+is not available. Well, the problem is obvious -- Nim supports function overloading,
+so we have newButton(): Button and newButton(label: string): Button.  But sometimes
+we are just too tired. We know the name of the C function, so let us use that as a
+starting point:
+
+----
+grep -C3 gtk_button_new_with_l ~/.nimble/pkgs/gintro-#head/gintro/*
+...
+proc gtk_button_new_with_label(label: cstring): ptr Button00 {.importc, libprag.}
+
+proc newButton*(label: cstring): Button =
+  let gobj = gtk_button_new_with_label(label)
+  let qdata = g_object_get_qdata(gobj, Quark)
+...
+----
+
+The gintro generated modules are generally located in
+~/.nimble/pkgs/gintro-#head/gintro/ and contain clean and ordered code. Data types
+and methods working on these types are grouped together. Let us assume that you want
+to create a new GTK application but you are not sure which flags are available. Two
+grep calls should give us all what we need:
+
+----
+grep -C3 gtk_application_new ~/.nimble/pkgs/gintro-#head/gintro/gtk4.nim
+...
+proc gtk_application_new(applicationId: cstring; flags: gio.ApplicationFlags): ptr Application00 {.
+    importc, libprag.}
+
+proc newApplication*(applicationId: cstring = ""; flags: gio.ApplicationFlags = {}): Application =
+  let gobj = gtk_application_new(safeStringToCString(applicationId), flags)
+  let qdata = g_object_get_qdata(gobj, Quark)
+  if qdata != nil:
+...
+grep -B12 "ApplicationFlags\*" ~/.nimble/pkgs/gintro-#head/gintro/gio.nim 
+type
+  ApplicationFlag* {.size: sizeof(cint), pure.} = enum
+    isService = 0
+    isLauncher = 1
+    handlesOpen = 2
+    handlesCommandLine = 3
+    sendEnvironment = 4
+    nonUnique = 5
+    canOverrideAppId = 6
+    allowReplacement = 7
+    replace = 8
+
+  ApplicationFlags* {.size: sizeof(cint).} = set[ApplicationFlag]
+----
+
+For the second grep call we took advantage of the fact that the flags are exported,
+so an export marker must follow the name. We had to put quotes around the search
+string and to escape the asterisk.
+
+=== Application Program Style in
+
+xxx
+
