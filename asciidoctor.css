@@ -772,7 +772,7 @@ p { margin-bottom: 1.25rem; }
 @media amzn-kf8 { #header, #content, #footnotes, #footer { padding: 0; } }
 
 
-
+.key{font-family: monospace; font-weight: bold; background-color: #DDD; color: #000}
 .code{font-family: monospace; background-color: #DDD; color: #000}
 .term{font-family: monospace; background-color: #DDD; color: #000}
 .ndef{font-style: italic; color: #000}
