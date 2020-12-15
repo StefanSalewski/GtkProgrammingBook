@@ -1,7 +1,7 @@
 = GTK4 for Graphical User Interfaces
 with the Nim Programming Language
 (C) Dr. Stefan Salewski 2020
-//v0.1, 02-OCT-2020
+//v0.1, 2020-DEC-15
 :doctype: book
 :toc: left
 :icons: font
@@ -18,19 +18,20 @@ with the Nim Programming Language
 :win: Windows
 :os: operating system
 :proc: procedure
+:app: application
 :gtk2: GTK{nbsp}2
 :gtk3: GTK{nbsp}3
 :gtk4: GTK{nbsp}4
 :gtks: GTK's
 :qtversion: 6
-:gintroversion: 0.8.2
+:gintroversion: 0.8.3
 :nimversion: v1.4
 :ebassi: Emmanuele Bassi
 
 ////
 
 asciidoctor -a stylesheet=asciidoctor.css gtkprogramming.adoc
- 
+
 we are using these custom roles for clean semantic markup:
 
 [.new]##
@@ -56,17 +57,17 @@ focus on the Linux {os} (OS). While the Nim programming language does support al
 mayor {os}s, GTK has it main emphasis on the Linux OS. {win} and {macos} are
 supported by GTK, but without true native look and feel. Android and {ios} is not
 supported by GTK, but there is some early experimental support for the [.new]#Librem#
-mobile devices manufactured by the [.new]#Purism# company.  As GTK is compact and has
+mobile devices manufactured by the [.new]#Purism# company. As GTK is compact and has
 a modular design, it can be also used on devices with restricted resources like the
-[.new]#Raspberry Pi# family.  While GTK is generally not used to create web
+[.new]#Raspberry Pi# family. While GTK is generally not used to create web
 applications, it may be possible to run GTK applications locally in a web browser by
 using the broadway GTK backend.
 
 The examples in this book uses the Nim implementation of the team around Mr. A. Rumpf
-in version {nimversion}, the first {gtk4} version that is available in late 2020 and the Nim GTK bindings provided by the [.new]#gintro# package
-in version {gintroversion}.
-For other Nim implementations or different GTK bindings modifications of the
-provided examples can be necessary.
+in version {nimversion}, the first {gtk4} version that is available in late 2020 and
+the Nim GTK bindings provided by the [.new]#gintro# package in version
+{gintroversion}.  For other Nim implementations or different GTK bindings
+modifications of the provided examples can be necessary.
 
 //[.normal]
 
@@ -89,13 +90,14 @@ by replacing the traditional terminal based textual user interfaces. GUIs allowe
 even untrained people the intuitive interaction with computers without the need to
 learn and remember many textual command. Closely coupled to graphical user interfaces
 is the computer mouse, a small gadget that rests on the table and maps its movements
-to a pointer drawn on the computer screen allowing the interaction with the widgets. Today
-the computer mouse is often supported or substituted by touch pads or touch displays.
+to a pointer drawn on the computer screen allowing the interaction with the widgets.
+Today the computer mouse is often supported or substituted by touch pads or touch
+displays.
 
 After the release of GTK that toolkit was used by other software too, and in 2002
 Version 2.0 of GTK appeared. {gtk2} had already a more modular design and was not
 that tight couple to GIMP. In 2011 GTK{nbsp}3.0 appeared, which provided many new
-features.  Most important was a new customizable design supported by [.new]#cascading
+features. Most important was a new customizable design supported by [.new]#cascading
 style sheets# (CSS), and the use of libraries like [.new]#cairo# for drawing the
 graphical elements and of [.new]#pango# for font rendering. In late 2020 official
 release of {gtk4} will appear, which has again an improved internal design, an
@@ -105,22 +107,24 @@ performance while keeping CPU load low.
 
 //.Smallprint
 ****
-Unfortunately GTK is currently not in a very active state. There seems to be one or
-two paid full-time developers which try to finish official release 4.0 and a few
+
+Unfortunately GTK is currently not in a very active state. There seems to be one
+or two paid full-time developers which try to finish official release 4.0 and a few
 volunteers which support the development. The number of active GTK programmers,
 partly mirrored by the traffic of the GTK/Gnome forum, seems to be tiny, and most of
 them use GTK still direct from C. Maybe because they have learned C decades ago and
 never tried a modern language, maybe because GTK itself is written in C and its
 native API documentation and examples are based on C language, or maybe because some
 bindings to other languages are of bad quality or have not enough documentation and
-examples.  Writing tiny GTK apps in plain C may be OK, but for larger programs plain
-C becomes unmaintainable very fast.  At least for Python, JavaScript, Rust, {cpp} and
-D there seems to exists a few GTK users. But still the number of non trivial GTK apps
+examples. Writing tiny GTK apps in plain C may be OK, but for larger programs plain C
+becomes unmaintainable very fast. At least for Python, JavaScript, Rust, {cpp} and D
+there seems to exists a few GTK users. But still the number of non trivial GTK apps
 which appeared in the last decade is very small, and some existing apps did not
 manage to move from {gtk2} to {gtk3} at all. But there is some hope that with the new
 {gtk4} things will improve. Maybe with the official release of {gtk4} at the end of
 2020 the quality of languages bindings will increase and maybe some new good books
 and tutorials will appear making learning GTK programming easier and more fun.
+
 ****
 
 While GTK can be used on {win} and {macos} computers, it is generally used on Linux,
@@ -134,14 +138,14 @@ used.
 
 Like most traditional GUI toolkits GTK uses a retained mode, where the graphical
 scene is updated and redrawn only when necessary. In contrast to retained mode GUIs
-in the last years immediate mode GUIs has become popular. These GUIs often have
-their origin in simple GUIs for games and redraw the whole scene permanently,
-generally synchronized with the screen refresh rate. The permanent redraws create
-some CPU load of course, but for games that does generally not matter, as CPU and GPU
-load are dominated by the game itself, and with OpenGL or Vulkan hardware support
-drawing the GUI does not cause high CPU load. And finally the modern retained mode
-GUIs like GTK are not really that static any more as they contain many animations.
-So the distinction between retained and immediate mode GUIs is not that sharp.
+in the last years immediate mode GUIs has become popular. These GUIs often have their
+origin in simple GUIs for games and redraw the whole scene permanently, generally
+synchronized with the screen refresh rate. The permanent redraws create some CPU load
+of course, but for games that does generally not matter, as CPU and GPU load are
+dominated by the game itself, and with OpenGL or Vulkan hardware support drawing the
+GUI does not cause high CPU load. And finally the modern retained mode GUIs like GTK
+are not really that static any more as they contain many animations.  So the
+distinction between retained and immediate mode GUIs is not that sharp.
 
 The GTK toolkit has a modular design with these main components:
 
@@ -186,20 +190,20 @@ implementation of the original [.new]#X Window System#.
 All these components are written in the C programming language. C is a very old,
 restricted and sometimes unsecure language, which can lead to very verbose code,
 which is difficult to maintain. As GTK has an object-orientated design, but C
-language does not support OOP style, a whole object system called [.new]#gobject#
-was written for GTK from scratch. And as C does not support high level data
-structures like resizeable strings, hash maps, asynchronous in out operations and
-much more important functionality which modern languages generally provide, this was
-also written from scratch and is provided in supporting libraries like [.new]#glib#
-and [.new]#gio#. As C does not support automatic memory management, in GTK it is
+language does not support OOP style, a whole object system called [.new]#gobject# was
+written for GTK from scratch. And as C does not support high level data structures
+like resizeable strings, hash maps, asynchronous in out operations and much more
+important functionality which modern languages generally provide, this was also
+written from scratch and is provided in supporting libraries like [.new]#glib# and
+[.new]#gio#. As C does not support automatic memory management, in GTK it is
 sometimes necessary to release memory manually, which may lead to the well known
 problems like memory leaks or use after free issues.
 
 It seems to be obvious that all these bloated legacy stuff is nearly unmaintainable
 considering the tiny GTK and Gnome community. And today, when we have so many nice
-modern programming languages available, nearly no one intends to write apps in C. When we take
-into account the fact that GTK does not even supports the popular Android OS for
-mobile devices, we may ask why we should care for GTK at all still.
+modern programming languages available, nearly no one intends to write apps in C.
+When we take into account the fact that GTK does not even supports the popular
+Android OS for mobile devices, we may ask why we should care for GTK at all still.
 
 Indeed a popular competitor of GTK is the Qt GUI toolkit with its KDE Linux desktop
 environment. Qt appeared already in 1995 with a license model not well suited for
@@ -270,8 +274,8 @@ does not enforce OOP design with inheritance as languages like Java do, our Nim
 examples follow the original C examples provided by GTK core developers. Some other
 modern languages like Go or Rust use generally a similar approach and do not enforce
 OOP and inheritance, while classical OOP languages like Java, Python or Ruby
-generally enforce the use of classes and inheritance for GTK apps. {cpp} with its gtkmm
-GTK bindings also push its users to OOP design.
+generally enforce the use of classes and inheritance for GTK apps. {cpp} with its
+gtkmm GTK bindings also push its users to OOP design.
 
 We will use for this book semi-automatic generated {gtk4} and {gtk3} bindings which
 are generated by the [.new]#gintro# package, where g stands for all the gtk related
@@ -310,6 +314,16 @@ uibuilder:: UI prototyping with Glade
 
 sciter:: Nim bindings are work in progress
 
+nanovg:: Nim wrapper for the C NanoVG antialiased vector graphics rendering library for OpenGL
+
+rdgui:: A modular GUI toolkit for rapid
+
+nodesnim:: The Nim GUI/2D framework based on OpenGL and SDL2
+
+neel:: making lightweight Electron-like HTML/JS GUI apps with C, {cpp}, or Objective-C backends
+
+mui:: A tiny, portable, immediate-mode UI library written in ANSI C
+
 Some of these bindings may currently not compile with the latest Nim compiler or may
 not support the new [.new]#ARC# memory management. But we recommend to investigate
 them before you decide to use gintro, maybe one of them fits better you needs. wNim
@@ -325,7 +339,7 @@ Note that we assume for this book that you are already familiar with computer
 programming in general and with the Nim programming language. At least you should be
 able to open a terminal window and to enter and execute some commands. Some basic
 knowledge of the C language would also help, as we sometimes use C code as a starting
-point for our Nim programs. 
+point for our Nim programs.
 
 GTK is an event driven toolkit. That is we create widgets like buttons or text entry
 fields and connect them with one or multiple functions, which are then automatically
@@ -445,20 +459,22 @@ less tested fixes.
 
 .The GTK Nim Bindings
 ****
+
 The Nim GTK relation has a long history. It started with low level bindings created
-by the [.new]#c2nim# tool many years ago. In 2015 we then got low level, c2nim generated GTK3
-bindings, which are still available in the  [.new]#oldgtk3# nimble package. But it was obvious
-that low level GTK bindings are more than useless -- they transfer all the ugly
-aspects of plain C into the Nim world, without transferring the few benefits of the
-GTK C API like elaborated C GTK macros and well documented and tested API.  Nim
-coding using low level GTK bindings is a pain compared to using C directly.  So it
-was considered to use GTK's gobject-introspection API to generate high level Nim
-bindings. A first experimental attempt was made already in 2015 by Mr.  Jason Mansour
-(https://github.com/jdmansour/nim-smartgi), but the project was aborted soon. At the
-same time Mr. Jonne Haß started to create gobject-introspection based bindings for
-the new Crystal programming language (https://github.com/jhass/crystal-gobject), and the Rust project spent much work in
-creating gobject-introspection based bindings to the Rust language.  In 2016
-Dr. Salewski started a second try to write a gobject-introspection based bindings
+by the [.new]#c2nim# tool many years ago. In 2015 we then got low level, c2nim
+generated GTK3 bindings, which are still available in the [.new]#oldgtk3# nimble
+package. But it was obvious that low level GTK bindings are more than useless -- they
+transfer all the ugly aspects of plain C into the Nim world, without transferring the
+few benefits of the GTK C API like elaborated C GTK macros and well documented and
+tested API. Nim coding using low level GTK bindings is a pain compared to using C
+directly. So it was considered to use GTK's gobject-introspection API to generate
+high level Nim bindings. A first experimental attempt was made already in 2015 by Mr.
+Jason Mansour (https://github.com/jdmansour/nim-smartgi), but the project was aborted
+soon. At the same time Mr. Jonne Haß started to create gobject-introspection based
+bindings for the new Crystal programming language
+(https://github.com/jhass/crystal-gobject), and the Rust project spent much work in
+creating gobject-introspection based bindings to the Rust language. In 2016 Dr.
+Salewski started a second try to write a gobject-introspection based bindings
 generator in Nim and for Nim from scratch, with the initial goal to create some
 working bindings similar to the oldgtk3 ones. In the following years work on the new
 bindings continued, with the goal to provide really high level and high quality
@@ -468,23 +484,23 @@ new ARC memory management and for GTK4 was added.
 
 From time to time there are request to provide pre-built bindings instead of
 generating them locally for each nimble package install. One often raised argument is
-quality insurance and audit support.  Well we would have to provide at least 6
+quality insurance and audit support. Well we would have to provide at least 6
 different sets of the bindings -- for Linux, Windows, Mac, each in 32 and 64 bit
 variant. And as {gtk4} is actively developed, we would have to update and test all of
 them regularly. Still it would be possible that the newest modules would not work for
-people with older GTK versions.  This does not mean that this solution is bad and
-will not be supported in future, but the required work load to maintain it would be
-really large.  Maybe a group of really active volunteers using various {os} could
-manage it.  Another often requested solution is providing machine independent
-bindings similar as the c2nim program tries to provide. But the fact is that
-gobject-introspection is designed to provide machine dependent information only. So
-the solution would be to generate machine dependent files for all supported targets
-first, and then to compare the files for differences and try to unify them by
-including machine sensitive when statements. Maybe that would be possible.
-Unfortunately the initial gobject-introspection based files vary drastically with
-each new GTK release, so we would need a permanent unifying and testing process.
-Maybe we could fully automate that in some way? If not then again the work load for
-the maintainers would be very high.
+people with older GTK versions. This does not mean that this solution is bad and will
+not be supported in future, but the required work load to maintain it would be really
+large. Maybe a group of really active volunteers using various {os} could manage it.
+Another often requested solution is providing machine independent bindings similar as
+the c2nim program tries to provide. But the fact is that gobject-introspection is
+designed to provide machine dependent information only. So the solution would be to
+generate machine dependent files for all supported targets first, and then to compare
+the files for differences and try to unify them by including machine sensitive when
+statements. Maybe that would be possible.  Unfortunately the initial
+gobject-introspection based files vary drastically with each new GTK release, so we
+would need a permanent unifying and testing process.  Maybe we could fully automate
+that in some way? If not then again the work load for the maintainers would be very
+high.
 
 Maybe in future we will get also high level GTK bindings from other sources as an
 alternative to the gintro based ones. Beside gobject-introspection based ones other C
@@ -507,14 +523,15 @@ Finally one may ask why the bindings are at all generated during the install pro
 and not on the fly during the compilation of user programs. Theoretically on the fly
 generation may be possible -- Nim macros may be able to query the
 gobject-introspection database during the compile process for required data types and
-functions.  The benefit would be that always the latest GIR files where used, the
-user would never have to update the gintro nimble package. And for each compile of
-the user program only the really needed data would be processed, while with the
+functions. The benefit would be that always the latest GIR files where used, the user
+would never have to update the gintro nimble package. And for each compile of the
+user program only the really needed data would be processed, while with the
 pre-generated module files the whole GTK interface is compiled each time. But for
 statically typed languages on the fly bindings generation seems to be strange and
 probably is impossible. Compiling an average Nim GTK program takes about 3 seconds
 with current Nim compiler, and will become faster when the experimental incremental
 compilation will work reliable. So there is no real reason to complain.
+
 ****
 
 === Legacy Program Layout
@@ -533,7 +550,7 @@ called simplegtk3.c uses the old {gtk2} style and can be compiled with this comm
 
 ----
 gcc -o simplegtk3 simplegtk3.c `pkg-config --libs --cflags gtk+-3.0`
----- 
+----
 
 You can run it from a terminal window with this command:
 
@@ -541,9 +558,9 @@ You can run it from a terminal window with this command:
 ./simplegtk3
 ----
 
-The program will open a tiny window containing a single push button. Clicking that button will
-write a message to the terminal window. You can terminate the program by clicking
-with the mouse on the cross on the upper right corner of the program window.
+The program will open a tiny window containing a single push button. Clicking that
+button will write a message to the terminal window. You can terminate the program by
+clicking with the mouse on the cross on the upper right corner of the program window.
 
 // GDK_DPI_SCALE=0.5 ./simplegtk3
 image::simplegtk3c.png[]
@@ -589,64 +606,63 @@ main (int argc, char *argv[])
 The source code has the typical structure of {gtk2} programs written in C language:
 The first two lines are only comments, it follows an include directive to make the
 gtk library available. The program consists of two functions, the C main() function
-which is executed at program startup automatically and a callback function called hello(). As usual
-for C programs the main() function has two parameters, an array of optional command
-line parameters and the number of parameters. These two parameters are passed to the
-gtk_init() function which has to be called at the beginning of an old style GTK
-program. In the main() function a new top level window instance is created by calling
-gtk_window_new(). Then we set the window title and we set the resizable property to
-false to give that window a fixed size. Then the function g_signal_connect() is
-called to connect the "destroy" signal to the predefined callback function
-gtk_main_quit() provided by gtk. The destroy signal is emitted for the window by GTK
-when we click with the mouse on the window close symbol. In this case gtk_main_quit()
-terminates the whole program. After this we create a button instance and set some
-properties of the button like its label text and its margins to reserve some space
-between the button and the border of the enclosing window. We connect the "clicked"
-signal of the button instance to our hello() callback and add the button to the
-window. We have to call gtk_widget_show_all() to make the window and its parents
-visible. Finally we call gtk_main() to transfer control to the GTK main loop. That
-loop now runs as some form of supervisor waiting for user actions and calling the
-connected callback when appropriate. When the user clicks the close button of the
-window the program terminates, the top level window is closed, the GTK main loops
-stops and the last line of the C main() function returns the value 0 to the {os} to
-indicate that no error has occurred.
+which is executed at program startup automatically and a callback function called
+hello(). As usual for C programs the main() function has two parameters, an array of
+optional command line parameters and the number of parameters. These two parameters
+are passed to the gtk_init() function which has to be called at the beginning of an
+old style GTK program. In the main() function a new top level window instance is
+created by calling gtk_window_new(). Then we set the window title and we set the
+resizable property to false to give that window a fixed size. Then the function
+g_signal_connect() is called to connect the "destroy" signal to the predefined
+callback function gtk_main_quit() provided by gtk. The destroy signal is emitted for
+the window by GTK when we click with the mouse on the window close symbol. In this
+case gtk_main_quit() terminates the whole program. After this we create a button
+instance and set some properties of the button like its label text and its margins to
+reserve some space between the button and the border of the enclosing window. We
+connect the "clicked" signal of the button instance to our hello() callback and add
+the button to the window. We have to call gtk_widget_show_all() to make the window
+and its parents visible. Finally we call gtk_main() to transfer control to the GTK
+main loop. That loop now runs as some form of supervisor waiting for user actions and
+calling the connected callback when appropriate. When the user clicks the close
+button of the window the program terminates, the top level window is closed, the GTK
+main loops stops and the last line of the C main() function returns the value 0 to
+the {os} to indicate that no error has occurred.
 
-A few remarks to above program:
-All the GTK widgets are objects which GTK creates for us by calls like
-gtk_button_new(). These "constructor" calls returns a pointer to the widget
-and we use this pointer to access and interact with the widget later.
-The GTK widgets build a
-hierarchy with parent/child inheritance in OOP fashion. The basic GTK widget is a sub class
-of the gobject object, and other widgets like windows or buttons are again sub classes of
-widget. In GTK C code the widget is generally used as the static base type. So when a
-button widget is used, then a variable of type widget is declared and
-gtk_button_new() returns not a button instance, but the plain widget type. This has
-the consequence that whenever we use a button function on that instance, we have to
-cast the widget to a button type as in [.code]#gtk_button_set_label (GTK_BUTTON
-(button), "hello world)"#. That is a convention chosen by the initial GTK creators.
-Note that in C casts like GTK_BUTTON() do type checks at runtime and give runtime
-warnings when the types do not match. We may wonder if we have to free widgets when
-we do not need them any longer. Indeed in C code that can be necessary in some cases.
-GTK uses reference counting for its objects, that is that each object has a reference
-counter. In C we can increase that counter to reference an object, that is to ensure
-that it is kept alive and is not destroyed by GTK. When we do not need that object
-any more we can decrease the reference counter. If the reference counter drops to
-zero then GTK destroys the object, that is GTK frees its memory and closes related
-resources. But often we do not have to really care for that. The reason for that is
-that GTK uses a special variant of reference counting: When we create a widget with a
-constructor like gtk_button_new() we get an instance which is market as "floating"
-indicating that the instance is not already owned by someone. Generally we insert
-each widget that we create into another widget, like a window or another container
-widget, and that container widget then takes ownership of its child. When we destroy a container or when our program
-terminates and the top level window is destroyed, then all its children are
-automatically freed. So we have not to care about all that memory management in this
-case. But there are exceptions to this process, so C programmers sometimes have to
-carefully check when they have to ref() and unref() resources. Fortunately high level
-languages like Nim or Python have a garbage collector which frees all objects when
-appropriate, so we have not to care for this. Nim with gintro supports even the new
-ARC memory management, which is deterministic and scope based: When a widget or
-another object goes out of scope it is immediately freed and all related resources
-are closed or released.
+A few remarks to above program: All the GTK widgets are objects which GTK creates for
+us by calls like gtk_button_new(). These "constructor" calls returns a pointer to the
+widget and we use this pointer to access and interact with the widget later.  The GTK
+widgets build a hierarchy with parent/child inheritance in OOP fashion. The basic GTK
+widget is a sub class of the gobject object, and other widgets like windows or
+buttons are again sub classes of widget. In GTK C code the widget is generally used
+as the static base type. So when a button widget is used, then a variable of type
+widget is declared and gtk_button_new() returns not a button instance, but the plain
+widget type. This has the consequence that whenever we use a button function on that
+instance, we have to cast the widget to a button type as in
+[.code]#gtk_button_set_label (GTK_BUTTON (button), "hello world)"#. That is a
+convention chosen by the initial GTK creators.  Note that in C casts like
+GTK_BUTTON() do type checks at runtime and give runtime warnings when the types do
+not match. We may wonder if we have to free widgets when we do not need them any
+longer. Indeed in C code that can be necessary in some cases.  GTK uses reference
+counting for its objects, that is that each object has a reference counter. In C we
+can increase that counter to reference an object, that is to ensure that it is kept
+alive and is not destroyed by GTK. When we do not need that object any more we can
+decrease the reference counter. If the reference counter drops to zero then GTK
+destroys the object, that is GTK frees its memory and closes related resources. But
+often we do not have to really care for that. The reason for that is that GTK uses a
+special variant of reference counting: When we create a widget with a constructor
+like gtk_button_new() we get an instance which is market as "floating" indicating
+that the instance is not already owned by someone. Generally we insert each widget
+that we create into another widget, like a window or another container widget, and
+that container widget then takes ownership of its child. When we destroy a container
+or when our program terminates and the top level window is destroyed, then all its
+children are automatically freed. So we have not to care about all that memory
+management in this case. But there are exceptions to this process, so C programmers
+sometimes have to carefully check when they have to ref() and unref() resources.
+Fortunately high level languages like Nim or Python have a garbage collector which
+frees all objects when appropriate, so we have not to care for this. Nim with gintro
+supports even the new ARC memory management, which is deterministic and scope based:
+When a widget or another object goes out of scope it is immediately freed and all
+related resources are closed or released.
 
 In the code above we use the function g_signal_connect() to connect widgets to a user
 defined callback function. The signal type like "clicked" is not an enumeration type
@@ -788,12 +804,12 @@ main()
 The program structure follows closely the C program, there is no need to press the
 code in classes. The first two lines are only comments. It follows an import
 statement, we import the modules gtk4, glib and gobject unqualified into the global
-name space, as common for Nim.footnote[You may wonder why the gtk module itself
-has a numeric suffix, but other companion modules like glib and gobject do not. The
+name space, as common for Nim.footnote:[You may wonder why the gtk module itself has
+a numeric suffix, but other companion modules like glib and gobject do not. The
 reason for this is that the main libraries gtk and gdk are available each in version
-2, 3 and 4, and are not backward compatible. But for the companion libs like
-glib, gio, gobject and some more only one version is available and is used for gtk3
-and gtk4 together. For the gintro Nim bindings the gtk3 module was just called gtk for
+2, 3 and 4, and are not backward compatible. But for the companion libs like glib,
+gio, gobject and some more only one version is available and is used for gtk3 and
+gtk4 together. For the gintro Nim bindings the gtk3 module was just called gtk for
 historic reasons.] We have decided to call the function that contains the largest
 code part main(), but that name can be freely selected in Nim. And we have to call
 that function explicitly, there is no function that is called automatically in Nim.
@@ -809,27 +825,26 @@ conflicts as errors, and we can add module prefixes in our Nim source code then.
 the init() function of the gtk4 module we have decided to use a module prefix from
 the beginning -- for functions without parameters and with very short trivial names
 the chance for name conflicts increase. And sometimes it is useful to indicate the
-origin of a function by use of a module qualifier.
-GTK widgets and the other gobject based types in GTK are objects that are dynamically
-created on the heap and accessed by pointers in C code.  The gintro Nim bindings creates
-a Nim proxy object for each instance of these types. 
-Nim constructors like
-newWindow() or newButton() creates a Nim proxy object on the heap and return its
-reference --  the proxy objects is automatically destroyed when it is not needed any longer by
-our Nim code and by GTK itself. The proxy object contains a pointer to the GTK object
-and some more fields for internal use. While the internal relationship between Nim's
-proxy objects and GTK's widgets and other gobject based types is not trivial, for the gintro user
-these types behave like ordinary Nim objects handled by Nim's memory management system.
+origin of a function by use of a module qualifier.  GTK widgets and the other gobject
+based types in GTK are objects that are dynamically created on the heap and accessed
+by pointers in C code.  The gintro Nim bindings creates a Nim proxy object for each
+instance of these types.  Nim constructors like newWindow() or newButton() creates a
+Nim proxy object on the heap and return its reference --  the proxy objects is
+automatically destroyed when it is not needed any longer by our Nim code and by GTK
+itself. The proxy object contains a pointer to the GTK object and some more fields
+for internal use. While the internal relationship between Nim's proxy objects and
+GTK's widgets and other gobject based types is not trivial, for the gintro user these
+types behave like ordinary Nim objects handled by Nim's memory management system.
 
-Opposite to GTK itself the gintro constructors
-do not always return a reference to a plain widget, but they return the actual ref type like Button or
-Window. For connecting GTK signals the type safe connect() macro call is used, which
-accepts an optional typed argument. Currently that optional argument can be a plain
-value like int or a reference to an arbitrary type, but var parameters are currently not supported. So we
-had to use a ref bool for the parameter of the quit_cb() callback function, as we
-want to modify the boolean value in the quit_cb() callback and access the modified
-value in the main() {proc}. We have to de-reference the done variable by the
-dereference operator [] to access the content. The var parameter type should be
+Opposite to GTK itself the gintro constructors do not always return a reference to a
+plain widget, but they return the actual ref type like Button or Window. For
+connecting GTK signals the type safe connect() macro call is used, which accepts an
+optional typed argument. Currently that optional argument can be a plain value like
+int or a reference to an arbitrary type, but var parameters are currently not
+supported. So we had to use a ref bool for the parameter of the quit_cb() callback
+function, as we want to modify the boolean value in the quit_cb() callback and access
+the modified value in the main() {proc}. We have to de-reference the done variable by
+the dereference operator [] to access the content. The var parameter type should be
 needed only in very rare cases as the optional parameter of the connect macro --
 maybe gintro will support them later. The gintro connect macro is type safe, the data
 types of all parameters have to match with the data types used in the connected
@@ -848,8 +863,7 @@ button.
 
 When we set properties or attributes we have generally various options, we can use
 function or method call syntax and we can assign the value using the equal sign. For
-the setter {proc} we can generally use the short name without the set name
-component:
+the setter {proc} we can generally use the short name without the set name component:
 
 ----
 setTitle(window, "Hello")
@@ -859,8 +873,8 @@ window.title("Hello")
 window.title = "Hello"
 ----
 
-For setting some properties like the default size of widgets we can use
-also tuple assignment as in the last two lines of this code:
+For setting some properties like the default size of widgets we can use also tuple
+assignment as in the last two lines of this code:
 
 [source,nim]
 ----
@@ -879,17 +893,17 @@ window.defaultSize = (width: 200, height: 200) # <6>
 <5> tupel assignment
 <6> tupel assignment with named members
 
-The Nim program above looks a bit bloated still due to the 4 set margin calls, each with
-the same literal value 10. Well that program shape is a result of the initial C code,
-and often the 4 values may be not really all identical. But when such code fragments
-should occur often in our code then we would define our own setMargin() {proc} that
-would get one parameter and assign all four values for us, and we may define another
-{proc} with four parameters to assign all 4 margins, we could call it with
-button.setMartin(10) and button.setMargin(top = 5, bottom = 5, left = 20, right =
-20). Note that Nim support default values for {proc} parameters. The gintro
-package uses that fact for boolean properties which generally have the default value
-true, so we can use a plain window.setResizable instead of window.setResizable(true).
-To set that property to false we still have to use window.setResizable(false) or
+The Nim program above looks a bit bloated still due to the 4 set margin calls, each
+with the same literal value 10. Well that program shape is a result of the initial C
+code, and often the 4 values may be not really all identical. But when such code
+fragments should occur often in our code then we would define our own setMargin()
+{proc} that would get one parameter and assign all four values for us, and we may
+define another {proc} with four parameters to assign all 4 margins, we could call it
+with button.setMartin(10) and button.setMargin(top = 5, bottom = 5, left = 20, right
+= 20). Note that Nim support default values for {proc} parameters. The gintro package
+uses that fact for boolean properties which generally have the default value true, so
+we can use a plain window.setResizable instead of window.setResizable(true).  To set
+that property to false we still have to use window.setResizable(false) or
 window.resizable = false.
 
 === Application Style
@@ -1082,24 +1096,24 @@ specify the empty set for the flag parameter, but we could have leave that out a
 is the default. In the C code gtk_application_new() passes plain integer flag values
 which can be combined by bit wise or operations, and G_APPLICATION_FLAGS_NONE is
 passed when no bit flag should be set. In Nim we use a bitset with a {} default for
-the empty set. Finally we used the quit {proc} of system module to return the
-status result to the OS. The only small difference of the Nim code to the C code is
-that we do not use connectSwapped() but call an intermediate destroyWindow()
-{proc} that obtains the application window as an additional parameter and calls
-destroy() on it to close the top level window and to terminate the program. Providing
-a type safe connectSwapped() {proc} for the Nim bindings seems to be hard, and we
-would need it only in rare cases in real world code. Note that for the connect()
-macro the type of the optional parameter has to match exactly the data type used in
-the callback signature, that is while the body of the destroyWindow() {proc} would
-work with a plain GTK window, which is a parent type of GTK application window, we
-have to use still GTK application window in the {proc} signature, otherwise the
-compiler would complain about incompatible types. That is a limitation of current
-gintro bindings and results from the fact that the connect macro simple enforce type
-matching, it does not actually invest the actual types of the provided callback
-function and checks for type compatibility. If we have to use a plain GTK window type
-for the second parameter of the destroyWindow() callback for some reason, then we can
-make it work again with a type conversion like button.connect("clicked",
-destroyWindow, gtk4.Window(window)).
+the empty set. Finally we used the quit {proc} of system module to return the status
+result to the OS. The only small difference of the Nim code to the C code is that we
+do not use connectSwapped() but call an intermediate destroyWindow() {proc} that
+obtains the application window as an additional parameter and calls destroy() on it
+to close the top level window and to terminate the program. Providing a type safe
+connectSwapped() {proc} for the Nim bindings seems to be hard, and we would need it
+only in rare cases in real world code. Note that for the connect() macro the type of
+the optional parameter has to match exactly the data type used in the callback
+signature, that is while the body of the destroyWindow() {proc} would work with a
+plain GTK window, which is a parent type of GTK application window, we have to use
+still GTK application window in the {proc} signature, otherwise the compiler would
+complain about incompatible types. That is a limitation of current gintro bindings
+and results from the fact that the connect macro simple enforce type matching, it
+does not actually invest the actual types of the provided callback function and
+checks for type compatibility. If we have to use a plain GTK window type for the
+second parameter of the destroyWindow() callback for some reason, then we can make it
+work again with a type conversion like button.connect("clicked", destroyWindow,
+gtk4.Window(window)).
 
 We can compile and run our Nim program with following commands from a terminal
 window:
@@ -1120,7 +1134,7 @@ memory management and by enabling link time optimization for the C compiler back
 
 ----
 nim c -d:release --gc:arc -d:useMalloc --passC:-flto hello_world.nim
----- 
+----
 
 Here we additional use -d:useMalloc to use plain malloc() instead of Nim's own memory
 allocation. That commands gives us an executable size of about 40 kByte with gcc 10
@@ -1137,8 +1151,8 @@ Unfortunately it is nearly impossible to provide a full set of commented API doc
 the gintro Nim GTK bindings. The GTK related modules consists of more than 10000
 functions and about 2000 data types, constants and enums. It is planed to list them
 all on some HTML pages, but that would provide only the symbol names and the
-signature for {proc}. Copying the C comments verbatim would not make much sense,
-and rewriting all comments for Nim would be a gigantic effort. Generally the best
+signature for {proc}. Copying the C comments verbatim would not make much sense, and
+rewriting all comments for Nim would be a gigantic effort. Generally the best
 solution for Nim is to follow the C API docs, which are generated by GTK directly
 from the GTK C source code. The C API docs are in most cases of good quality and not
 outdated, and the differences to the Nim API are generally obvious. For example if
@@ -1188,7 +1202,7 @@ proc newApplication*(applicationId: cstring = ""; flags: gio.ApplicationFlags = 
   let qdata = g_object_get_qdata(gobj, Quark)
   if qdata != nil:
 ...
-grep -B12 "ApplicationFlags\*" ~/.nimble/pkgs/gintro-#head/gintro/gio.nim 
+grep -B12 "ApplicationFlags\*" ~/.nimble/pkgs/gintro-#head/gintro/gio.nim
 type
   ApplicationFlag* {.size: sizeof(cint), pure.} = enum
     isService = 0
@@ -1211,13 +1225,13 @@ string and to escape the asterisk.
 === GtkApplication and the Application Program Style
 
 For {gtk3} and {gtk4} programs we generally use the application program style. In
-this style we use a small arbitrary named main {proc} which creates our application by
-calling newApplication(), then connect the application to a set of callback
-{proc} with application specific signals and finally calls run() to run the GTK
-main loop. All further program execution is now guided by GTK signals which causes
-execution of our callback functions. The GtkApplication class is a subclass of
-GApplication of module gio and supports signals like "startup", "activate", "open",
-"shutdown" and some more.
+this style we use a small arbitrary named main {proc} which creates our application
+by calling newApplication(), then connect the application to a set of callback {proc}
+with application specific signals and finally calls run() to run the GTK main loop.
+All further program execution is now guided by GTK signals which causes execution of
+our callback functions. The GtkApplication class is a subclass of GApplication of
+module gio and supports signals like "startup", "activate", "open", "shutdown" and
+some more.
 
 Understanding the GtkApplication class is maybe the most demanding task for new GTK
 programmers. Indeed it is not easy to understand the whole GtkApplication API, the
@@ -1236,9 +1250,9 @@ keyboard or mouse, and the automatic handling of program parameters and argument
 handling of single or multiple windows or program instances.
 
 For the beginning you can ignore most of the signals of the GTKApplication class and
-connect your activate() {proc} only to the activate signal of the GtkApliclation class
-as we did in our previous examples. Later you can add more signals and distribute
-your whole startup code on multiple callback {proc}.
+connect your activate() {proc} only to the activate signal of the GtkApliclation
+class as we did in our previous examples. Later you can add more signals and
+distribute your whole startup code on multiple callback {proc}.
 
 The most important GtkApplication signals are:
 
@@ -1251,21 +1265,21 @@ open:: launch with file arguments, display file content
 shutdown:: do cleanup work, closing files or saving documents
 
 When our application program starts, then the startup signal is emitted. We can
-connect a startup callback {proc} to this signal that can perform some
-initialization tasks that are not directly related to showing a new window. When our
-program is invoked without file parameters then the activate signal is emitted next,
-and our activate callback {proc} may open an empty window for the user. For the
-case that the user passes some file parameters, the open signal is emitted instead of
-the activate signal, and we have to open the specified files. Generally GTK
-applications uses only a single program instance. If the user attempts to start a
-second instance of a single-instance application then GtkApplication will send
-signals to the already running first instance and we will receive additional activate
-or open signals. In this case, the second instance will exit immediately, without
-calling startup or shutdown. Our application programs generally terminates when we
-close all open windows, but we can use the function g_application_hold() to prevent
-terminating of our program. When our program finally terminates, we get the shutdown
-signal, and our connected shutdown callback function can do some cleanup work or
-maybe save all open files.
+connect a startup callback {proc} to this signal that can perform some initialization
+tasks that are not directly related to showing a new window. When our program is
+invoked without file parameters then the activate signal is emitted next, and our
+activate callback {proc} may open an empty window for the user. For the case that the
+user passes some file parameters, the open signal is emitted instead of the activate
+signal, and we have to open the specified files. Generally GTK applications uses only
+a single program instance. If the user attempts to start a second instance of a
+single-instance application then GtkApplication will send signals to the already
+running first instance and we will receive additional activate or open signals. In
+this case, the second instance will exit immediately, without calling startup or
+shutdown. Our application programs generally terminates when we close all open
+windows, but we can use the function g_application_hold() to prevent terminating of
+our program. When our program finally terminates, we get the shutdown signal, and our
+connected shutdown callback function can do some cleanup work or maybe save all open
+files.
 
 ==== Primary and Remote Instances
 
@@ -1326,15 +1340,15 @@ have to pass the command line parameters to the run() {proc}. As Nim does not gi
 direct access to the command line argument string array, we have to construct it by
 querying paramStr() for each argument. Note that we pass the flag
 ApplicationFlag.handlesOpen to the newApplication() call to tell GTK that it should
-not ignore file arguments. To keep the example short we made the activate {proc} dumb.
-It creates a textview, a scrolled widget and the main window and inserts the widgets
-into each other. A smarter activate() {proc} should try to detect an already existing
-window of an already running primary program instance as it does the open() callback.
-The open() callback {proc} uses app.getActiveWindow() to check if a primary instance of
-our program is already running and reuses that window if possible. Otherwise it
-creates new widgets in the same way as the activate() {proc} does. Then it calls
-loadContents() to load the textual content from the provided GFile into a string, and
-sets that text as buffer content of the textview widget.
+not ignore file arguments. To keep the example short we made the activate {proc}
+dumb.  It creates a textview, a scrolled widget and the main window and inserts the
+widgets into each other. A smarter activate() {proc} should try to detect an already
+existing window of an already running primary program instance as it does the open()
+callback.  The open() callback {proc} uses app.getActiveWindow() to check if a
+primary instance of our program is already running and reuses that window if
+possible. Otherwise it creates new widgets in the same way as the activate() {proc}
+does. Then it calls loadContents() to load the textual content from the provided
+GFile into a string, and sets that text as buffer content of the textview widget.
 
 Note that this is only a minimal skeleton. For a real text editor program we would
 have to do much more checks, and we may want to handle multiple file arguments. We
@@ -1450,8 +1464,8 @@ understand and to use. We have already used the toplevel widgets GtkWindow and
 GtkApplicationWindow that build generally the outer rectangular container for our
 whole graphical user interface. Windows normally have a title and decorations that
 are under the control of the windowing system and allow the user to manipulate the
-window (resize it, move it, close it,...). In {gtk3} and {gtk4} windows can have
-only one single child, but this child can be a container widget which can hold many
+window (resize it, move it, close it,...). In {gtk3} and {gtk4} windows can have only
+one single child, but this child can be a container widget which can hold many
 widgets including more container widgets. So all the widgets are arranged in a
 hierarchical fashion starting at the toplevel window widget.
 
@@ -1465,7 +1479,7 @@ entry field. So a sketch of our widget arrangement may look like this:
 ----
 
  label entry
-   
+
    button
 
 ----
@@ -1486,8 +1500,8 @@ the first box, and then the button. And we are done.
  |  -------------  |
  |                 |
  |      button     |
-  ----------------- 
----- 
+  -----------------
+----
 
 image::basicWidgets1.png[]
 
@@ -1546,8 +1560,8 @@ main()
 
 The basic shape of above program is again similar to our first <<hello_world.nim>>
 example: We have a main() {proc} that creates our application, connects it to the
-activate callback {proc} and finally runs the app. The activate callback creates all of
-our widgets and inserts them in a hierarchical way into the container widgets. The
+activate callback {proc} and finally runs the app. The activate callback creates all
+of our widgets and inserts them in a hierarchical way into the container widgets. The
 button widget is connected to a callback {proc} that gets the entry widget as an
 additional parameter, so that this {proc} can access our textual input by calling
 getText(entry), which is equivalent to entry.text with method call syntax and without
@@ -1589,19 +1603,21 @@ For more information see
 
 + https://developer.gnome.org/gtk4/stable/GtkEntry.html
 
-One special property of the GtkEntry widget is the fact that it implements the GtkEditable
-interface, see
+One special property of the GtkEntry widget is the fact that it implements the
+GtkEditable interface, see
 
 + https://developer.gnome.org/gtk4/stable/GtkEditable.html
 
-So all the functions of GtkEditable can be used on GtkEntry widgets as well. We use in our example above
-the function setWidthChars() in the form [.code]#entry.widthChars = 32# to give it the right size to
-show up to 32 characters -- you can type in longer text, it scrolls.
+So all the functions of GtkEditable can be used on GtkEntry widgets as well. We use
+in our example above the function setWidthChars() in the form
+[.code]#entry.widthChars = 32# to give it the right size to show up to 32 characters
+-- you can type in longer text, it scrolls.
 
 Don't forget that all these widgets are children of the parent GtkWidget class, so
-you can use all the GtkWidget functions also. We use grabFocus() in the buttonCB() {proc} to let
-keyboard input go continuously to this widget, so that the user has not to click with the mouse pointer
-into the entry widget before it accepts keyboard input again.
+you can use all the GtkWidget functions also. We use grabFocus() in the buttonCB()
+{proc} to let keyboard input go continuously to this widget, so that the user has not
+to click with the mouse pointer into the entry widget before it accepts keyboard
+input again.
 
 + https://developer.gnome.org/gtk4/stable/GtkWidget.html
 
@@ -1610,35 +1626,40 @@ into the entry widget before it accepts keyboard input again.
 
 image::grid.png[]
 
-The GtkGrid is a container widget that is used to arrange child widgets in a rectangular
-shape like a table or a matrix. In {gtk3} a similar container called GtkTable was available,
-but GtkTable is now deprecated. We create a new grid widget with the newGrid() constructor
-and we insert arbitrary other widgets by using the attach() {proc}. As parameters of attach() we pass the child widget,
-the column and row coordinate where we want to insert the child, and optional a width and height if
-that child should span more than one single cell. The GtkGrid accepts also negative position coordinates,
-what is useful when we have already created a grid with coordinates starting at zero and then want to add
-a header label at the top or other widgets at the left. We have not to modify our existing code, we
-can just use negative coordinates for our forgotten stuff. GtkGrid offers some more functions, for example
-to set the spacing between children or to remove attached widgets again, see
+The GtkGrid is a container widget that is used to arrange child widgets in a
+rectangular shape like a table or a matrix. In {gtk3} a similar container called
+GtkTable was available, but GtkTable is now deprecated. We create a new grid widget
+with the newGrid() constructor and we insert arbitrary other widgets by using the
+attach() {proc}. As parameters of attach() we pass the child widget, the column and
+row coordinate where we want to insert the child, and optional a width and height if
+that child should span more than one single cell. The GtkGrid accepts also negative
+position coordinates, what is useful when we have already created a grid with
+coordinates starting at zero and then want to add a header label at the top or other
+widgets at the left. We have not to modify our existing code, we can just use
+negative coordinates for our forgotten stuff. GtkGrid offers some more functions, for
+example to set the spacing between children or to remove attached widgets again, see
 
 + https://developer.gnome.org/gtk4/stable/GtkGrid.html
 
-The following example creates a plain employees status table. We use GtkCheckButtons as child widgets,
-that are widgets which uses a visible check mark to indicate a boolean state. In the example
-we use a label widget spanning all columns to display a headline, and at the left a label widget
-for each employee to display the name. We connect each CheckButton widget to a toggled() callback
-{proc} using the "toggled" signal. The GtkCheckButton is a child of the GtkToggleButton which provides
-the "toggled" signal. We use two distinct callback functions for this signal so that
-we can differentiate between vacation and retirement status. But still we need the name of the
-employee in the callback procedure to display the new status. We have different
-ways to enable this, we could sub-type our CheckButton class to store additional information or we
-could pass an optional parameter when we connect to the toggled callback. We will
-explain sub-typing in later sections when we have to store addition information in our widgets.
-For now we can also use the fact that we can give widgets names using the setName() function.
-So we can just attach the name of the employee direct to the widget. To make the code below not too
-verbose we have not cared much about the visual appearance. For a real application we would care
-more for alignment, justification and separation of the various widgets and maybe style
-some labels using CSS or pango text attributes. We will learn how to do that in later sections. 
+The following example creates a plain employees status table. We use GtkCheckButtons
+as child widgets, that are widgets which uses a visible check mark to indicate a
+boolean state. In the example we use a label widget spanning all columns to display a
+headline, and at the left a label widget for each employee to display the name. We
+connect each CheckButton widget to a toggled() callback {proc} using the "toggled"
+signal. The GtkCheckButton is a child of the GtkToggleButton which provides the
+"toggled" signal. We use two distinct callback functions for this signal so that we
+can differentiate between vacation and retirement status. But still we need the name
+of the employee in the callback procedure to display the new status. We have
+different ways to enable this, we could sub-type our CheckButton class to store
+additional information or we could pass an optional parameter when we connect to the
+toggled callback. We will explain sub-typing in later sections when we have to store
+addition information in our widgets. For now we can also use the fact that we can
+give widgets names using the setName() function. So we can just attach the name of
+the employee direct to the widget. To make the code below not too verbose we have not
+cared much about the visual appearance. For a real application we would care more for
+alignment, justification and separation of the various widgets and maybe style some
+labels using CSS or pango text attributes. We will learn how to do that in later
+sections.
 
 [[grid.nim]]
 [source,nim]
@@ -1690,31 +1711,1930 @@ proc main =
 main()
 ----
 
-The main() {proc} is again identical to the ones in our former examples. In the activate {proc} we
-create the window, the grid and some labels and a few CheckButtons. We use the overloaded
-function of newCheckButton() which accepts a string which is displayed on the
-right of the check box. The C name for that function is gtk_check_button_new_with_label().
-We attach the head label at column 0 and row -2 at the top of our grid and let it extend
-over 3 columns by specifying width = 3. Next we set column headers for all 3 columns
-by attaching labels. It follows a loop where we iterate over all our employees, create a label
-widget with the name of the employee and two status widgets for vacation and retirement state
-and attach them to the grid. Finally we set the grid as child of our window and show() the
-window with all its child widgets. We have connected our ToggleButton widgets to two distinct callbacks
-for vacation and retirement state. When we click with the mouse on a check box to toggle the
-current state, then our callback functions print the new state to the terminal window.
-The callback retrieves the name of the employee from the widget by calling getName() on the widget
-and the new state by calling getAcctive() -- we used method call syntax and left out the get prefix here.
-In the code above we set the default window size to a really small value, so the window extents automatically
-to the required size to contain the grid with all its child widgets. This ensures that the toplevel window has no unused void areas.
-And we use setColumnSpacing() to separate the children of the grid horizontally. Note that we use named
-parameters for the first attach() call when we attach the head widget. For the later attach() calls
-we use positional arguments and use the default 1 for width and height value.
-For more info about the GtkCheckButton see
+The main() {proc} is again identical to the ones in our former examples. In the
+activate {proc} we create the window, the grid and some labels and a few
+CheckButtons. We use the overloaded function of newCheckButton() which accepts a
+string which is displayed on the right of the check box. The C name for that function
+is gtk_check_button_new_with_label(). We attach the head label at column 0 and row -2
+at the top of our grid and let it extend over 3 columns by specifying width = 3.
+Next we set column headers for all 3 columns by attaching labels. It follows a loop
+where we iterate over all our employees, create a label widget with the name of the
+employee and two status widgets for vacation and retirement state and attach them to
+the grid. Finally we set the grid as child of our window and show() the window with
+all its child widgets. We have connected our ToggleButton widgets to two distinct
+callbacks for vacation and retirement state. When we click with the mouse on a check
+box to toggle the current state, then our callback functions print the new state to
+the terminal window. The callback retrieves the name of the employee from the widget
+by calling getName() on the widget and the new state by calling getAcctive() -- we
+used method call syntax and left out the get prefix here. In the code above we set
+the default window size to a really small value, so the window extents automatically
+to the required size to contain the grid with all its child widgets. This ensures
+that the toplevel window has no unused void areas. And we use setColumnSpacing() to
+separate the children of the grid horizontally. Note that we use named parameters for
+the first attach() call when we attach the head widget. For the later attach() calls
+we use positional arguments and use the default 1 for width and height value. For
+more info about the GtkCheckButton see
 
 + https://developer.gnome.org/gtk4/stable/GtkCheckButton.html
 
 
-=== GtkScrolledWindow
+//=== GtkScrolledWindow
 
-+ https://developer.gnome.org/gtk4/stable/GtkScrolledWindow.html
+//+ https://developer.gnome.org/gtk4/stable/GtkScrolledWindow.html
+
+== GAction
+
+Before we continue with more widgets we will introduce you to the concept of actions.
+
+In the previous example programs we connected widgets directly to our callback
+functions using the connect() macro call. This is easy but not very flexible. Maybe
+we want the user to call the same callback function also from a popdown menu item or
+from a keyboard shortcut?
+
+The concept of actions avoids a tight coupling of functionality to actual GUI
+elements. Actions are a way to tell the GTK toolkit about a piece of functionality in
+our program and to give it a name. We can map that actions to GUI elements like
+widgets, popup menu items or keyboard key sequences to give the user access to that
+functionality. The connection to the GUI elements can occur directly in our program
+code, or we may do the connections through XML files.
+
+The {gtk3} library had an own action type called GtkAction, which is deprecated since
+version 3.10 and should not be used any more. Instead we use the GAction class which
+is provided by the GIO library and which is used for {gtk3} and {gtk4}. GAction is
+generally used together with the GtkApplication class which we introduced earlier.
+
+Indeed GAction is merely the interface to the concept of an action. Various
+implementations of GActions exist, including GSimpleAction which we will use in the
+following examples. Another important implementation of GAction is GPropertyAction
+which can be used to control properties of GObjects.
+
+An action has four pieces of information associated with it:
+
+* a name as an identifier (usually all-lowercase, untranslated English string)
+
+* an enabled flag indicating if the action can be activated or not
+
+* an optional state value for stateful actions
+
+* an optional parameter type, used when activating the action
+
+An action supports two operations:
+
+* activation, invoked with an optional parameter
+* state change request for stateful actions, invoked with a new requested state value
+
+Most actions in our GTK {apps} will be stateless actions with no parameters.  These
+actions can be represented by plain menu items without special decoration, like a
+"quit", "print" or "new document" menu item.
+
+Stateful actions can have a plain boolean state like on/off or yes/no or a state with
+multiple possibilities like left/center/right for text justification in an editor.
+
+Stateful actions with a boolean state are used when the actions should modify a state
+of the whole app or of a window like "display line numbers" in a text editor or
+"fullscreen" for a window. This type of actions is called a toggle action as it
+toggles the boolean state (true/false). Toggle actions use no parameters, the
+activation always toggles the state. In menu items the "true" state is represented by
+a visible check mark.
+
+If the state of a stateful action can not be represented by a boolean state then an
+enumeration of the possible values is used as state indicator, typically as string
+like left/center/right for text justification. These actions are also called radio
+actions and are represented by radio buttons or radio menu items. These actions have
+a parameter type equal to their state type, and activating them with a particular
+parameter value changes the state to that value.
+
+Actions can be bound or scoped to the whole app, or to single windows. For example
+the "fullscreen" action or "save" and "print" actions for windows containing a
+document impact only a single window, while actions like "about" or "preferences"
+impact the whole application. Actions scoped to single window instances allows each
+window to have its own state independently from the other window instances. We use
+the function addAction() with a window as first parameter to add an action to a
+window instance or with our GtkApplication as first parameter to add the action to
+the whole application.
+
+To specify the scope when we map the action to widgets, menu items or keyboard keys,
+we have additional to prefix the action name with the prefix "win." for window bound
+actions and with "app." for actions bound to the whole app.
+
+References:
+
+* https://developer.gnome.org/gio/stable/GAction.html
+* https://developer.gnome.org/gio/stable/GSimpleAction.html
+* https://developer.gnome.org/GAction/
+
+=== A tiny GAction Example
+
+The use of GAction seems to be complicated, and so some people still avoids it. But
+it is flexible and currently the best supported way to create interactions with the
+user, so we will use it in the rest of this book. We will start with a very simple
+application with only a single action (save) which we map to a button widget and at
+the same time to a key sequence (control shift s). That example is similar to a
+Python code listing from https://developer.gnome.org/GAction/. In the next section we
+will then create a larger app with an overlay menu based on a C example provided by
+the GTK developers (testgaction.c).
+
+C code usually uses the function g_action_map_add_action_entries() with an array of
+GActionEntry structs as parameter to create the desired action like
+
+----
+ static GActionEntry app_entries[] =
+{
+  { "preferences", preferences_activated, NULL, NULL, NULL },
+  { "quit", quit_activated, NULL, NULL, NULL }
+};
+
+static void
+example_app_startup (GApplication *app)
+{
+  ...
+  g_action_map_add_action_entries (G_ACTION_MAP (app),
+                                   app_entries, G_N_ELEMENTS (app_entries),
+                                   app);
+  ...
+}
+----
+
+This is comfortable but not really type safe and is not available in Nim. In Nim we
+use the function newSimpleAction() to create stateless actions and then use the
+connect() macro to connect that action to a callback function. The callback function
+receives the action and a variable of GVariant type as parameters, and can accept one
+more arbitrary optional parameter. The GVariant parameter would contain the actual
+state for stateful actions, for stateless actions it is generally ignored. After we
+have created the action we connect it with the addAction() function to the ActionMap
+of our GTK window. The GtkApplicationWindow provides an interface to GActionMap, but
+as the interface itself and the interface provider are defined in different modules
+(GIO vs GTK), we have to convert the ApplicationWindow to ActionMap with a call of
+actionMap(window) before we can add the action. Finally we call the function
+setActionName() to map the save action to our MenuButton and setAccelsForAction() to
+map the save action also to a keyboard key sequence. We prefix the action name with
+"win." to indicate that the action is bound to the current active window.
+
+//== GSimpleAction
+
+[[gaction0.nim]]
+[source,nim]
+.gaction0.nim
+----
+# nim c --gc:arc gaction0.nim
+import gintro/[gtk4, glib, gobject, gio]
+
+proc saveCb(action: SimpleAction; v: Variant) =
+  echo "saveCb"
+
+proc appActivate(app: Application) =
+  let window = newApplicationWindow(app)
+  let action = newSimpleAction("save")
+  discard action.connect("activate", saveCB)
+  window.actionMap.addAction(action)
+  let button = newButton()
+  button.label = "Save"
+  window.setChild(button)
+  button.setActionName("win.save")
+  setAccelsForAction(app, "win.save", "<Control><Shift>S")
+  show(window)
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  connect(app, "activate", appActivate)
+  discard run(app)
+
+main()
+----
+
+Our save callback function contains only an echo statement which writes a message to
+the terminal window when the action is activated. In a real application that function
+would save the content of the currently active window.
+
+In the example code above we used actions bound to single window instances. We added
+our action to the action map of our window and we used the prefix "win." when we
+mapped the action to a button widget and to a keystroke sequence. We can easily
+modify the code to bind the action to the whole app: We call the addAction() function
+on the GtkApplication instance and use the "app." prefix for the action name when we
+map it to the button widget and to the key sequence:
+
+----
+app.addAction(action)
+...
+  button.setActionName("app.save")
+  setAccelsForAction(app, "app.save", "<Control><Shift>S")
+----
+
+For stateless actions it does not really matter if we use actions scoped to single
+window instances or to the whole app, but for stateful actions it can make a
+difference: Only actions bound to window instances can have checkmarks or radio
+buttons which differ for each window. Note that when we create the action with the
+newSimpleAction() call we use the action name without a prefix, but for the
+setActionName() call as well as for the setAccelsForAction() call a prefix is
+necessary and it has to exactly match the action scope: We select a global scope by
+calling addAction() on the app instance and have to use "app." prefixes then.  Or we
+call addAction() on a window instance and have to use "win." prefix.  If the prefix
+would not match the action scope or if we use no prefix at all, then keyboard
+shortcuts would not work and buttons or menu items would be displayed greyed out and
+would not work also.
+
+=== GAction and GMenu
+
+Our next example program creates a popup menu bound to a menu button.  We map a set
+of actions to the items of our menu. This includes simple stateless actions, a toggle
+action with boolean state, and a stateful action with three states numbered 1, 2 and
+3. The menu items displays a checkmark for the toggle action when enabled and the
+stateful action with the three states is displayed with corresponding radio menu
+items. The example is based on a C language GAction example called testgaction.c
+found in the GTK4 tests directory.
+
+image::gaction.png[]
+
+[[gaction.nim]]
+[source,nim]
+.gaction.nim
+----
+import gintro/[gtk4, glib, gobject, gio]
+
+const menuData = """
+  <interface>
+    <menu id="menuModel">
+      <section>
+        <item>
+          <attribute name="label">Normal Menu Item</attribute>
+          <attribute name="action">win.normal-menu-item</attribute>
+        </item>
+        <submenu>
+          <attribute name="label">Submenu</attribute>
+          <item>
+            <attribute name="label">Submenu Item</attribute>
+            <attribute name="action">win.submenu-item</attribute>
+          </item>
+        </submenu>
+        <item>
+          <attribute name="label">Toggle Menu Item</attribute>
+          <attribute name="action">win.toggle-menu-item</attribute>
+        </item>
+      </section>
+      <section>
+        <item>
+          <attribute name="label">Radio 1</attribute>
+          <attribute name="action">win.radio</attribute>
+          <attribute name="target">1</attribute>
+        </item>
+        <item>
+          <attribute name="label">Radio 2</attribute>
+          <attribute name="action">win.radio</attribute>
+          <attribute name="target">2</attribute>
+        </item>
+        <item>
+          <attribute name="label">Radio 3</attribute>
+          <attribute name="action">win.radio</attribute>
+          <attribute name="target">3</attribute>
+        </item>
+      </section>
+    </menu>
+  </interface>"""
+
+proc changeLabelButton(action: gio.SimpleAction; parameter: glib.Variant; label: Label) =
+  label.setLabel("Text set from button")
+
+proc normalMenuItem(action: gio.SimpleAction; parameter: glib.Variant; label: Label) =
+  label.setLabel("Text set from normal menu item")
+
+proc toggleMenuItem(action: gio.SimpleAction; parameter: glib.Variant; label: Label) =
+  let newState = newVariantBoolean(not action.getState.getBoolean)
+  action.changeState(newState)
+  label.setLabel("Text set from toggle menu item. Toggle state: " & $newState.getBoolean)
+
+proc submenuItem(action: gio.SimpleAction; parameter: glib.Variant; label: Label) =
+  label.setlabel("Text set from submenu item")
+
+proc radio(action: gio.SimpleAction; parameter: glib.Variant; label: Label) =
+  var l: uint64
+  let newState: glib.Variant = newVariantString(parameter.getString(l))
+  action.changeState(parameter)
+  let str: string = "From Radio menu item " & getString(newState, l)
+  label.setLabel(str)
+
+proc activate(app: gtk4.Application) =
+  let
+    window = newApplicationWindow(app)
+    box = newBox(gtk4.Orientation.vertical, 12)
+    menubutton = newMenuButton()
+    button1 = newButton("Change Label Text")
+    actionGroup: gio.SimpleActionGroup = newSimpleActionGroup()
+    label: Label = newLabel("Initial Text")
+
+  var action: SimpleAction
+  action = newSimpleAction("change-label-button")
+  discard action.connect("activate", changeLabelButton, label)
+  actionGroup.addAction(action)
+
+  action = newSimpleAction("normal-menu-item")
+  discard action.connect("activate", normalMenuItem, label)
+  actionGroup.addAction(action)
+
+  var v = newVariantBoolean(true)
+  action = newSimpleActionStateful("toggle-menu-item", nil, v)
+  discard action.connect("activate", toggleMenuItem, label)
+  actionGroup.addAction(action)
+
+  action = newSimpleAction("submenu-item")
+  discard action.connect("activate", submenuItem, label)
+  actionGroup.addAction(action)
+
+  v = newVariantString("1")
+  let vt = newVariantType("s")
+  action = newSimpleActionStateful("radio", vt, v)
+  discard action.connect("activate", radio, label)
+  actionGroup.addAction(action)
+  window.insertActionGroup("win", actionGroup)
+
+  label.setMarginTop(12)
+  label.setMarginBottom(12)
+  box.append(label)
+  menuButton.setHalign(gtk4.Align.center)
+
+  var builder = newBuilderFromString(menuData)
+  var menuModel: gio.MenuModel = builder.getMenuModel("menuModel")
+  var menu = newPopoverMenuFromModel(menuModel)
+  menuButton.setPopover(menu)
+  box.append(menubutton)
+  button1.setHalign(gtk4.Align.center)
+  button1.setActionName("win.change-label-button")
+  box.append(button1)
+  window.setChild(box)
+  window.show
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+When you run this example program you will get a window with a label displaying a
+textual message, a plain button widget which updates the label message when you click
+the button, and a menu button which displays a popup menu when you click it. Each
+menu item allows you also to update the label message.
+
+For this example we use a XML string constant to construct our menu. The GTK
+developers generally recommends use of XML files for the description of the GUI
+layout whenever possible. We noticed already earlier in this book that the advantages
+of XML files are not always so obvious when using high level languages like Nim. But
+for menu construction XML files are indeed helpful, and as the C code on which this
+example is based also use XML for the menu we do the same. In the next section we
+then construct the same menu without XML directly with elementary GTK function calls.
+One disadvantage of XML files is that they are plain multi line text strings, so the
+C or Nim compiler can not validate them in advance. We have to run the code to see if
+all is correct, or maybe use other validating tools for the XML. Or we may try to
+create the XML string with tools like Glade from the beginning. For now we just take
+the XML menu string directly from the provided testgaction.c example program. That
+string has the well known shape of ordinary XML files. For processing and accessing
+XML GUI definitions GTK provides the GtkBuilder library. We call
+newBuilderFromString() with our XML string as argument to open the XML file, and them
+builder.getMenuModel() to access the whole menu construct. As argument of
+getMenuModel() we pass an id string which we had defined inside our XML string
+constant as [.code]#<menu id="menuModel">#. Finally we map that menuModel to a GTK
+menu button by a call of setPopover(). The XML menu definition is divided in multiple
+sections, which contains each one or more item definitions. Each item has the two
+attributes label and action. The attribute label specifies the string which is
+displayed as menu item text, and the attribute action is the name of a GAction that
+we define in our program. We prefix the action name with "win." to indicate that it
+is scoped to the current window. For the radio item entries we use an additional
+attribute called target that specifies the actual argument which is passed to the
+action callback function when the action is activated.  And finally one item of our
+menu is enclosed in a submenu section to create a submenu.
+
+In the activate() procedure we create all our desired actions and connect them to
+callback functions in a way similar as we did it in the previous example. One
+difference is, that we add the created actions not directly to the application or to
+the application window, but we create an ActionGroup by a call of
+newSimpleActionGroup() first, add all the actions to that group, and finally call the
+statement window.insertActionGroup("win", actionGroup) to add the group with all our
+actions to our application window. Grouping actions in this way can have some
+advantages, e.g. we can easily deactivate an action group or remove an action group
+again from a window or from the whole app.
+
+Additional to some stateless simple actions which we create again with a call of
+newSimpleAction() this example uses actions with state. We use a call of
+newSimpleActionStateful("toggle-menu-item", nil, v) to create a toggle action with
+boolean state. We have to pass the initial boolean state to this call by a GVariant
+data type which we create with a call of newVariantBoolean(). The reason that we can
+not just pass the actual boolean value directly to that procedure but have to use a
+GVariant is, that C and Nim are both typed languages, which means that all three
+parameters of proc newSimpleActionStateful() must have a well defined data type,
+which is GVariant for the last parameter.  A Variant is a special container type
+which has a well defined data type but can wrap other data types. Don't confuse the
+GVariant which we use here with Nim's own variant data type. Both have a similar
+purpose but are completely different.  As Nim supports {proc} overloading, we would
+indeed be free to define our own newSimpleActionStateful() {proc} which accepts a
+plain bool as third parameter and the call the GTK proc with same name but with a
+variant type passed as last parameter. But this is not yet supported by current
+gintro bindings, we would have to write the necessary code manually.
+
+For creating our radio actions some more code is necessary: We use again a call of
+newSimpleActionStateful() to create the radio actions. But for this type of stateful
+action we have to pass the initial state as well as the data type of the state
+parameter. For passing the parameter type we have to create a GVariantType variable
+with a call of newVariantType("s"). Here we pass the string "s" as parameter to
+indicate that we want a string variant type.  You can find the strings which we have
+to pass for desired types at
+https://developer.gnome.org/glib/stable/glib-GVariantType.html.  For a double type we
+would have to pass "d" for example. As last parameter we have to pass a GVariant
+again to specify the initial state. In this case we create a string variant with a
+call of newVariantString("1") with initial state "1".
+
+The need of GVariant and GVariantType data types makes our code a bit verbose
+unfortunately, but the automatically created bindings of the gintro package support
+no simpler method currently. Maybe later versions will do, but that involves manually
+work which of course need documentation as well. Of course you can write your own
+helper procedures. Unfortunately that can make it harder for others to understand
+your code, when the reader knows GTK well but not your customization procs. So we
+leave that out for now.
+
+At the end of this section we have to discuss the callback functions which we connect
+with our actions.  For the stateless actions it is not very interesting. The
+parameter list of the callback functions contain a variable of GVariant type, but
+that variable has no content for stateless actions. For the callbacks connected to
+the stateful actions we have more work to do:
+
+[source,nim]
+----
+proc toggleMenuItem(action: gio.SimpleAction; parameter: glib.Variant; label: Label) =
+  let newState = newVariantBoolean(not action.getState.getBoolean)
+  action.changeState(newState)
+  label.setLabel("Text set from toggle menu item. Toggle state: " & $newState.getBoolean)
+
+proc radio(action: gio.SimpleAction; parameter: glib.Variant; label: Label) =
+  var l: uint64
+  let newState: glib.Variant = newVariantString(parameter.getString(l))
+  action.changeState(parameter)
+  let str: string = "From Radio menu item " & getString(newState, l)
+  label.setLabel(str)
+----
+
+The most important point is, that we have to call action.changeState(newState) to set
+the new state. Without that call the state is not updated and the check mark and the
+radio buttons would not update their visual appearance. Unfortunately changeState()
+needs again a parameter of variant type. For the toggleMenuItem() proc the provided
+variant parameter is not used, as it is a plain boolean toggle action. So we extract
+the actual state from the action itself, invert the boolean state and create a new
+boolean variant of that state which we pass to the changeState() function. For the
+radio() callback it is similar, but the variant parameter contains already the actual
+new state, which we specified in the menu items in the XML string.  We can pass that
+variant parameter directly to changeState() to change the visual appearance of the
+radio menu items, or we can extract the actual string from the variant parameter by
+calling getString() on it to extract the string. We use that string to update our
+label widget.  You may wonder why the getString() procedure has an additional
+parameter of type uint64.  In C this is an optional out parameter which is used to
+retrieve the actual string length.footnote:[ C strings are plain character arrays
+terminated with \x00 to indicate its end, and in C the length of strings is not
+directly available but determined by searching for the terminating \x00 character.
+For long text strings that search has some costs, so it can be useful to provide the
+actual string length by a function out parameter.] In C for such out parameters a
+pointer to a storage location is passed where the library can store the value, and
+GTK allows passing NULL (nil) in case that the parameter should not be used. The
+gobject-introspection generated gintro bindings map such out parameters to Nim's var
+parameter, which avoid ugly and dangerous use of pointers. But unfortunately the
+optionality of parameters is lost in the process of conversion to var type. There is
+an open issue about this topic in the gintro github issue tracker, but still there is
+no good solution. One suggestion was to convert procs with optional var parameters to
+functions which returns these data as function results, where the function result is
+a tuple in case of more than one optional var parameter or in case that there is
+already a non void function result in the C library. But doing that conversion fully
+automatically is not that easy, and the result may be confusing for the user. So we
+may create some overloaded functions manually when necessary.
+
+For connecting the actions to our callback functions we used the "activate" signal
+which is provided by the GSimpleAction class. GSimpleAction provides also a
+"change-state" signal and we may be tempted to use that one instead for stateful
+actions. But that signal is a bit problematic as it may lead to infinite recursion
+when we call changeState() in our callback functions. As a final note we should
+mention that stateful actions can be also used when no callback is actually
+connected, as for this case GTK calls changeState() directly and we may query the
+actual state then from the action variable. But whenever we connect our own callback
+function, then we have to call changeState() our self to update the state.
+
+References:
+
+* https://developer.gnome.org/gio/stable/GAction.html
+* https://developer.gnome.org/gio/stable/GSimpleAction.html
+* https://developer.gnome.org/glib/stable/glib-GVariantType.html
+* https://developer.gnome.org/gio/stable/GSimpleActionGroup.html
+
+
+== GSettings
+
+The GSettings class provides a convenient way to permanently storing configuration
+data, and to bind them to properties of widgets or other gobject based data types.
+The configuration data are described in a XML file which is then converted into a
+binary database.
+
+For using GSettings in our own programs, we have first to create a XML file which
+defines name and type of each configuration entry, and additional provides a default
+value and optionally a summary and a description. The file name of such XML files
+must always end with ".gschema.xml". The following example has only one field called
+like-nim of type boolean (b):
+
+//[[gsettings.nim]]
+[source,xml]
+//.gsettings.nim
+//----
+----
+<schemalist>
+  <schema path="/org/gnome/recipes/"
+         id="org.gnome.Recipes">
+    <key type="b" name="like-nim">
+      <default>false</default>
+      <summary>I like Nim</summary>
+      <description>
+        I like or like not
+        the Nim programming language.
+      </description>
+    </key>
+  </schema>
+</schemalist>
+----
+
+To use such a configuration we have to install it properly on our computer. But
+before we describe that installation process in more detail let us see how we can use
+the gsettings configuration in our app. The code below creates a check button and
+binds its boolean state to the "like-nim" property of above configuration.  When you
+run the app you can click on the check button to toggle its state.  The new state is
+automatically stored in the gsettings configuration.  If you terminate the app and
+launch it again the check button shows its previous state, even after a reboot of
+your computer.
+
+[[gsettings.nim]]
+[source,nim]
+.gsettings.nim
+----
+# gsettings.nim -- basic use of gsettings
+# nim c --gc:arc gsettings.nim
+# https://blog.gtk.org/2017/05/01/first-steps-with-gsettings/
+import gintro/[gtk4, gobject, gio]
+
+# unused
+#proc toggle(b: CheckButton) =
+#  echo b.active
+#  let s = newSettings("org.gnome.Recipes")
+#  discard s.setBoolean("like-nim", b.active)
+
+proc activate(app: Application) =
+  let window = newApplicationWindow(app)
+  window.title = "GSettings"
+  window.defaultSize = (200, 200)
+  let b = newCheckButton("I like Nim")
+  b.halign = Align.center
+  #b.connect("toggled", toggle) # we don't need this for plain binding!
+  let s = newSettings("org.gnome.Recipes")
+  if s.getBoolean("like-nim"):
+    echo "I like Nim language"
+  `bind`(s, "like-nim", b, "active", {SettingsBindFlag.set, get})
+  window.setChild(b)
+  show(window)
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+Above program has again the well know application style.  In the activate() proc we
+first create our application window and a new check button.  Then we load our
+gsetting with the newSettings() function to which we pass the id string
+"org.gnome.Recipes" which we specified in our XML file.  We can query the boolean
+state of the "like-nim" property with a call of s.getBoolean().  Finally we bind that
+property to our check button using the bind() proc. As bind is a Nim keyword we have
+to enclose that proc names in backtics, which is sometimes also called
+stropping.footnote:[Indeed we can avoid the backtics when we just use method call
+syntx like s.bind().] The bind proc requires five arguments -- the settings instance,
+a settings property, a widget, a widget property and a set with the bind flags.  For
+the settings propety we use the "like-nim" one, which is the only one which is
+already declared in our XML file. The widgets is our check button with its "active"
+property. Our check button is a subclass of a toggle button, and from
+https://developer.gnome.org/gtk4/stable/GtkToggleButton.html#GtkToggleButton.properties
+we know that it has this property which is mapped to its boolean state and the
+visibility of its check mark.  Finally we set the set and get flags in the bind flags
+parameter to bind our check button bidirectional to that settings property. This
+simple bind call does only work due to the fact that the settings property as well as
+the check button property have the same data type, boolean in this case. If we want
+to bind properties with different data types, then we have to use converter procs,
+which you may find in the gsettings C API docs.  If the plain binding of a gesettings
+property to a widget property is not sufficient for a more advanced use case, then
+you can connect your widget to ordinary signals like the "toggled" signal and a
+matching callback functions which can retieve and set the gsettings properties
+directly as shown in the commented out toggle() proc in above code example.
+
+Now let us investigate how we can install the configuration file on our computer.  At
+runtime, GSettings looks for configurations in the glib-2.0/schemas subdirectories of
+all directories specified in the XDG_DATA_DIRS environment variable. The usual
+location to install schema files is /usr/share/glib-2.0/schemas.  But gsettings loads
+not the XML files directly, but a "compiled binary" called gschemas.compiled which is
+generated from all XML files in that directory.  In principle we could copy our XML
+file into /usr/share/glib-2.0/schemas directory, cd into that directory and type
+"glib-compile-schemas ." to "compile" all the XML files including our own to the
+"gschemas.compiled" database.  We would need root privileges for that. But that is a
+dangerous operation, if for some reason the resulting gschemas.compiled database is
+corrupted then most of our GTK/Gnome programs would not work any more. So we better
+keep our own database separate. For that there exists at least two ways, which we can
+do as ordinary user without root privileges.
+
+Unfortunately it is not enough to put our XML file or the compiled version of that
+file just into the same directory where our executable is located, as gsettings does
+not load schema files from the current directory automatically. But we can tell
+gsettings to load additional schemas from a specific directory by setting the
+GSETTINGS_SCHEMA_DIR environment variable, which is generally empty by default. So
+one method for a fast test of our program is
+
+----
+cd
+mkdir testdir
+cp gsettings.nim testdir
+cp test.gschema.xml testdir
+glib-compile-schemas testdir
+testdir/gsettings
+----
+
+We create a new directory, copy our nim source code and the XML file there and call
+glib-compile-schemas for the whole directory. Finally we can launch our application.
+
+In a similar way we can create a directory which shall permanently store our own
+schema files, maybe named mySchemas. For that you have to make an entry like
+
+----
+export GSETTINGS_SCHEMA_DIR="~/mySchemas"
+----
+
+in one of your shell startup scripts like .bashrc or similar which are automatically
+executed at computer startup. Of course you have to execute "glib-compile-schemas"
+for that directory whenever you add more XML files.
+
+Finally a similar method is to add one more custom path to the XDG_DATA_DIRS
+environment variable. But then we have to respect the fact that the actual path is
+the glib-2.0/schemas subdirectory of the entries.
+
+So we can add a line like
+
+----
+XDG_DATA_DIRS=$XDG_DATA_DIRS:~/myGsettingsStore/
+----
+
+to ~/.bashrc or equivalent files and populate that directory by
+commands like
+
+----
+mkdir -p ~/myGsettingsStore/glib-2.0/schemas
+cp test.gschema.xml ~/myGsettingsStore/glib-2.0/schemas
+glib-compile-schemas ~/myGsettingsStore/glib-2.0/schemas
+----
+
+****
+
+Unfortunately these explanations about storing the gsetting configurations are valid
+only for Linux systems and you have to know which startup script is used by your
+Linux distribution. For other operating systems you may have to consult internet
+search engines or the GTK/Gnome forum for more details.
+
+****
+
+References:
+
+* https://developer.gnome.org/gio/stable/GSettings.html
+* https://blog.gtk.org/2017/05/01/first-steps-with-gsettings/
+* https://developer.gnome.org/GSettings/
+* https://developer.gnome.org/gio/stable/glib-compile-schemas.html
+
+== GTK Basic Widgets
+
+In this chapter we will introduce simple but useful basic widgets and explain the
+widgets which we introduced earlier in more detail. All these widgets are really easy
+to use. We have constructor functions with names which starts with "new" like
+newButton(), we can add these widgets to containers, and connect them directly to
+signals or map them to GActions. You should also study the C API documentation of
+these simple widgets to learn about all the other functionality that is also
+available, like provided functions, available signals or widget properties.  Remember
+that GTK widgets build a class hierarchy so functionality may be provided by parent
+classes.  For example the GtkCheckButton is a subclass of GtkToggleButton and both
+are of course widgets, so you may have to consult all that API documentation to find
+functions or properties that you may desire. Also consider using the devhelp tool to
+navigate the C API docs. For the more advanced and complicated widgets like
+GtkTreeView, GtkListView and GtkDrawingArea we will give only minimal examples in
+this chapter to give you a basic feeling what they are and how they can be used.
+GtkTreeView and GtkListView are powerfull widgets to display larger textual and other
+data sets. And the GtkDrawingArea is a widget where we can draw arbitrary two
+dimensional graphics by using drawing functions of the cairo graphics library. We can
+use the GtkDrawingArea for pure display purpose, or we can combine it with user input
+activities to create advanced CAD tools. One more advanced GTK widget is the
+GtkGLArea which can be used to display three-dimensional OpenGL graphics.  But as
+creating graphics with OpenGL is a wide area for which many whole books have been
+written, we will not try to cover that topic in this book.
+
+The GTK widgets can be grouped into container widgets which arrange other widgets
+like GtkBox or GtkGrid, into mostly passive widgets for displaying data like the
+GtkLabel, and into the active widgets which accept user input like GtkEntry. For an
+overview you may visit the widget gallery page:
+
+* https://developer.gnome.org/gtk4/stable/ch08.html
+
+=== Label
+
+The GtkLabel is a simple widget that can display some text. The text can have
+multiple lines when desired, can wrap automatically and can support style attributes
+like italic or boldface. The label widget is mostly used to label other widgets or to
+display some textual messages to the user.  GtkButtons use a label widgets to display
+its text.  For the actual text display the pango library is used, which supports many
+advanced text renderings like right to left text and many attributes like
+strike-though, underline, overline (since pango v 1.46) and many more.  GtkLabels
+like all GTK widgets support utf8 unicode text which allows display of glyphs of
+exotic languages as well as a large range of symbols.
+
+The GtkLabel is one of the simplest GTK widgets and the C API documentation should be
+easy to understand and can be used in Nim straight forward:
+
+* https://developer.gnome.org/gtk4/stable/GtkLabel.html
+
+==== Properties
+
+GTK uses the concept of properties to set or modify the internal state of GTK widgets
+or other entities.  For most properties GTK offers setter and getter functions which
+we use when available, so we have not to deal with properties that often. But in some
+cases it is necessary, so we will introduce the basics at this point already. GTK
+properties have textual names like "wrap" or "gtk-application-prefer-dark-theme" and
+a typed state like boolean true/false, integer states or states of other types. In C
+code most often the function g_object_set() is used to set one or multiple
+properties. That function uses multiple untyped arguments. As it is not type safe it
+is not provided by gobject-introspection and is not available in most high level GTK
+bindings including Nim. Instead we use g_object_set_property() called just
+setProperty() to set single properties in Nim.  Unfortunately that procedure needs a
+GValue as third parameter which makes it use a bit complicated.
+
+The following example program defines a helper procedure called toBoolVal() to create
+a GValue with matching type and content from a Nim bool value. We use the resulting
+GValue to set the wrap property of our label and the
+"gtk-application-prefer-dark-theme" property of our whole application. Both
+properties expects a boolean GValue.
+
+image::label.png[]
+
+[[label.nim]]
+[source,nim]
+.label.nim
+----
+import gintro/[gtk4, gobject, gio]
+
+proc toBoolVal(b: bool): Value =
+  let gtype = typeFromName("gboolean")
+  discard init(result, gtype)
+  setBoolean(result, b)
+
+proc activate(app: gtk4.Application) =
+  let d = gtk4.getDefaultSettings()
+  setProperty(d, "gtk-application-prefer-dark-theme", toBoolVal(true))
+  let window = newApplicationWindow(app)
+  window.title = "Window"
+  window.defaultSize = (100, 20)
+  let box = newBox(Orientation.vertical, 20)
+  window.setChild( box)
+  let label1 = newLabel("This text does not wrap")
+  let label2 = newLabel("But this very long text can wrap automatically")
+  #label2.setWrap(true)
+  label2.setProperty("wrap", toBoolVal(true))
+  box.append(label1)
+  box.append(label2)
+  window.show
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+In our toBoolVal() proc we have to create a GType variable first. For this we can use
+the typeFromName() proc to which we have to pass the correct GTK type name, or with
+recent gintro versions we could use getType() procs like gBooleanGetType() directly.
+Guessing the right name is not always easy -- for string types we would have to use
+gStringGetType() or typeFromName("gchararray"). With that GType we can first init() a
+GValue variable and then set its value. GValues are used a lot in gtkListView and
+GtkThreeView widgets, we will learn more about GTypes the GValue variables later when
+we explain these widgets.  In the above example program we use the function
+setProperty() two times. First we set the property
+"gtk-application-prefer-dark-theme" for our whole application to true. To do that we
+query the default settings with a call of getDefaultSettings() and then set that
+boolean value. The result is that our whole app uses a dark color scheme when
+available. The second use of setProperty(), again for a boolean variable, is to set
+the "wrap" property of one of our label widgets. For this the label class provides
+the function setWrap() which we generally would use. We used a GtkBox to arrange our
+two labels vertically in our window. We will learn more details about the GtkBox
+containers in the next section.
+
+While GtkLabels are most of the time passive entities, they provide some signals like
+"activate-link" and "move-cursor".  By default label text can not be copied to the
+clipboard, but we can call setSelectable() on a label widget to make it selectable.
+Then we can click with the mouse on the text, we can select all or part of the text
+and the label widget will get a popup menu which pops up when we press the right
+mouse button allowing to select and copy the label text to the clipboard. This can be
+useful when a label displays messages which we may want to copy elsewhere.  One of
+the many useful functions offered by labels is setEllipsize() which determines how
+text not fitting into the available are is handled. That function is often used in
+conjunction with setMaxWidhChars() or setWidhChars().  Our second example program
+below displays some chess pieces using utf8 unicode glyphs, and an ordinary text
+which is displayed in a small font and which is shortened by showing ellipsis when
+the enclosing window is small. The label widget with the chess pieces is made
+selectable, so you can copy the content into another window, maybe into an instance
+of the the gedit text editor.
+
+image::label2.png[]
+
+[[label2.nim]]
+[source,nim]
+.label2.nim
+----
+import gintro/[gtk4, gobject, gio, pango]
+
+proc activate(app: gtk4.Application) =
+  let window = newApplicationWindow(app)
+  let box = newBox(Orientation.vertical, 20)
+  window.setChild( box)
+  let label1 = newLabel()
+  label1.setUseMarkup
+  label1.setSelectable
+  label1.setMarkup("<big>\u2654\u2655\u2656\u2657\u2658\u2659\u265A\u265B\u265C\u265D\u265E\u265F</big>")
+  let label2 = newLabel("<small>Some less important message that nobody really reads</small>")
+  label2.setUseMarkup
+  label2.setEllipsize(pango.EllipsizeMode.end)
+  box.append(label1)
+  box.append(label2)
+  window.show
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+In both label texts we use html tags like <big> or <small> to modify the text
+display. Currently we have to additional call setUseMarkup() on the label to tell it
+that html tags should be used. We may expect that for the case that we use
+setMarkup() that should be not necessary -- maybe it is a bug of early {gtk4}
+release? Modifying the label display with enclosed tags directly is convenient, but
+restricted to only a few attributes. In the next section we will lean how we can use
+XML UI files to do more advanced text customization.
+
+==== GtkLabels and XML UI files
+
+Earlier in this book we used already XML files to describe the structure of popup
+menus.  And we said at the beginning of the book that GTK allows to declare the whole
+GUI or parts of it with XML UI files which is then loaded by the GTK builder. Below
+you can see such an XML UI file which describes a label and two buttons, which are
+arranged into a GtkGrid widget.
+
+image::builder.png[]
+
+[[builder.ui]]
+[source,xml]
+.builder.ui
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <object id="window" class="GtkWindow">
+  <!--
+  <object id="window" class="GtkApplicationWindow">
+  -->
+    <property name="title">Grid</property>
+    <child>
+      <object id="grid" class="GtkGrid">
+         <child>
+          <object id="label" class="GtkLabel">
+            <property name="label">Label with red background</property>
+            <attributes>
+              <attribute name="weight" value="PANGO_WEIGHT_BOLD"/>
+              <attribute name="background" value="red" start="11" end="14"/>
+            </attributes>
+            <layout>
+              <property name="column">0</property>
+              <property name="row">-1</property>
+              <property name="column-span">2</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object id="button1" class="GtkButton">
+            <property name="label">Button 1</property>
+            <layout>
+              <property name="column">0</property>
+              <property name="row">0</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object id="button2" class="GtkButton">
+            <property name="label">Button 2</property>
+            <layout>
+              <property name="column">1</property>
+              <property name="row">0</property>
+            </layout>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
+----
+
+This UI file has the common shape of XML files. Contained Widgets have a class which
+determines the type of the widget and an id which allows access to that widget from
+our program file. The outermost entity is the GtkWindow, with a GtkGrid as child,
+which again has a label and two buttons as children. If using such XML files has more
+advantages than disadvantages is not always that clear, but the GTK developers
+generally recomment using such files instead of creating the whole GUI structure in
+program code. Indeed the XML UI file looks clean and simple most of the time, but
+creating valid files or debugging corrupted files is not that simple. We took our
+above file from the GTK4 source distribution and added only the label section which
+is again taken from the GtkLabel API docs. GTK offers the tool Glade which allows to
+create such XML UI files interactively, we may explain that tool at the end of this
+book. But you should find some tutorials or videos about the Glade tool in the
+internet. One advantage of XML UI files is that by modifying that file we can tune
+the GUI without recompiling the source code of the program.  As least when the XML UI
+file is really shipped as a separate text file. But often it is shipped as a
+compressed binary resource file or it is included as string in the program source
+file. In the XML UI file above we can change the label text, its appearance or its
+presents at all, and our program should still work!  And the XML file makes it easy
+to tune the visible appearance of our label widget by use of attributes like "weight"
+or "background". Now let use investigate the program source code which uses above XML
+UI description:
+
+[[builder.nim]]
+[source,nim]
+.builder.nim
+----
+# https://developer.gnome.org/gtk4/unstable/ch01s05.html
+# builder.nim -- application style example using builder/glade xml file for user interface
+# nim c --gc:arc builder.nim
+import gintro/[gtk4, gobject, gio]
+
+proc hello(b: Button; msg: string) =
+  echo "Hello", msg
+
+proc activate(app: Application) =
+  let builder = newBuilder()
+  discard builder.addFromFile("builder.ui")
+  #let window = builder.getApplicationWindow("window")
+  let window = builder.getWindow("window")
+  window.setApplication(app)
+  let label = builder.getLabel("label") # not really necessary, out label is fully passive
+  var button = builder.getButton("button1")
+  button.connect("clicked", hello, "")
+  button = builder.getButton("button2")
+  button.connect("clicked", hello, " again...")
+  show(window)
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+Our Program has again the well known app structure. In the activate proc we create a
+builder object by calling newBuilder() and then load the GUI structure by a call of
+addFromFile(). After that we can access the widgets by calls like getWindow(),
+getButton() or getLabel(). For the window we have to set the application with a call
+of setApplication(). In the above code we connect our widgets to our callback
+functions by use of the connect macro.  In principle that connection could be done in
+the XML UI files as well, but the gintro bindings do not support that currently and
+probably never will.  Note that we call show(window) at the end of the activate()
+proc as we did in all of our apps before. It would be possible to save that proc call
+when we add the <property name="visible">True</property> to the window class in the
+XML file, but GTK developers regard this as a bad practice.
+
+==== Mnemonics in Label Text
+
+Mnemonics can be used in label widgets as some form of keyboard shortcuts: We can put
+an underscore character '_' in the text of a label to indicate that the following
+character should be a keyboard shortcut to activate a widget.  That can be useful if
+we have a GUI window with multiple buttons or multiple text entry fields and we want
+to control the GUI from the keyboard without use of the mouse device. So we just have
+to press the left "alt" key and a matching key to activate a button or to activate an
+entry field to accept keyboard input.  Mnemonics are not used that much in {gtk4} as
+GAction provides a more flexible way to map actions to various user input, but as
+mnemonics are still available and really easy to use we will give a short example:
+
+image::label3.png[]
+
+[[label3.nim]]
+[source,nim]
+.label3.nim
+----
+import gintro/[gtk4, gobject, gio]
+
+proc entryCb(e: Entry) =
+  echo "Searching for: ", e.text
+
+proc activate(app: gtk4.Application) =
+  let window = newApplicationWindow(app)
+  let box = newBox(Orientation.horizontal, 10)
+  window.setChild(box)
+  let label = newLabelWithMnemonic("_Find")
+  label.setUseUnderline(true)
+  let entry = newEntry()
+  let dummy = newEntry()
+  label.setMnemonicWidget(entry)
+  entry.connect("activate", entryCb)
+  box.append(label)
+  box.append(entry)
+  box.append(dummy)
+  discard dummy.grabFocus
+  window.show
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+The code above creates a label with Mnemonics support and two text entry fields.  We
+would need only the search entry field, but as long as it is the only one it would
+always get user input, so we add one more dummy entry which can get keyboard focus.
+We create the label widget with a call of newLabelWithMnemonic("_Find"). The
+underscore in front of the 'F' character indicates that this character should be used
+as keyboard shortcut. The call of setUseUnderline(true) tells the label widget that
+keyboard shortcuts should be really used, and setMnemonicWidget() tells which other
+widget should be activated by the label. You may wonder why the call of
+setUseUnderline(true) is necessary when it is obvious from the use of
+newLabelWithMnemonic() that shortcuts should be used. But it is indeed necessary
+currently, maybe it is still a early {gtk4} bug. Often label widgets are contained in
+other widgets, i.e. in Button widgets. In that case the call of setMnemonicWidget()
+is not needed, the enclosing widget is activated in that case.  To use the shortcut
+you press the left "alt" key and the letter "f", which will make the seach widget
+active accepting keyboard input. Maybe click with the mouse into the dummy widget
+before to see the effect better.  Pressing left "alt" key underlines the action key
+in the label widget to give you a hint which key is in use. In our example we put the
+underscore in from of the first capital letter of our label text. But we can put it
+everywhere in the text string, and lower and upper case characters work the same. A
+call of newLabelWithMnemonic("Fi_nd") would make "alt" "n" the shortcut.
+Unfortunately these form of shortcut definitions can easily lead to conflicting
+characters when many many shortcuts are in use or when the program is translated into
+other languages.
+
+
+==== Pango Text Attributes
+
+At the end of this section we will investigate how we can modify our label text by
+use of Pango attributes. The following example program creates two Pango attributes,
+one to modify the background color of our label, and another one which display the
+label text as strike through. For both attributes we set the range where we want to
+apply these attributes. Attributes can overlap.  Then we create an attribute list,
+add our two attributes to the list and finally call setAttributes() to apply the
+attribute list to our label.
+
+image::label4.png[]
+
+[[label4.nim]]
+[source,nim]
+.label4.nim
+----
+import gintro/[gtk4, gobject, gio, pango]
+
+proc activate(app: gtk4.Application) =
+  let window = newApplicationWindow(app)
+  let label = newLabel("Some text with red background and overlapping strikethrough")
+  let attrColor = newAttrBackground(uint16.high, 0, 0) # <1>
+  let attrStr = newAttrStrikethrough(true) # <2>
+  attrColor.startIndex = ATTR_INDEX_FROM_TEXT_BEGINNING + 15 # <3>
+  attrColor.setEndIndex(29.uint32) # <4>
+  attrStr.indices = (24.uint32, 32.uint32) # <5>
+  let attrList = newAttrList() # <6>
+  attrList.insert(attrColor) # <7>
+  attrList.insert(attrStr)
+  label.setAttributes(attrList) # <8>
+  window.setChild(label)
+  window.show
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+<1> create a background color attribute using RGB color values with range 0 .. uint16.high
+<2> create a strike through attribute
+<3> set start index. Index starts at zero, we can use the constant ATTR_INDEX_FROM_TEXT_BEGINNING (0.uint32)
+<4> set end index, the constant ATTR_INDEX_TO_TEXT_END is an alias for uint32.high
+<5> we can also use a tuple assignment
+<6> create a new attribute list
+<7> insert our two attributes into the attribute list
+<8> apply the attribute list to our label
+
+For setting the index ranges of our attributes we can use set functions, value
+assignment or tuple assignment.  Setting the indices in the call of the attribute
+constructor directly as is used in Python GTK bindings is not yet supported by the
+gintro language bindings. We may declare such extended constructor manually if we
+should really need them often, but generally labels with many Pango text attributes
+are not used that often. Note that the indices uses the data type uint32, and that
+the indices count byte positions, not unicode glyphs.
+
+Another option to modify the visual appearance of GTK labels and other widgets is the
+use of CSS (Cascading Style Sheets). We will learn more about CSS later in this book.
+
+References:
+
+* https://developer.gnome.org/gtk4/stable/GtkLabel.html
+* https://developer.gnome.org/gtk4/stable/GtkSettings.html
+* https://developer.gnome.org/pango/stable/pango-Markup.html
+* https://developer.gnome.org/pango/stable/pango-Text-Attributes.html
+
+=== Box
+
+image::box.png[]
+
+The GtkBox is a simple container widget which is used to arrange child widgets into a
+single row or column, depending upon the value of its “orientation” property.
+
+We used box widgets already in the introducing sections of this book. In this section
+we will explain some properties and functions of the GtkBox widget in some more
+detail.  The following example program creates a horizontal box, which will arrange
+its child widgets in a single row.
+
+[[box.nim]]
+[source,nim]
+.box.nim
+----
+import gintro/[gtk4, gobject, gio, pango]
+
+proc activate(app: gtk4.Application) =
+  let window = newApplicationWindow(app)
+  let box = newBox(Orientation.horizontal, 20)
+  #box.baseLinePosition = BaselinePosition.bottom
+  #box.setHomogeneous
+  window.setChild( box)
+  let label1 = newLabel("<small>Available\nchess pieces</small>")
+  label1.setYalign(1) # bottom
+  label1.setUseMarkup
+  let label2 = newLabel()
+  label2.setMarkup("<big>\u2654\u2655\u2656\u2657\u2658\u2659\u265A\u265B\u265C\u265D\u265E\u265F</big>")
+  label2.setYalign(1)
+  #label2.setUseMarkup # set from setMarkup() call
+  box.append(label1)
+  box.append(label2)
+  window.show
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+To create the container widget we call newBox(Orientation.horizontal, 20). The first
+parameter determines the orientation and the optional second parameter the empty
+space between its children in logical pixels. We add that box as child of our window
+by a call of setChild().  Finally we create two label widgets, append both to the box
+and call show() on our window to display all of our widgets. The first label has two
+rows of text (\n inserts a line break) and we apply the pango attribute <small> to
+decrease the text size. The second label has only one text line with unicode glyphs,
+and we apply the attribute <big> to make it appear larger.
+
+The GtkBox class provides the functions append() and prepend() to add new child
+widgets at the end (right/bottom) or at the start (left/top) of the container. We can
+also use insertChildAfter() to insert a new widget after an already inserted one.
+Removing children from a box widgets or reordering of children is also possible by
+using the remove() or reorderChildAfter() functions. But these operations are not
+that common and we would need access to the already contained children for these
+operations.  The widget parent class of the box widget provides various functions to
+access contained children, we will learn more about that later in this book. When we
+use insertChildAfter() to insert a widget, then we have to be sure that the "after"
+widget is really a child of that box, and when we use reorderChildAfter() then of
+course both child widgets have to be in the box. If that is not the case then a GTK
+runtime error will occur.  An useful function of the GtkBox widget is
+setHomogeneous() which can be used to give all children in the box the same size
+extend.  The function setSpacing() can be used to modify the pixel spacing for all
+the child widgets. Note that GTK uses logical pixels -- for high resolution displays
+one logical pixel can correspond to multiple physical pixels depending on the user's
+GUI settings. For horizontal boxes the GtkBox class provides the function
+setBaselinePosition(), which is not used that often and has only an effect when at
+least one of the widgets in the box has set its valign property to Align.baseline.
+For our example we do not use the function setBaselinePosition(), but we use the fact
+that label widgets by default use all available space in a box, and we call the
+function setYalign(1) for both labels to align the text to the bottom.
+
+****
+
+Aligning widgets in containers is a bit complicated. Often the default alignment is
+OK, but when not it can be difficult. First we have to decide if the children in the
+container should expand to take all available space or not. And then the GtkWidget
+class provides various functions and properties to modify the actual alignment.  We
+will describe all the various options later in this book in a separate section.
+
+****
+
+As the children of GtkBox widgets can be again boxes, we can construct interesting
+two-dimensional layouts.  At the beginning of the book we have already used the
+GtkGrid widget to arrange children in a tabular layout, and you may wonder if the
+GtkGrid can completely replace nested boxes.  But that is not always possible, as the
+GtkGrid generates layouts that look like a regular matrix, with optionally joined
+cells. And sometimes using boxes is simpler or more flexible than using grid widgets.
+The following program generates a layout with three nested box widgets which would be
+not possible to archive with a single grid widget:
+
+image::box2.png[]
+
+[[box2.nim]]
+[source,nim]
+.box2.nim
+----
+import gintro/[gtk4, gobject, gio]
+
+proc activate(app: gtk4.Application) =
+  let window = newApplicationWindow(app)
+  let hbox1 = newBox(Orientation.horizontal, 25)
+  let hbox2 = newBox(Orientation.horizontal, 25)
+  let vbox = newBox(Orientation.vertical)
+  var l: Label
+  for el in ["A", "B", "C"]:
+    l = newLabel(el)
+    l.hexpand = true
+    hbox1.append(l)
+  for el in ["D", "E"]:
+    l = newLabel(el)
+    l.hexpand = true
+    hbox2.append(l)
+  vbox.append(hbox1)
+  vbox.append(hbox2)
+  window.setChild(vbox)
+  window.show
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+Finally we should mention that the GtkBox widget implements the GtkOrientable
+interface, so that we can flip existing boxes dynamically at run-time of our program.
+Here flip stand for rotate by 90 degree, we switch between Orientation.horizontal and
+Orientation.vertical. That can be useful in rare cases, e.g. when the containing
+window is resized by the user. The following app flips the box when the user clicks
+on the button widget. We will learn more details about the GtkButton widget later in
+this book.
+
+[[box3.nim]]
+[source,nim]
+.box3.nim
+----
+import gintro/[gtk4, gobject, gio]
+
+proc flipBox(b: Button; box: Box) =
+  box.setOrientation(Orientation(1 - box.getOrientation.ord))
+
+proc activate(app: gtk4.Application) =
+  let window = newApplicationWindow(app)
+  let box = newBox(Orientation.vertical, 20)
+  window.setChild( box)
+  let label = newLabel("You can flip this box")
+  let button = newButton("Flip")
+  button.connect("clicked", flipBox, box)
+  box.append(label)
+  box.append(button)
+  window.show
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+NOTE: Remember that each GtkWidget can be put at least one time into a GTK container
+widget.  Whenever you try to insert the same widget again in the same or into another
+container, then you will get a GTK run-time error. This means that you would have to
+create multiple label widgets for the case that you wants to display the same text
+multiple times. You can not reuse the same widget.  Also you should avoid trying to
+copy widgets, use one more constructor call like newLabel("My message") instead.
+Maybe later the gintro bindings will support copying of widgets, but currently they
+do not support it.  This does not mean that you can not reuse widgets: You can remove
+widgets from containers and insert them in another container or again in the same
+container. In C some caution is needed, as widgets may get destroyed when we remove
+them from containers due to GTK's refcounting system. So in C we generally call
+g_object_ref() on the widget before we remove it from a container to keep it alive
+until we insert it again. In Nim referencing widgets that way should not be needed.
+We may give examples for removing and re-inserting widgets with the gintro bindings
+later in the book.
+
+References:
+
+* https://developer.gnome.org/gtk4/stable/GtkBox.html
+* https://developer.gnome.org/gtk4/stable/gtk4-Orientable.html
+* https://developer.gnome.org/gtk4/unstable/gtk-migrating-3-to-4.html#id-1.7.4.3.11
+
+=== Button
+
+image::button.png[]
+
+The GtkButton widget is used to trigger a callback function that is called when the
+button is pressed.  Generally the GtkButton widgets contains a label widget which is
+used to display a short text, or a symbolic icon. But the GtkButton can also contain
+most other GTK widgets.  The GtkButton widget supports only two signals, the
+"clicked" and the "activate" signal.  We use only the "clicked" signal to call our
+callback function when the button is pressed.  The "activate" signal is for GTK
+internal use only.  The program below creates a box container widget and fills it
+with various button variants:
+
+[[button.nim]]
+[source,nim]
+.button.nim
+----
+import gintro/[gtk4, gobject, gio]
+
+proc buttonCb(b: Button) =
+  echo "click"
+
+proc activate(app: gtk4.Application) =
+  let window = newApplicationWindow(app)
+  let box = newBox(Orientation.horizontal, 10)
+  window.setChild( box)
+  let b1 = newButton("Click Me")
+  let b2 = newButtonWithMnemonic("_Mnemonic")
+  let b3 = newButtonFromIconName("document-print")
+  let b4 = newButton("\u2654")
+  let b5 = newToggleButton("Toggle Button")
+  let b0 = newButton("CSS Styled")
+  let cssProvider = newCssProvider()
+  let data = "button {color: yellow; background: green;}"
+  cssProvider.loadFromData(data)
+  let styleContext = b0.getStyleContext
+  assert styleContext != nil
+  addProvider(styleContext, cssProvider, STYLE_PROVIDER_PRIORITY_USER)
+  for b in [b0, b1, b2, b3, b4, b5]:
+    box.append(b)
+    b.connect("clicked", buttonCb)
+  window.show
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+For the button b1 we pass a text argument to the constructor function newButton().
+That way a label is created which is used to display that text on the button. In the
+section about GtkLabel widgets we explained that GTK supports mnemonics to activate
+widgets. To use mnemonics we put an underscore character (_) into a text string to
+make the following character a keyboard shortcut which is activated by pressing the
+ALT key and that character simultaneously. We use that for button b2. For button b3
+we decided to display an icon instead of a textual message. For that we call the
+newButtonFromIconName() constructor and pass a valid icon name. To get an overview of
+the available icons you may launch the gtk4-icon-browser.  The button b4 is again a
+plain GtkButton, but we use unicode glyphs as text. Button b5 is a GtkToggleButton, a
+subclass of the parent GtkButton.  The GtkToggleButton behaves like a mechanical
+switch and is drawn differently when in pushed down state.  The toggle button
+supports additional to the "clicked" signal of its parent class the "toggled" signal
+which is emitted whenever the state changes between pressed and released state.
+Generally we would connect the toggle button to the "toggle" signal, but to kept our
+program short we use also the available "clicked" signal.  Finally button b0 is again
+a plain GtkButton, but we use CSS styling to change it colors. We said earlier that
+CSS can be used to customize the GTK GUI. Here we give only a very simple example to
+show that it is possible. Beginners generally ask about functions for styling widgets
+and expect at least a simple function to set foreground and background colors and
+maybe some more widget properties. GTK most of the time does not offer such simple
+styling functions. One reason for that is that GTK3 and GTK4 uses not plain
+background and foreground colors, but can use background images, color gradients,
+transparency effects and much more. The other reason is that customizing widgets is
+in most cases a bad idea. The themed GTK GUI is designed carefully for a nice
+appearance, and the user may have customized it further for her own needs. Maybe the
+user has selected a high contrast color scheme and larger fonts because of visual
+restrictions. So graphical customized widgets or whole apps generally look ugly and
+maybe can not used at all by some people.
+
+But with CSS custom styling is generally possible with some efforts. In our example
+we call the function newCssProvider() to create a CssProvider object and load it from
+a string with the desired style properties.  For simple style changes using a plain
+string as source is convenient, but for larger customization the function
+loadFromPath() can be used to load the data from an external CSS text file. The data
+string starts with the name of the widget that we want to modify followed by the
+necessary information enclosed in curly braces.  As we have direct access to our
+widget we call getStyleContext() to gets its style context and then call
+addProvider() to add our new CSS information.  This way we can change the size,
+margins and padding of widgets and many other styling properties.  But these form of
+styling is not always that easy and may sometimes not work as expected at all. For
+styling widgets which are not directly accessible but contained deeply nested in
+other widgets, we have to use the function addProviderForScreen(getDefaultScreen(),
+...) instead of the pair getStyleContext() and addProvider(). In the second halve of
+the book we will learn more about CSS styling and we will discover the gtk-inspector
+tool which allows us to inspect and even modify CSS properties and other useful data
+interactive from running applications.
+
+To keep our example code short we connect all of our buttons to the same plain
+callback function which only prints the message "clicked" when one of the buttons is
+pressed.  Earlier in the book we introduced GActions and showed how we can connect
+actions with widgets, keyboard input and other input sources. For larger applications
+the use of GActions may be a better solution than connecting signals directly to
+callbacks. We should also mention that the GtkWidget parent class of the GtkButton
+provides the function setSensitive() which can be used to make widgets insensitive.
+For a button widgets that means that mouse clicks are ignored.
+
+For advanced use cases we can use the newButton() constructor without arguments and
+then call setChild() on the button instance to explicitly set a child widgets. The
+child widget may be a label styled with pango attributes, icon or image widgets or
+most other widget classes.  When the child of the button is a label widget, then the
+function getLabel() can be used to get the label text. To set a new label text the
+function setLabel() can be used.footnote:[From the API docs it is not fully clear
+what happens when the button already has a child which is not of GtkLabel class --
+from the context we may assume that it is replaced.] The function setIconName() can
+be used to set a named icon as child of the button -- an existing child is replaced.
+To set an existing widget as child of a button the function setChild() is available,
+and getChild() can be used to retrieve a child, maybe to modify it. Finally we can
+use the function setHasFrame() with a boolean argument to determine if a frame should
+be drawn around the button.
+
+Direct children of the GtkButton class are the already mentioned GtkToggleButton and
+the GtkLinkButton and the GtkLockButton.  A GtkToggleButton is a GtkButton which will
+remain “pressed-in” when clicked. Clicking again will cause the toggle button to
+return to its normal state.  A toggle button is created by calling either
+newToggleButton() or newToggleButtonWithMnemonic().  When you pass a string parameter
+to the first function, then a label widget is created as child, otherwise you should
+call setChild() to set the child widget.  The state of the toggle button can be set
+by calling setActive() on the toggle button instance and retrieved by a call of
+getActive(). Finally the function setGroup() is available to set the group for the
+button instance, that is a related set of other toggle buttons. In a group of
+multiple toggle buttons, only one button can be active at a time.  The group of
+toggle buttons behaves like radio buttons in this case, that is you press one and the
+formerly pressed one releases automatically.  Note that the same effect can be
+achieved via the GtkActionable API, by using the same action with parameter type and
+state type 's' for all buttons in the group, and giving each button its own target
+value.
+
+Toggle buttons have the advantage that they use the area of the label text for its
+function, so no additional space is consumed.  But unfortunately it can be difficult
+to discover the actual state of the toggle button from its visual appearance. So
+other buttons with retained boolean state like the GtkCheckButton, the GtkSwitch and
+GtkRadioButtons are additional available.  Additional GTK offers many specialized
+buttons like font-, color or filechooser buttons or menu- and spinbuttons.  You may
+visit the widget gallery linked below to discover more button like classes.  We will
+describe a few of them in the following sections of the book.
+
+Note that you can also use a GtkBox populated with multiple widgets as child of
+button widgets. That way it is for example possible to have a textual label and an
+icon as active area of a button.footnote:[ That style was used in GTK2 and other GUI
+toolkits in early days, but is not recommended for GTK3 and GTK4 any more.]
+
+References:
+
+* https://developer.gnome.org/gtk4/stable/GtkButton.html
+* https://developer.gnome.org/gtk4/stable/GtkToggleButton.html
+* https://developer.gnome.org/gtk4/stable/ch08.html
+
+=== Link-, Lock- and Toggle-Button
+
+image::linklockbutton.png[]
+
+The GtkLinkButton, the GtkLockButton anf the GtkToggleButton are direct subclasses of
+the GtkButton. The GtkToggleButton maintains a boolean state and and changes its
+visual appearance when in pressed down state. We discussed the toggle button already
+in the previous section together with the plain GtkButton widget.
+
+The GtkLinkButton is a GtkButton with a hyperlink, similar to the ones used in HTML
+web pages.  It is useful to show references to resources like help or support pages
+of our app.  A link button is created by calling the constructor function newButton()
+with a string containing an URI and optional with an additional label text argument.
+The URI bound to the GtkLinkButton can be set specifically by calling the setURI()
+function, and retrieved by calling getURI().
+
+By default the GtkLinkButton widget calls showURI() when the button is clicked.  This
+function launches the default application for showing a given URI, or shows an error
+dialog if that fails.  This behaviour can be overridden by connecting to the
+“activate-link” signal of the link button and returning gdk4.EVENT_STOPT from the
+call back function.
+
+The GtkLockButton is a widget that can be used in control panels or preferences
+dialogs to allow users to obtain and revoke authorizations needed to operate the
+controls. The required authorization is represented by a GPermission object. Concrete
+implementations of GPermission may use PolicyKit or some other authorization
+framework. As GtkLockButton are used most often only in system tools and we have to
+learn about GPermission to use it, we will not discuss that button in detail.
+
+The following program creates a GtkLockButton and a GtkLinkButton. The lock button
+has no function.  The link button is connected to a callback function which prints
+the URI when the button is clicked.
+
+[[linklockbutton.nim]]
+[source,nim]
+.linklockbutton.nim
+----
+import gintro/[gtk4, gdk4, gobject, glib, gio]
+
+proc buttonCb(b: LinkButton): bool =
+  echo "clicked: ", " ", b.getURI
+  return gdk4.EVENT_PROPAGATE
+
+proc activate(app: gtk4.Application) =
+  let window = newApplicationWindow(app)
+  let box = newBox(Orientation.horizontal, 50)
+  window.setChild( box)
+  let p = newSimplePermission(false)
+  let lock = newLockButton(p)
+  let link = newLinkButtonWithLabel("https://developer.gnome.org", "GTK/Gnome")
+  box.append(lock)
+  box.append(link)
+  link.connect("activate-link", buttonCb)
+  window.show
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+The newLockButton() constructor function expects as argument a permission object
+which we create with a call of newSimplePermission(false) with default false state.
+In a real application we would had to provide code for handling that button.  To the
+newLinkButton() constructor we pass an URI and a label text as arguments.  We connect
+the "activate-link" signal to a callback function that prints the URI when the link
+is clicked. While most of the callback functions that we used in our previous
+examples had no return parameter, the callback function of the "activate-link" signal
+has to return a boolean value.  In this case the return value determines if or if not
+that signal is further processed when our own callback is done. We can return the
+boolean constants gdk4.EVENT_PROPAGATE to allow processing that signal by other
+functions, or gdk4.EVENT_STOP to stop the propagation. In our example we return
+gdk4.EVENT_PROPAGATE at the end of our callback function to allow further processing
+by GTK. The result is that a web browser with our specified URI is opened
+automatically when available. If we do not want that behaviour we could return
+gdk4.EVENT_STOP to avoid this.
+
+We can construct a link button with a call of newLinkButton() passing only a URI
+string if the button should display the URI or we can call newLinkButton() with an
+additional string which is used as label text. Later we can extract the URI string
+with a call of getURI() or set a different URI with setURI(). After the user has
+clicked on the button for the first time the boolean property "visited" is set to
+true and the look of the button changes. We can set and query the visited state with
+the getVisited() and setVisited() functions.
+
+References:
+
+* https://developer.gnome.org/gtk4/stable/GtkLockButton.html
+* https://developer.gnome.org/gtk4/stable/GtkLinkButton.html
+
+=== Check-Button
+
+image::checkbutton.png[]
+
+The GtkCheckButton is a widgets with a label and a discrete toggle button.  In {gtk4}
+the GtkCheckButton is a direct child of the GtkWidget class.  A group of multiple
+check buttons can built a set of radio buttons in which only one button can be active
+at a time.  For that variant pressing down one member of the group releases the
+formerly pressed one automatically, like for station or wavelength-range keys of
+historic broadcast radio devices.
+
+The following example program creates 3 ordinary check button widgets and 3 radio
+button variants:
+
+[[checkbutton.nim]]
+[source,nim]
+.checkbutton.nim
+----
+import gintro/[gtk4, gobject, gio]
+
+proc checkCb(ch: CheckButton) =
+  echo ch.getLabel, " toggled: ", ch.getActive
+
+proc activate(app: Application) =
+  let window = newApplicationWindow(app)
+  let bh = newBox(Orientation.horizontal, 10)
+  let bv1 = newBox(Orientation.vertical)
+  let bv2 = newBox(Orientation.vertical)
+  window.setChild( bh)
+  bh.append(bv1)
+  bh.append(bv2)
+  let ch1 = newCheckButton("Red")
+  let ch2 = newCheckButton("Yellow")
+  let ch3 = newCheckButton("Green")
+  for ch in [ch1, ch2, ch3]:
+    bv1.append(ch)
+    ch.connect("toggled", checkCb)
+  let r1 = newCheckButton("Sun")
+  let r2 = newCheckButton("Rain")
+  let r3 = newCheckButton("Snow")
+  for ch in [r1, r2, r3]:
+    bv2.append(ch)
+    ch.connect("toggled", checkCb)
+  r2.setGroup(r1)
+  r3.setGroup(r1)
+  window.show
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+A radio group is created by calling setGroup() on all but the first member. The first
+setGroup() call creates the initial group with only two members, and each subsequent
+call of setGroup() joins one more button to that group. We connect all of our check
+buttons to the same callback function to keep the example code short. The callback
+function extract the label text from the check button passed as argument and prints
+its new state. Note that for the radio buttons one click on a button to activate it
+automatically releases the formerly pressed button in the group, resulting in one
+additional call of our callback function.  We create a new check or radio button with
+a call of newCheckButton(). When we give a string argument the button gets a label
+next to the active area. In most cases we need a label to inform the user about the
+purpose of that button, but when our check button has a neighborhood relation to
+another widget a label may not be necessary. We can later set or modify the label
+text with setLabel() or retrieve the label text with getLabel(). As for most widgets
+we can also create check buttons with mnemonics by use of the constructor function
+newCheckButtonWithMnemonic() or by later activation of mnemonics by calling
+setUseUnderline() on the check button widget. The function setGroup() is used to
+group multiple check buttons to a radio group.  Note that the same effect can be
+achieved via the GtkActionable API, by using the same action with parameter type and
+state type 's' for all buttons in the group, and giving each button its own target
+value.  The boolean state of check buttons can be set with a call of setActive() and
+queried with a call of getActive(). Finally the check button widget provides the
+function setInconsistent() to set the visual state of a button to an "in between"
+state. This function affects only the visual appearance of the button, not the
+functionality. This may be necessary when there is temporary no clear boolean state
+for a property. Generally we would set the widget to a consistent state as soon as
+possible by a call of setInconsistent() with false argument, i.e. when the user
+clicks that button again or when other conditions change.
+
+References:
+
+* https://developer.gnome.org/gtk4/stable/GtkCheckButton.html
+
+=== Switch
+
+image::switch.png[]
+
+The GtkSwitch is one more simple widget with a boolean on/off state.  The user can
+switch the state by clicking in the empty area, or by dragging the handle.  The
+GtkSwitch consists only of the graphical symbol with its active area, there is no
+label text directly connected to the switch widget. So the GtkSwitch is generally
+placed beside another widget so that the user can guess on what the switch works.
+The on/off state of the switch is recognized by the position of the slider and the
+color of the active area, which should be clear enough at least for the default GUI
+theme.  The GtkSwitch can also handle situations where the underlying state changes
+with a delay, i.e.  when the user turns on blue-tooth or WLAN. The example program
+below creates a horizontal box with two label widgets and two switches:
+
+[[switch.nim]]
+[source,nim]
+.switch.nim
+----
+import gintro/[gtk4, gdk4, gobject, glib, gio]
+
+proc switchCb(s: Switch; newState: bool; num: int): bool =
+  echo "switched ", num, " to ", newState
+  return gdk4.EVENT_PROPAGATE
+
+proc activate(app: Application) =
+  let window = newApplicationWindow(app)
+  let bh = newBox(Orientation.horizontal, 10)
+  let l1 = newLabel("Switch 1")
+  let l2 = newLabel("Switch 2")
+  let s1 = newSwitch()
+  let s2 = newSwitch()
+  s1.connect("state-set", switchCb, 1)
+  s2.connect("state-set", switchCb, 2)
+  for w in [l1, s1, l2, s2]:
+    bh.append(w)
+
+  window.setChild(bh)
+  window.show
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+We use the same callback function for both switches and connect it to the "state-set"
+signal. To discriminate the two switches we pass an additional parameter to our
+callback function.  The callback function receives the new state of the switch by a
+boolean parameter and has to return a boolean result indicating if the signal should
+be further processed by other signal handlers or if the signal emission should stop.
+When our callback function returns gdk4.EVENT_STOP then the signal is not further
+processed by GTK, which means that the user action changes only the position of the
+slider but the color of the switch widget does not change automatically. That can be
+used to indicate delayed state changes like turning on WLAN or blue-tooth.  In that
+case we call setState() when the state change is complete to bring the switch to a
+consistent state.
+
+References:
+
+* https://developer.gnome.org/gtk4/stable/GtkSwitch.html
+
+=== Headerbar
+
+image::headerbar.png[]
+
+A very simple and useful widget is the GtkHeaderbar, which is often used as a
+replacement of the ordinary window title and can contain menu buttons or other
+widgets. The GtkHeaderbar was introduced in GTK3 but strongly modified for GTK4. The
+GTK developers provides a C program called testheaderbar.c which demonstrates many
+different ways in which headerbar widgets can be used.  In this section we will
+present a common use case where the window title is replaced with the headerbar
+widget and that headerbar widget contains a menu button. As we have already created a
+program with a menu button and a popup menu with gactions we will reuse that code
+nearly unchanged:
+
+[[headerbar.nim]]
+[source,nim]
+.headerbar.nim
+----
+# https://gitlab.gnome.org/GNOME/gtk/-/blob/master/tests/testheaderbar.c
+# gcc -Wall testheaderbar.c -o testheaderbar `pkg-config --cflags --libs gtk4`
+
+import gintro/[gtk4, glib, gobject, gio]
+
+const menuData = """
+  <interface>
+    <menu id="menuModel">
+      <section>
+        <item>
+          <attribute name="label">Normal Menu Item</attribute>
+          <attribute name="action">win.normal-menu-item</attribute>
+        </item>
+        <submenu>
+          <attribute name="label">Submenu</attribute>
+          <item>
+            <attribute name="label">Submenu Item</attribute>
+            <attribute name="action">win.submenu-item</attribute>
+          </item>
+        </submenu>
+        <item>
+          <attribute name="label">Toggle Menu Item</attribute>
+          <attribute name="action">win.toggle-menu-item</attribute>
+        </item>
+      </section>
+      <section>
+        <item>
+          <attribute name="label">Radio 1</attribute>
+          <attribute name="action">win.radio</attribute>
+          <attribute name="target">1</attribute>
+        </item>
+        <item>
+          <attribute name="label">Radio 2</attribute>
+          <attribute name="action">win.radio</attribute>
+          <attribute name="target">2</attribute>
+        </item>
+        <item>
+          <attribute name="label">Radio 3</attribute>
+          <attribute name="action">win.radio</attribute>
+          <attribute name="target">3</attribute>
+        </item>
+      </section>
+    </menu>
+  </interface>"""
+
+proc changeLabelButton(action: gio.SimpleAction; parameter: glib.Variant; label: Label) =
+  label.setLabel("Text set from button")
+
+proc normalMenuItem(action: gio.SimpleAction; parameter: glib.Variant; label: Label) =
+  label.setLabel("Text set from normal menu item")
+
+proc toggleMenuItem(action: gio.SimpleAction; parameter: glib.Variant; label: Label) =
+  let newState = newVariantBoolean(not action.getState.getBoolean)
+  action.changeState(newState)
+  label.setLabel("Text set from toggle menu item. Toggle state: " & $newState.getBoolean)
+
+proc submenuItem(action: gio.SimpleAction; parameter: glib.Variant; label: Label) =
+  label.setlabel("Text set from submenu item")
+
+proc radio(action: gio.SimpleAction; parameter: glib.Variant; label: Label) =
+  var l: uint64
+  let newState: glib.Variant = newVariantString(parameter.getString(l))
+  action.changeState(parameter)
+  let str: string = "From Radio menu item " & getString(newState, l)
+  label.setLabel(str)
+
+proc activate(app: gtk4.Application) =
+  let
+    window = newApplicationWindow(app)
+    box = newBox(gtk4.Orientation.vertical, 12)
+    menubutton = newMenuButton()
+    button1 = newButton("Change Label Text")
+    actionGroup: gio.SimpleActionGroup = newSimpleActionGroup()
+    label: Label = newLabel("Initial Text")
+    header = newHeaderBar() # <1>
+
+  window.setTitle("Headerbar as titlebar") # <2>
+  window.setTitlebar(header) # <3>
+  var action: SimpleAction
+  action = newSimpleAction("change-label-button")
+  discard action.connect("activate", changeLabelButton, label)
+  actionGroup.addAction(action)
+
+  action = newSimpleAction("normal-menu-item")
+  discard action.connect("activate", normalMenuItem, label)
+  actionGroup.addAction(action)
+
+  var v = newVariantBoolean(true)
+  action = newSimpleActionStateful("toggle-menu-item", nil, v)
+  discard action.connect("activate", toggleMenuItem, label)
+  actionGroup.addAction(action)
+
+  action = newSimpleAction("submenu-item")
+  discard action.connect("activate", submenuItem, label)
+  actionGroup.addAction(action)
+
+  v = newVariantString("1")
+  let vt = newVariantType("s")
+  action = newSimpleActionStateful("radio", vt, v)
+  discard action.connect("activate", radio, label)
+  actionGroup.addAction(action)
+  window.insertActionGroup("win", actionGroup)
+
+  label.setMarginTop(12)
+  label.setMarginBottom(12)
+  box.append(label)
+  menuButton.setHalign(gtk4.Align.center)
+
+  var builder = newBuilderFromString(menuData)
+  var menuModel: gio.MenuModel = builder.getMenuModel("menuModel")
+  var menu = newPopoverMenuFromModel(menuModel)
+  menuButton.setPopover(menu)
+  # box.append(menubutton) # <4>
+  menuButton.setIconName("open-menu-symbolic") # <5>
+  header.packEnd(menuButton) # <6>
+  button1.setHalign(gtk4.Align.center)
+  button1.setActionName("win.change-label-button")
+  box.append(button1)
+  window.setChild(box)
+  window.show
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+The differences of the code above to the previous <<gaction.nim>> example are indeed
+tiny.  We will use annotations to point you to the modification: Some lines of above
+code ends with a numeric digit included in a circle to mark that line, and we will
+refer to that location with the same digit here:
+
+<1> ceate a new header bar widget
+<2> give the window a nice title
+<3> set our header widget as window titlebar
+<4> remove or comment out this line as we will add the menu button to our headerbar now
+<5> set a nice icon image for our menu button
+<6> add the menu button to the headerbar
+
+Headerbars can contain more widgets, e.g. an "Open" and a "Save" button as used for
+the gedit editor, or a text entry widget to support text search. We use the functions
+packEnd() and packStart() to add widgets at the right or left side of our headerbar.
+
+If you should know the headerbar widget already from {gtk3} you may wonder about the
+gtk_header_bar_set_subtitle() function which was used in {gtk3} to set subtitles,
+i.e. the file path below the document name in the gedit editor. This function is not
+directly provided in {gtk4}, maybe we can insert a vertical box into the headerbar
+widget which then displays title and subtitle when desired. But maybe that subtitle
+is not that useful at all and its use makes the titlebar really thick.
+
+In above example we used the function setIconName() to change the image of our menu
+button.  GTK provides a program called gtk4-icon-browser which can be used to find
+icons and their names.  And you may consult the references mentioned below.
+
+References:
+
+* https://developer.gnome.org/gtk4/stable/GtkHeaderBar.html
+* https://developer.gnome.org/icon-naming-spec/
+* https://specifications.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
+
 
