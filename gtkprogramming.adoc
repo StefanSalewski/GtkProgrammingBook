@@ -1,7 +1,7 @@
 = GTK4 for Graphical User Interfaces
 with the Nim Programming Language
 (C) Dr. Stefan Salewski 2020
-//v0.1, 2020-DEC-15
+//v0.1, 2020-DEC-28
 :doctype: book
 :toc: left
 :icons: font
@@ -2869,7 +2869,7 @@ single row or column, depending upon the value of its “orientation” property
 
 We used box widgets already in the introducing sections of this book. In this section
 we will explain some properties and functions of the GtkBox widget in some more
-detail.  The following example program creates a horizontal box, which will arrange
+detail. The following example program creates a horizontal box, which will arrange
 its child widgets in a single row.
 
 [[box.nim]]
@@ -2907,7 +2907,7 @@ main()
 To create the container widget we call newBox(Orientation.horizontal, 20). The first
 parameter determines the orientation and the optional second parameter the empty
 space between its children in logical pixels. We add that box as child of our window
-by a call of setChild().  Finally we create two label widgets, append both to the box
+by a call of setChild(). Finally we create two label widgets, append both to the box
 and call show() on our window to display all of our widgets. The first label has two
 rows of text (\n inserts a line break) and we apply the pango attribute <small> to
 decrease the text size. The second label has only one text line with unicode glyphs,
@@ -2919,14 +2919,14 @@ also use insertChildAfter() to insert a new widget after an already inserted one
 Removing children from a box widgets or reordering of children is also possible by
 using the remove() or reorderChildAfter() functions. But these operations are not
 that common and we would need access to the already contained children for these
-operations.  The widget parent class of the box widget provides various functions to
+operations. The widget parent class of the box widget provides various functions to
 access contained children, we will learn more about that later in this book. When we
 use insertChildAfter() to insert a widget, then we have to be sure that the "after"
 widget is really a child of that box, and when we use reorderChildAfter() then of
 course both child widgets have to be in the box. If that is not the case then a GTK
-runtime error will occur.  An useful function of the GtkBox widget is
+runtime error will occur. An useful function of the GtkBox widget is
 setHomogeneous() which can be used to give all children in the box the same size
-extend.  The function setSpacing() can be used to modify the pixel spacing for all
+extend. The function setSpacing() can be used to modify the pixel spacing for all
 the child widgets. Note that GTK uses logical pixels -- for high resolution displays
 one logical pixel can correspond to multiple physical pixels depending on the user's
 GUI settings. For horizontal boxes the GtkBox class provides the function
@@ -2941,15 +2941,15 @@ function setYalign(1) for both labels to align the text to the bottom.
 Aligning widgets in containers is a bit complicated. Often the default alignment is
 OK, but when not it can be difficult. First we have to decide if the children in the
 container should expand to take all available space or not. And then the GtkWidget
-class provides various functions and properties to modify the actual alignment.  We
+class provides various functions and properties to modify the actual alignment. We
 will describe all the various options later in this book in a separate section.
 
 ****
 
 As the children of GtkBox widgets can be again boxes, we can construct interesting
-two-dimensional layouts.  At the beginning of the book we have already used the
+two-dimensional layouts. At the beginning of the book we have already used the
 GtkGrid widget to arrange children in a tabular layout, and you may wonder if the
-GtkGrid can completely replace nested boxes.  But that is not always possible, as the
+GtkGrid can completely replace nested boxes. But that is not always possible, as the
 GtkGrid generates layouts that look like a regular matrix, with optionally joined
 cells. And sometimes using boxes is simpler or more flexible than using grid widgets.
 The following program generates a layout with three nested box widgets which would be
@@ -3029,13 +3029,13 @@ main()
 ----
 
 NOTE: Remember that each GtkWidget can be put at least one time into a GTK container
-widget.  Whenever you try to insert the same widget again in the same or into another
+widget. Whenever you try to insert the same widget again in the same or into another
 container, then you will get a GTK run-time error. This means that you would have to
 create multiple label widgets for the case that you wants to display the same text
-multiple times. You can not reuse the same widget.  Also you should avoid trying to
+multiple times. You can not reuse the same widget. Also you should avoid trying to
 copy widgets, use one more constructor call like newLabel("My message") instead.
 Maybe later the gintro bindings will support copying of widgets, but currently they
-do not support it.  This does not mean that you can not reuse widgets: You can remove
+do not support it. This does not mean that you can not reuse widgets: You can remove
 widgets from containers and insert them in another container or again in the same
 container. In C some caution is needed, as widgets may get destroyed when we remove
 them from containers due to GTK's refcounting system. So in C we generally call
@@ -3055,12 +3055,12 @@ References:
 image::button.png[]
 
 The GtkButton widget is used to trigger a callback function that is called when the
-button is pressed.  Generally the GtkButton widgets contains a label widget which is
+button is pressed. Generally the GtkButton widgets contains a label widget which is
 used to display a short text, or a symbolic icon. But the GtkButton can also contain
-most other GTK widgets.  The GtkButton widget supports only two signals, the
-"clicked" and the "activate" signal.  We use only the "clicked" signal to call our
-callback function when the button is pressed.  The "activate" signal is for GTK
-internal use only.  The program below creates a box container widget and fills it
+most other GTK widgets. The GtkButton widget supports only two signals, the
+"clicked" and the "activate" signal. We use only the "clicked" signal to call our
+callback function when the button is pressed. The "activate" signal is for GTK
+internal use only. The program below creates a box container widget and fills it
 with various button variants:
 
 [[button.nim]]
@@ -3110,38 +3110,38 @@ make the following character a keyboard shortcut which is activated by pressing 
 ALT key and that character simultaneously. We use that for button b2. For button b3
 we decided to display an icon instead of a textual message. For that we call the
 newButtonFromIconName() constructor and pass a valid icon name. To get an overview of
-the available icons you may launch the gtk4-icon-browser.  The button b4 is again a
+the available icons you may launch the gtk4-icon-browser. The button b4 is again a
 plain GtkButton, but we use unicode glyphs as text. Button b5 is a GtkToggleButton, a
-subclass of the parent GtkButton.  The GtkToggleButton behaves like a mechanical
-switch and is drawn differently when in pushed down state.  The toggle button
-supports additional to the "clicked" signal of its parent class the "toggled" signal
-which is emitted whenever the state changes between pressed and released state.
-Generally we would connect the toggle button to the "toggle" signal, but to kept our
-program short we use also the available "clicked" signal.  Finally button b0 is again
-a plain GtkButton, but we use CSS styling to change it colors. We said earlier that
-CSS can be used to customize the GTK GUI. Here we give only a very simple example to
-show that it is possible. Beginners generally ask about functions for styling widgets
-and expect at least a simple function to set foreground and background colors and
-maybe some more widget properties. GTK most of the time does not offer such simple
-styling functions. One reason for that is that GTK3 and GTK4 uses not plain
-background and foreground colors, but can use background images, color gradients,
-transparency effects and much more. The other reason is that customizing widgets is
-in most cases a bad idea. The themed GTK GUI is designed carefully for a nice
-appearance, and the user may have customized it further for her own needs. Maybe the
-user has selected a high contrast color scheme and larger fonts because of visual
-restrictions. So graphical customized widgets or whole apps generally look ugly and
-maybe can not used at all by some people.
+subclass of the parent GtkButton. The GtkToggleButton behaves like a mechanical
+switch and is drawn differently when in pushed down state. The toggle button supports
+additional to the "clicked" signal of its parent class the "toggled" signal which is
+emitted whenever the state changes between pressed and released state.  Generally we
+would connect the toggle button to the "toggle" signal, but to kept our program short
+we use also the available "clicked" signal. Finally button b0 is again a plain
+GtkButton, but we use CSS styling to change it colors. We said earlier that CSS can
+be used to customize the GTK GUI. Here we give only a very simple example to show
+that it is possible. Beginners generally ask about functions for styling widgets and
+expect at least a simple function to set foreground and background colors and maybe
+some more widget properties. GTK most of the time does not offer such simple styling
+functions. One reason for that is that GTK3 and GTK4 uses not plain background and
+foreground colors, but can use background images, color gradients, transparency
+effects and much more. The other reason is that customizing widgets is in most cases
+a bad idea. The themed GTK GUI is designed carefully for a nice appearance, and the
+user may have customized it further for her own needs. Maybe the user has selected a
+high contrast color scheme and larger fonts because of visual restrictions. So
+graphical customized widgets or whole apps generally look ugly and maybe can not used
+at all by some people.
 
 But with CSS custom styling is generally possible with some efforts. In our example
 we call the function newCssProvider() to create a CssProvider object and load it from
-a string with the desired style properties.  For simple style changes using a plain
+a string with the desired style properties. For simple style changes using a plain
 string as source is convenient, but for larger customization the function
 loadFromPath() can be used to load the data from an external CSS text file. The data
 string starts with the name of the widget that we want to modify followed by the
-necessary information enclosed in curly braces.  As we have direct access to our
+necessary information enclosed in curly braces. As we have direct access to our
 widget we call getStyleContext() to gets its style context and then call
-addProvider() to add our new CSS information.  This way we can change the size,
-margins and padding of widgets and many other styling properties.  But these form of
+addProvider() to add our new CSS information. This way we can change the size,
+margins and padding of widgets and many other styling properties. But these form of
 styling is not always that easy and may sometimes not work as expected at all. For
 styling widgets which are not directly accessible but contained deeply nested in
 other widgets, we have to use the function addProviderForScreen(getDefaultScreen(),
@@ -3152,7 +3152,7 @@ interactive from running applications.
 
 To keep our example code short we connect all of our buttons to the same plain
 callback function which only prints the message "clicked" when one of the buttons is
-pressed.  Earlier in the book we introduced GActions and showed how we can connect
+pressed. Earlier in the book we introduced GActions and showed how we can connect
 actions with widgets, keyboard input and other input sources. For larger applications
 the use of GActions may be a better solution than connecting signals directly to
 callbacks. We should also mention that the GtkWidget parent class of the GtkButton
@@ -3162,7 +3162,7 @@ For a button widgets that means that mouse clicks are ignored.
 For advanced use cases we can use the newButton() constructor without arguments and
 then call setChild() on the button instance to explicitly set a child widgets. The
 child widget may be a label styled with pango attributes, icon or image widgets or
-most other widget classes.  When the child of the button is a label widget, then the
+most other widget classes. When the child of the button is a label widget, then the
 function getLabel() can be used to get the label text. To set a new label text the
 function setLabel() can be used.footnote:[From the API docs it is not fully clear
 what happens when the button already has a child which is not of GtkLabel class --
@@ -3174,29 +3174,29 @@ use the function setHasFrame() with a boolean argument to determine if a frame s
 be drawn around the button.
 
 Direct children of the GtkButton class are the already mentioned GtkToggleButton and
-the GtkLinkButton and the GtkLockButton.  A GtkToggleButton is a GtkButton which will
+the GtkLinkButton and the GtkLockButton. A GtkToggleButton is a GtkButton which will
 remain “pressed-in” when clicked. Clicking again will cause the toggle button to
-return to its normal state.  A toggle button is created by calling either
-newToggleButton() or newToggleButtonWithMnemonic().  When you pass a string parameter
+return to its normal state. A toggle button is created by calling either
+newToggleButton() or newToggleButtonWithMnemonic(). When you pass a string parameter
 to the first function, then a label widget is created as child, otherwise you should
-call setChild() to set the child widget.  The state of the toggle button can be set
-by calling setActive() on the toggle button instance and retrieved by a call of
+call setChild() to set the child widget. The state of the toggle button can be set by
+calling setActive() on the toggle button instance and retrieved by a call of
 getActive(). Finally the function setGroup() is available to set the group for the
 button instance, that is a related set of other toggle buttons. In a group of
-multiple toggle buttons, only one button can be active at a time.  The group of
-toggle buttons behaves like radio buttons in this case, that is you press one and the
-formerly pressed one releases automatically.  Note that the same effect can be
+multiple toggle buttons, only one button can be active at a time. The group of toggle
+buttons behaves like radio buttons in this case, that is you press one and the
+formerly pressed one releases automatically. Note that the same effect can be
 achieved via the GtkActionable API, by using the same action with parameter type and
 state type 's' for all buttons in the group, and giving each button its own target
 value.
 
 Toggle buttons have the advantage that they use the area of the label text for its
-function, so no additional space is consumed.  But unfortunately it can be difficult
+function, so no additional space is consumed. But unfortunately it can be difficult
 to discover the actual state of the toggle button from its visual appearance. So
 other buttons with retained boolean state like the GtkCheckButton, the GtkSwitch and
-GtkRadioButtons are additional available.  Additional GTK offers many specialized
-buttons like font-, color or filechooser buttons or menu- and spinbuttons.  You may
-visit the widget gallery linked below to discover more button like classes.  We will
+GtkRadioButtons are additional available. Additional GTK offers many specialized
+buttons like font-, color or filechooser buttons or menu- and spinbuttons. You may
+visit the widget gallery linked below to discover more button like classes. We will
 describe a few of them in the following sections of the book.
 
 Note that you can also use a GtkBox populated with multiple widgets as child of
@@ -3220,15 +3220,15 @@ visual appearance when in pressed down state. We discussed the toggle button alr
 in the previous section together with the plain GtkButton widget.
 
 The GtkLinkButton is a GtkButton with a hyperlink, similar to the ones used in HTML
-web pages.  It is useful to show references to resources like help or support pages
-of our app.  A link button is created by calling the constructor function newButton()
+web pages. It is useful to show references to resources like help or support pages of
+our app. A link button is created by calling the constructor function newButton()
 with a string containing an URI and optional with an additional label text argument.
 The URI bound to the GtkLinkButton can be set specifically by calling the setURI()
 function, and retrieved by calling getURI().
 
-By default the GtkLinkButton widget calls showURI() when the button is clicked.  This
+By default the GtkLinkButton widget calls showURI() when the button is clicked. This
 function launches the default application for showing a given URI, or shows an error
-dialog if that fails.  This behaviour can be overridden by connecting to the
+dialog if that fails. This behaviour can be overridden by connecting to the
 “activate-link” signal of the link button and returning gdk4.EVENT_STOPT from the
 call back function.
 
@@ -3240,8 +3240,8 @@ framework. As GtkLockButton are used most often only in system tools and we have
 learn about GPermission to use it, we will not discuss that button in detail.
 
 The following program creates a GtkLockButton and a GtkLinkButton. The lock button
-has no function.  The link button is connected to a callback function which prints
-the URI when the button is clicked.
+has no function. The link button is connected to a callback function which prints the
+URI when the button is clicked.
 
 [[linklockbutton.nim]]
 [source,nim]
@@ -3276,12 +3276,12 @@ main()
 
 The newLockButton() constructor function expects as argument a permission object
 which we create with a call of newSimplePermission(false) with default false state.
-In a real application we would had to provide code for handling that button.  To the
-newLinkButton() constructor we pass an URI and a label text as arguments.  We connect
+In a real application we would had to provide code for handling that button. To the
+newLinkButton() constructor we pass an URI and a label text as arguments. We connect
 the "activate-link" signal to a callback function that prints the URI when the link
 is clicked. While most of the callback functions that we used in our previous
 examples had no return parameter, the callback function of the "activate-link" signal
-has to return a boolean value.  In this case the return value determines if or if not
+has to return a boolean value. In this case the return value determines if or if not
 that signal is further processed when our own callback is done. We can return the
 boolean constants gdk4.EVENT_PROPAGATE to allow processing that signal by other
 functions, or gdk4.EVENT_STOP to stop the propagation. In our example we return
@@ -3307,10 +3307,10 @@ References:
 
 image::checkbutton.png[]
 
-The GtkCheckButton is a widgets with a label and a discrete toggle button.  In {gtk4}
-the GtkCheckButton is a direct child of the GtkWidget class.  A group of multiple
+The GtkCheckButton is a widgets with a label and a discrete toggle button. In {gtk4}
+the GtkCheckButton is a direct child of the GtkWidget class. A group of multiple
 check buttons can built a set of radio buttons in which only one button can be active
-at a time.  For that variant pressing down one member of the group releases the
+at a time. For that variant pressing down one member of the group releases the
 formerly pressed one automatically, like for station or wavelength-range keys of
 historic broadcast radio devices.
 
@@ -3366,7 +3366,7 @@ buttons to the same callback function to keep the example code short. The callba
 function extract the label text from the check button passed as argument and prints
 its new state. Note that for the radio buttons one click on a button to activate it
 automatically releases the formerly pressed button in the group, resulting in one
-additional call of our callback function.  We create a new check or radio button with
+additional call of our callback function. We create a new check or radio button with
 a call of newCheckButton(). When we give a string argument the button gets a label
 next to the active area. In most cases we need a label to inform the user about the
 purpose of that button, but when our check button has a neighborhood relation to
@@ -3375,10 +3375,10 @@ text with setLabel() or retrieve the label text with getLabel(). As for most wid
 we can also create check buttons with mnemonics by use of the constructor function
 newCheckButtonWithMnemonic() or by later activation of mnemonics by calling
 setUseUnderline() on the check button widget. The function setGroup() is used to
-group multiple check buttons to a radio group.  Note that the same effect can be
+group multiple check buttons to a radio group. Note that the same effect can be
 achieved via the GtkActionable API, by using the same action with parameter type and
 state type 's' for all buttons in the group, and giving each button its own target
-value.  The boolean state of check buttons can be set with a call of setActive() and
+value. The boolean state of check buttons can be set with a call of setActive() and
 queried with a call of getActive(). Finally the check button widget provides the
 function setInconsistent() to set the visual state of a button to an "in between"
 state. This function affects only the visual appearance of the button, not the
@@ -3395,15 +3395,15 @@ References:
 
 image::switch.png[]
 
-The GtkSwitch is one more simple widget with a boolean on/off state.  The user can
-switch the state by clicking in the empty area, or by dragging the handle.  The
+The GtkSwitch is one more simple widget with a boolean on/off state. The user can
+switch the state by clicking in the empty area, or by dragging the handle. The
 GtkSwitch consists only of the graphical symbol with its active area, there is no
 label text directly connected to the switch widget. So the GtkSwitch is generally
 placed beside another widget so that the user can guess on what the switch works.
 The on/off state of the switch is recognized by the position of the slider and the
 color of the active area, which should be clear enough at least for the default GUI
-theme.  The GtkSwitch can also handle situations where the underlying state changes
-with a delay, i.e.  when the user turns on blue-tooth or WLAN. The example program
+theme. The GtkSwitch can also handle situations where the underlying state changes
+with a delay, i.e. when the user turns on blue-tooth or WLAN. The example program
 below creates a horizontal box with two label widgets and two switches:
 
 [[switch.nim]]
@@ -3442,19 +3442,449 @@ main()
 
 We use the same callback function for both switches and connect it to the "state-set"
 signal. To discriminate the two switches we pass an additional parameter to our
-callback function.  The callback function receives the new state of the switch by a
+callback function. The callback function receives the new state of the switch by a
 boolean parameter and has to return a boolean result indicating if the signal should
 be further processed by other signal handlers or if the signal emission should stop.
 When our callback function returns gdk4.EVENT_STOP then the signal is not further
 processed by GTK, which means that the user action changes only the position of the
 slider but the color of the switch widget does not change automatically. That can be
-used to indicate delayed state changes like turning on WLAN or blue-tooth.  In that
+used to indicate delayed state changes like turning on WLAN or blue-tooth. In that
 case we call setState() when the state change is complete to bring the switch to a
 consistent state.
 
 References:
 
 * https://developer.gnome.org/gtk4/stable/GtkSwitch.html
+
+=== ComboBoxText
+
+image::comboboxtext.png[]
+
+The GtkComboBoxText widget is a simple variant of the GtkComboBox that hides the
+model-view complexity for simple text-only use cases.  That widget behaves similar to
+a popup menu. When we click on the widget a list with text strings pops up and we can
+select one string from the list. That widget supports the "changed" signal. The
+connected callback function is called whenever the user selects a different string
+from the list.  We create a comboboxtext with the constructor function
+newComboBoxText() and can add entries by use of appendText(), insertText() and
+prependText(). There exists also functions append(), insert() and prepend() which
+allows to additional specify a string id for each entry, but these functions are not
+too useful for the plain GtkComboBoxText variant.  We can remove text entries by
+calling the function remove() with the element index as argument or we can use
+removeAll() to clear the whole list. We can also create a list with an additional
+entry field by calling the constructor function newComboBoxTextWithEntry(), which
+allows the user to type in arbitrary text strings.  In the callback function we can
+access the index of the user selection with the getActive() function and the
+corresponding text with the function getActiveText().
+
+[[comboboxtext.nim]]
+[source,nim]
+.comboboxtext.nim
+----
+import gintro/[gtk4, gobject, gio]
+
+proc changed(cbt: ComboBoxText) =
+  echo "changed to: ", cbt.getActive, " ", cbt.getActiveText
+
+proc activate(app: gtk4.Application) =
+  let window = newApplicationWindow(app)
+  let cb = newComboBoxText()
+  for t in ["zero", "one", "two", "three"]:
+    cb.appendText(t)
+  cb.setActive(0)
+  cb.connect("changed", changed)
+  window.setChild(cb)
+  window.show
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+The above program creates four list entries and connects the callback function to the
+"changed" signal. The function setActive() is called to pre-select an entry.
+
+References:
+
+* https://developer.gnome.org/gtk4/stable/GtkComboBoxText.html
+* https://developer.gnome.org/gtk4/stable/GtkComboBox.html
+
+=== Text
+
+image::text.png[]
+
+The GtkText widget is a single line text entry field. It provides the basic
+functionality for the GtkEntry and the GtkSearchEntry widgets. Those widgets provides
+optical decorations like a frame and can display icons or an progress display, while
+the GtkText has no decorations itself.  For multi-line editable we have also the
+GtkTextView widget.
+
+The GtkText widget provides a single line text entry field with all the advanced
+editing functionality like scrolling when the entered text is larger than the widget
+allocation, cursor movement, delete and backspace support and a popup menu with cut,
+copy and paste support. It is even possible to expand that popup menu with more menu
+entries, but that is some effort and not often necessary, so we will not demonstrate
+it in this section.
+
+The following program creates three variants of the GtkText widget. The first widget
+shows a message about its purpose as long as the user has not yet entered some actual
+text. The second text field sets its visibility property to false to hide the entered
+text as common for password entries. The third text entry field is an ordinary
+GtkText widget, but we use the function setMaxWidthChars(4) to restrict its size to
+exactly 4 characters. Note that GtkText is a direct child of GtkWidget and it
+implements the GtkEditable interface, from which we took the setMaxWidthChars()
+function.  The GtkEntry widget, which uses the functionality of GtkText, is also a
+direct chield of the GtkWidget class but not a chield of GtkText.
+
+[[text.nim]]
+[source,nim]
+.text.nim
+----
+import gintro/[gtk4, gobject, gio]
+
+proc activate(t: Text) =
+  echo "You entered: ", t.buffer.text
+
+proc activate(app: gtk4.Application) =
+  let window = newApplicationWindow(app)
+  let box = newBox(Orientation.horizontal, 20)
+  window.setChild( box)
+  let t1 = newText()
+  let t2 = newText()
+  let t3 = newText()
+  let f1 = newFrame()
+  let f2 = newFrame()
+  let f3 = newFrame()
+  f1.setChild(t1)
+  f2.setChild(t2)
+  f3.setChild(t3)
+  box.append(f1)
+  box.append(f2)
+  box.append(f3)
+  t1.placeHolderText = "Search ..."
+  t2.visibility = false
+  t3.setMaxWidthChars(4)
+  for t in [t1, t2, t3]:
+    t.connect("activate", activate)
+  window.show
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+In the example program above we put each text widget into a GTtkFrame widget to
+better show its extents. The GtkFrame is a decorative container which is used to
+frame single widgets or to visible group multiple widgets.  The GtkText class
+provides many functions to adapt its appearance or its functionality, which we can
+not discuss all here. Whenever you should need some special function you should
+consult the GtkText API as well as the related classes like GtkEditable and
+GtkWidget. As usual we create the text fields with the newText() constructor. For
+each text filed we create a frame widget, put all the frame widets into a horizontal
+box and finally set that box as chield of the main window. We use the "activate"
+signal to connect all the text fields to the same callback function, which prints the
+entered text when the user hits the return or enter key. Note that the GtkText widget
+uses an GtkEntryBuffer object to store the actual text content. In our callback
+function we had to access the buffer object to get the actual text content.  Buffers
+can be shared between multiple text fields, but that is only useful in rare cases.
+Also note that we can use the function setAttributes() to style the text of an text
+field with pango text attributes, maybe to change font size of colors. For details
+about pango text attributes refer to the GtkLabel section.
+
+In our example program we used the activate signal to call our callback function
+whenever the user confirms his input by pressing the return or enter key. In a few
+cases we may desire an immediate call of a callback function whenever the user
+modifies the input, without waiting for confirmation by return or enter. This is
+indeed possible when we make use of the fact that the GtkText widget implements the
+GtkEditable class, which support the "changed" signal. So we can add a changed
+callback in this way:
+
+[source,nim]
+----
+proc changed(e: Editable) =
+  echo "You entered just now: ", e.getText
+# ...
+  for t in [t1, t2, t3]:
+    connect(cast[Editable](t), "changed", changed)
+----
+
+Currently casting the text fields to editable is necessary to make this work, as
+current gintro bindings seems not to provide a converter function from GtkText to
+GtkEditable.
+
+References:
+
+* https://developer.gnome.org/gtk4/stable/GtkText.html
+* https://developer.gnome.org/gtk4/stable/GtkEntryBuffer.html
+* https://developer.gnome.org/gtk4/stable/GtkEditable.html
+* https://developer.gnome.org/gtk4/stable/GtkEntry.html
+* https://developer.gnome.org/gtk4/stable/GtkTextView.html
+
+=== Entry
+
+image::entry.png[]
+
+The GtkEntry is a single line text entry widget.  It provides most of the
+functionality that we already know from the GtkText widget.  The GtkEntry uses
+internally the GtkText widget functions, while it is not a subclass of GtkText but a
+direct subclass of GtkWidget. Like the GtkText widget the GtkEntry implements the
+GtkEditable interface.  The entry widget supports basic editing functions, and
+pressing the right mouse button over its active area opens a popup menu which
+provides cut/copy/past functionality and allows to insert uni-code symbols.  If the
+entered text is longer than the visible size of the input field, then the text
+scrolls so that the cursor position is always visible.  When using an entry for
+querying passwords or other sensitive information, the widget can be put into
+“password mode” using the setVisibility() function.  In this mode, entered text is
+displayed by “invisible” placeholder characters. By default GTK uses the best
+placeholder character that is available in the current font, but the character can be
+changed with the function setInvisibleChar().  The GtkEntry widget has also the
+ability to display progress or activity information. We can call the function
+setProgressFraction() to display a progress state between 0 and 1, or we can call
+setProgressPulseStep() and progessPulse() to move the progress bar in steps, maybe
+bouncing back and forth.  Additionally, GtkEntry can display icons at either side of
+the entry. These icons can be activated by clicking, can be set up as drag sources
+and can have tooltips.footnote:[We will learn more about "drag and drop" and about
+tooltips later.]
+
+The following program creates an entry widgets with a placeholder text, an icon at
+the right and a progress indicator:
+
+[[entry.nim]]
+[source,nim]
+.entry.nim
+----
+import gintro/[gtk4, gobject, gio]
+
+proc activate(e: Entry) =
+  echo "You entered: ", e.buffer.text
+  e.progressPulse
+  #entry.setProgressFraction(0.7) # use this if we know the exact progress state in %
+
+proc iconPress(e: Entry; p: EntryIconPosition) =
+  echo "You clicked: ", p
+  discard e.buffer.deleteText(0, -1) # delete all
+
+proc activate(app: gtk4.Application) =
+  let window = newApplicationWindow(app)
+  let entry = newEntry()
+  entry.marginStart = 10
+  entry.marginEnd = 10
+  entry.marginTop = 10
+  entry.marginBottom = 10
+  entry.setProgressPulseStep(0.2)
+  entry.setPlaceholderText("Enter some text")
+  entry.setIconFromIconName(EntryIconPosition.secondary, "edit-clear")
+  entry.setIconActivatable(EntryIconPosition.secondary, true)
+  entry.connect("activate", activate)
+  entry.connect("icon-press", iconPress)
+  window.setChild(entry)
+  window.show
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+The icon is connected to the iconPress() callback function and clears the text
+buffer. Whenever we enter some text in the widget the connected activate() callback
+function prints that text to the terminal window and pulses the progress bar.  To
+increase the visibility of the widget's border frame and the pulse bar we set the
+margins to 10 logical pixel for all four borders of the entry widget. The GtkEntry C
+API provides some more functions to customize entry widgets for concrete use cases.
+The purpose of that functions should be obvious, for details you can consult the C
+API documentation.
+
+References:
+
+* https://developer.gnome.org/gtk4/stable/GtkEntry.html
+
+=== SpinButton
+
+image::spinbutton.png[]
+
+The GtkSpinButton looks and behaves similar to the GtkEntry widget, but is used for
+numeric input and has additional to the input field two buttons which allows to
+increment or decrement the displayed numeric value with the mouse instead of the
+keyboard.  The GtkSpinButton can restrict the input values to a allowed range and
+round them to a specified precision, i.e. the number of decimal places.
+
+The spin button uses internally a GtkAdjustment object to store the allowed input
+ranges, the current value and the used increments.  Internally both, the adjustment
+and the spin button stores and processes the numeric value as C double, but some
+functions like getValueAsInt() allows to to retrieve the rounded integral value.
+
+The entry field of the spin button widget has by default the correct size to display
+all values of the allowed input range with the desired precision.  But this automatic
+sizing can be overwritten by explicitly setting the “width-chars” property.
+
+The following example program creates two spin button widgets and connects both to a
+valueChanged() callback function which is called whenever the numeric value is
+changed by user input:
+
+[[spinbutton.nim]]
+[source,nim]
+.spinbutton.nim
+----
+import gintro/[gtk4, gobject, gio]
+
+proc valueChanged(s: SpinButton) =
+  echo "value changed: ", s.getValue, " (", s.getValueAsInt, ")"
+
+proc activate(app: gtk4.Application) =
+  let window = newApplicationWindow(app)
+  let adj1 = newAdjustment(50.0, 0.0, 100.0, 1.0, 10.0, 0.0) # value, lower, upper, stepIncrement, pageIncrement, pageSize
+  let adj2 = newAdjustment(value = 0, lower = 0, upper = 10.0, stepIncrement = 0.01, pageIncrement = 1.0, pageSize = 0.0)
+
+  let b1 = newSpinButton(adj1, 5.0, 0)
+  let b2 = newSpinButton(adj2, 0.0, 2)
+  b1.connect("value-changed", valueChanged)
+  b2.connect("value-changed", valueChanged)
+  let box = newBox(Orientation.horizontal, 25)
+  box.append(b1)
+  box.append(b2)
+  window.setChild(box)
+  window.show
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+First we create two adjustments objects with a call of the newAdjustment()
+constructor function.  That constructor has 6 arguments of C double (Nim float) --
+the last one is the pageSize which is zero by default and ignored for spin buttons.
+The other five numbers are the initial value, the lower and upper bounds of the valid
+input range, and the step- and page-increments. The step increment is the amount by
+which the displayed value changes when we click on one of the two buttons with the
+left mouse key or when we press the up or down array keys of our keyboard. The page
+increment is used for larger steps -- when the middle mouse button is pressed or when
+the shift key is hold while the arrow keys of the keyboard are used.
+
+To create a spin button we pass the adjustment object and two numeric values to the
+newSpinButton() constructor function. The numeric values are the the climb rate and
+the number of decimal digits to display. Understanding the climb rate is not that
+easy.  When we press the up or down buttons with the mouse or hold the up or down
+array keys of the keyboard pressed for a longer time period, then the numeric values
+continuously increases or decreases.  When we set the clinb rate to zero, than the
+increase or decrease rate is constant. But when we set the climb rate to a value
+greater zero, then the steps with which the contents changes increases in size,
+allowing a faster but less accurate adjustment.
+
+For our first spin button we intent a valid input range from zero to 100 with a start
+value of 50, and we do want no fractional results, so we set the last parameter
+digits in the newSpinButton() call to zero. To allow fast modifications of the input
+value with the mouse or with the arrow keys, we use a climb rate of 5.
+
+Our second spin button shall have an input range from 0.00 up to 10.00.  We use a
+climb rate of zero, which ensures that value changes occur always slowly in 0.01
+increments.
+
+When we launch our program, type the value zero into the first spin button and press
+the "value increase" button of both widgerts for a longer time period we get these
+values printed in the terminal window:
+
+----
+value changed: 0.0 (0)
+value changed: 1.0 (1)
+value changed: 2.0 (2)
+value changed: 3.0 (3)
+value changed: 4.0 (4)
+value changed: 5.0 (5)
+value changed: 6.0 (6)
+value changed: 7.0 (7)
+value changed: 8.0 (8)
+value changed: 14.0 (14)
+value changed: 20.0 (20)
+value changed: 26.0 (26)
+value changed: 32.0 (32)
+value changed: 38.0 (38)
+value changed: 44.0 (44)
+value changed: 55.0 (55)
+value changed: 66.0 (66)
+value changed: 77.0 (77)
+value changed: 88.0 (88)
+value changed: 99.0 (99)
+value changed: 100.0 (100)
+
+value changed: 0.01 (0)
+value changed: 0.02 (0)
+value changed: 0.03 (0)
+value changed: 0.04 (0)
+value changed: 0.05 (0)
+value changed: 0.06 (0)
+value changed: 0.07000000000000001 (0)
+value changed: 0.08 (0)
+value changed: 0.09 (0)
+value changed: 0.09999999999999999 (0)
+value changed: 0.11 (0)
+value changed: 0.12 (0)
+----
+
+So for the first spin button we get increments of one for the first 8 values, then
+increment increases by 5 to 6, and finally the increment increases again by 5 to 11.
+The final value is clamped to 100.  For the second spin button the increments has the
+constant value 0.01, but we have to care for the fact that floating point numbers are
+approximations of real numbers, so we may have to restrict the number of decimals
+when we print the values. And of course we have to avoid test for exact equality, as
+they generally fail for floats due to tiny numeric errors.
+
+GTK also provides a newSpinButtonWithRange() constructor function, which needs only
+the arguments min, max and step and no adjustment object as parameter.  The other
+values like the initial value, increment and precision are then automatically
+generated. Generally it makes not much sense to use this function, as we have to
+remember how all the unspecified settings are deviated and because in most cases we
+do not get exactly what we need. The function setAdjustment() can be used to replace
+the adjustment object of a spin button, and the function setDigits() is available to
+set the displayed number of digits after the decimal point. The functions setRange()
+can be used to modify the input range, and setIncrements() can be used to modify the
+step and page increments. Retrieving these values is possible with the corresponding
+getter functions like getRange(). Finally we can set and get the numeric value with
+getValue() and setValue(), or we can retrieve the value as an integral number with
+getValueAsInt(). The function setWrap() allows us to determine if a spin button value
+wraps around to the opposite limit when the upper or lower limit of the range is
+exceeded, and with setSnapToTicks() we can control whether values are set to the
+nearest multiple of the step increment when a spin button is activated after
+providing an invalid value. By calling the configure() function passing an adjustment
+object, a climb rate and the number of digits, we can also fully reconfigure a spin
+button.  Finally we can call the functions spin() to increment or decrement a spin
+button’s value in a specified direction by a specified amount, or call the update()
+function to manually force an update of the spin button.
+
+In the example program above we used the "value-changed" signal to connect our
+callback function.  For that signal our callback function is called when the user
+presses the up or down buttons, the up or down array keys of the keyboard or when the
+user has typed in a new value and then confirms the value by pressing enter.  If the
+value is unchanged or clamped our callback is not called. As the GtkSpinButton
+implements the GtkEditable interface we can also connect to the "changed" signal to
+get the text typed in by the user immediately.  Additional the GtkSpinButton provides
+the "input" signal, which we may use in special cases to accept numeric text input,
+maybe allow the user to type "max" or "+" to change the actual value.  In a similar
+way the "output" signal could be used to modify the displayed value, maybe we want to
+display "max" when the value is clamped to the upper bound, always add a "+" sign or
+leading zeros to the displayed numbers, or maybe to suppress decimal places when they
+are zero.  Finally the "wrapped" signal is available for a special action when the
+value wraps around by user input.
+
+References:
+
+* https://developer.gnome.org/gtk4/stable/GtkSpinButton.html
+* https://developer.gnome.org/gtk4/stable/GtkAdjustment.html
 
 === Headerbar
 
@@ -3464,7 +3894,7 @@ A very simple and useful widget is the GtkHeaderbar, which is often used as a
 replacement of the ordinary window title and can contain menu buttons or other
 widgets. The GtkHeaderbar was introduced in GTK3 but strongly modified for GTK4. The
 GTK developers provides a C program called testheaderbar.c which demonstrates many
-different ways in which headerbar widgets can be used.  In this section we will
+different ways in which headerbar widgets can be used. In this section we will
 present a common use case where the window title is replaced with the headerbar
 widget and that headerbar widget contains a menu button. As we have already created a
 program with a menu button and a popup menu with gactions we will reuse that code
@@ -3605,7 +4035,7 @@ main()
 ----
 
 The differences of the code above to the previous <<gaction.nim>> example are indeed
-tiny.  We will use annotations to point you to the modification: Some lines of above
+tiny. We will use annotations to point you to the modification: Some lines of above
 code ends with a numeric digit included in a circle to mark that line, and we will
 refer to that location with the same digit here:
 
@@ -3628,8 +4058,8 @@ widget which then displays title and subtitle when desired. But maybe that subti
 is not that useful at all and its use makes the titlebar really thick.
 
 In above example we used the function setIconName() to change the image of our menu
-button.  GTK provides a program called gtk4-icon-browser which can be used to find
-icons and their names.  And you may consult the references mentioned below.
+button. GTK provides a program called gtk4-icon-browser which can be used to find
+icons and their names. And you may consult the references mentioned below.
 
 References:
 
