@@ -1,15 +1,21 @@
 = GTK4 for Graphical User Interfaces
-with the Nim Programming Language
-(C) Dr. Stefan Salewski 2020
-//v0.1, 2020-DEC-28
+with the Nim Programming Language (C) Dr. Stefan Salewski 2020, 2021
+//v0.1, 2021-JAN-25
 :doctype: book
 :toc: left
 :icons: font
 //:experimental:
 :imagesdir: http://ssalewski.de/gtkimages
 //:imagesdir: /home/stefan/GtkProgrammingBook
-:source-highlighter: pygments
-:pygments-style: monokai
+//:source-highlighter: pygments
+:source-highlighter: rouge
+//:rouge-style: monokai
+//:rouge-style: magritte
+:rouge-style: molokai
+//https://spsarolkar.github.io/rouge-theme-preview/
+
+
+//:pygments-style: monokai
 :stylesheet: nimbook.css
 
 :cpp: C++
@@ -24,9 +30,12 @@ with the Nim Programming Language
 :gtk4: GTK{nbsp}4
 :gtks: GTK's
 :qtversion: 6
-:gintroversion: 0.8.3
+:gintroversion: 0.8.5
 :nimversion: v1.4
 :ebassi: Emmanuele Bassi
+
+// e.g.  exempli gratia
+// i. e. id est
 
 ////
 
@@ -3886,6 +3895,95 @@ References:
 * https://developer.gnome.org/gtk4/stable/GtkSpinButton.html
 * https://developer.gnome.org/gtk4/stable/GtkAdjustment.html
 
+=== Grid
+
+image::grid2.png[]
+
+The GtkGrid is a container widget which is used to arrange child widgets
+in a tabular layout with rows and columns. Adjacent cells of the grid can be joined,
+and the indices of the cells can expand in positive or negative direction, allowing
+easy extension of existing grids in all direction. A new grid container widget
+is created with the constructor function newGrid() which needs no arguments.
+Then we can add child widgets by use of the attach() function which requires a
+column and a row index and optionally accepts a width and a height parameter
+for the case that the child should span multiple rows or columns. 
+It is also possible to add a child next to an existing child with the function attachNextTo().
+
+The following example program creates a grid container widget with label and entry
+child widgets. To keep the example code short we do not connect the entry widgets to
+callback functions, you may refer to the <<Entry>> section for details about the
+"activate" signal.
+
+[[grid2.nim]]
+[source,nim]
+.grid2.nim
+----
+import gintro/[gtk4, gobject, gio]
+
+proc activate(app: gtk4.Application) =
+  let window = newApplicationWindow(app)
+  window.title = "Employees"
+  let grid = newGrid()
+  for i, t in ["First Name", "Surname", "Job", "Retire Date"]:
+    let l = newLabel(t & ": ")
+    l.xAlign = 1
+    let e = newEntry()
+    grid.attach(l, 0, i)
+    grid.attach(e, 1, i)
+  window.setChild(grid)
+  window.show
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+We use the attach() function to create the grid cells and to insert the
+child widgets. We use column and row indices starting at zero
+and extending to positive values with no gaps. The order
+in which we add the child widgets is arbitrary, we could use negative
+indices or skip row or column indices. But we should not try to put
+more than one child widget into one single grid cell. If multiple
+widgets should reside in one cell, then we have first to put that child widgets
+in a box and then can add that box to a cell of the grid. For our label widgets
+we set the alignment value to 1 to make them right aligned.
+
+The GtkGrid widgets implements the  GtkOrientable interface,
+so we can use the function setOrientation() with enum paramters
+Orientation.horizontal or Orientation.vertical to rotate
+the grid by 90 degree.
+
+We can attach child widgets next to already contained children by use of the function attachNextTo().
+We have to pass the grid, the new child, the existing child and an enum PositionType with possible values
+left, right, top bottom. Optionally we can pass a width and height parameter which has the value 1 as defaults.
+With attachNextTo() we can also insert new child widgets by possible shifting existing widgets.
+The attachNextTo() function allows to pass nil as third parameter. Then the new widget is inserted
+at position zero, the concrete behaviour is determined by the  PositionType enum parameter.
+
+We can use the function getChildAt() passing the cell indices as parameters to get a child widget and
+then possible call remove() on the result or another known child to remove a widget.  
+The function queryChild() can be used to get the position and spans of child widgets, and
+with insertRow() and insertColumn() we can insert whole rows or columns, or remove
+them with removeRow() and removeColumn(). Cells with children spanning multiple cells
+expands or shrink in that case. Finally a function called insertNextTo() is available which
+inserts rows or columns next to an existing child widget, where the concrete behaviour is again
+determined by the PositionType enum (insert to the left, to the right, upon or below the existing child.)
+Further function called setRowHomogeneous(), setColumnHomogeneous(), setRowSpacing() and
+setColumnSpacing() to give all rows or columns the same width or height and a separation are available.
+Finally the grid class provides a few functions to modify the baseline position of child widgets, which we will
+not try to explain here. Maybe later we will manage to give a useful example for different baseline positions.
+
+Note that the GtkGrid supports cursor navigation between cells -- in our above example you can move
+with the keyboard up and down keys between the different entry widgets.
+
+References:
+
+* https://developer.gnome.org/gtk4/stable/GtkGrid.html
+
 === Headerbar
 
 image::headerbar.png[]
@@ -4067,4 +4165,460 @@ References:
 * https://developer.gnome.org/icon-naming-spec/
 * https://specifications.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
 
+== Dialogs
+
+The dialog box is a graphical control element in the form of a small popup window that communicates information
+to the user and prompts them for a response or selection.
+Dialog boxes are classified as "modal" or "modeless", depending on whether they block interaction with the
+software that initiated the dialog.
+The simplest type of a dialog box is the alert, which displays a message and may require an acknowledgment
+that the message has been read, usually by clicking "OK", or a decision as to whether or not an action should
+proceed, by clicking "OK" or "Cancel".
+An example of a plain dialog is the "About" box found in many software programs,
+which usually displays the name of the program and the version number, and may also include
+a list of the author names and  copyright information.
+Another example for the use of dialog boxes is asking for confirmation for actions
+which may result in loss of important data, e.g. closing a program which has an unsaved data buffer or overwriting an existing file.
+
+Non-modal or modeless dialog boxes are used when the requested information is not essential to continue,
+and so the window can be left open while work continues elsewhere. An example of some form of modeless dialogs  are
+toolboxes which can be separated or detached from the main application window.
+In general, good software design calls for dialogs to be of the non-modal type where possible, since they do not
+interrupt the workflow and do not
+force the user into a particular mode of operation. An example might be a dialog of settings for the
+current document, e.g. the background and text colors. The user can continue adding text to the main
+window whatever color it is, but can change it at any time using the dialog. (This isn't meant to
+be an example of the best possible interface for this; often the same functionality may be accomplished
+by toolbar buttons on the application's main window.) 
+
+Modal dialogs can be classified as system modal, application modal or document modal. System modal
+dialogs blocks the whole GUI, e.g. the shutdown dialog for the computer or serious, unrecoverable system errors.
+Application modal dialogs blocks the whole application instance, while document modal dialogs blocks
+only the editing of a single document.
+
+Additional to the classic dialog box GTK offers a set of highly specialized dialogs, from which
+the most used and most important one is the well known GtkFileChooserDialog. Other specialized dialogs are
+the GtkFontChooserDialog, the GtkColorChooserDialog, the GtkAppChooserDialog,
+the GtkPageSetupUnixDialog and the GtkPrintUnixDialog. A simplified variant of the GtkDialog
+is the GtkMessageDialog, but that one is not available by gobject-introspection and is currently
+unavailable in the gintro Nim GTK bindings. All these specialized dialogs are
+subclasses of the GtkDialog class. And finally there exists the GtkNativeDialog
+with it child GtkFileChooserNative and the GtkAboutDialog, which are not subclasses
+of the GtkDialog but direct children of GtkWindow.
+
+You should also note that the existing dialog variants are mostly convenient classes
+which allow easy creation of dialog boxes with a predefined look which integrates well
+into the GUI. If you have special needs you can also create your own custom dialog boxes
+based on the GtkWindow class.
+
+=== Dialog box
+
+image::dialog.png[]
+
+The GtkDialog is a subclass of the GtkWindow and is used to create popup windows.
+While Dialog boxes are a convenient way to prompt the user for a small amount of input,
+to display a message or to ask a question that popup behaviour interrupts the user's workflow
+and should be used only with care.
+
+GTK treats a dialog as a window split vertically. The top section is a GtkBox which may contain widgets
+to display information like a label.
+The bottom area is known as the “action area” in which buttons or other actionable widgets
+should be packed, like "OK" and "Cancel" buttons. 
+
+We create a new dialog box with a call of the constructor function newDialog() which takes no arguments.
+The GTK C API offers the convenience function gtk_dialog_new_with_buttons() which allows to
+set the dialog title, some boolean flags, and to add some buttons. But as that function uses untyped varargs
+arguments it is not type safe and not supported by gobject-introspection. So with Nim and the gintro bindings we have to use the 
+the newDialog() constructor function and to add the title, buttons, other widgets and flags with separate functions.
+
+A “modal” dialog (that is, one which freezes the rest of the application from user input), can be created by calling
+the setModal() function with the dialog window as argument.
+
+We can add various buttons to the dialog window with the function addButton(), to which we pass
+a label text and a response id. For the response id we can use one of the predefined negative enums,
+or our own positive integer constants.  
+Clicking one of the buttons will emit the  “response” signal and our connected callback function will
+receive the matching response id. These buttons also support Mnemonics (see <<Mnemonics in Label Text>>),
+so we can use "_Yes" as a label text and the "Y" will become underlined if we press the ALT key and
+ALT + "y" will activate that button.
+
+The predefined response ids of module gtk4 are listed below. The deleteEvent id is passed
+to the "response" callback when the user clicks not on a button of the dialog box but on the window close symbol
+or when the ESC key is pressed.
+
+[source,nim]
+----
+type
+  ResponseType* {.size: sizeof(cint), pure.} = enum
+    help = -11 # Returned by Help buttons in GTK dialogs
+    apply = -10 # Returned by Apply buttons in GTK dialogs
+    no = -9 # Returned by No buttons in GTK dialogs
+    yes = -8 # Returned by Yes buttons in GTK dialogs
+    close = -7 # Returned by Close buttons in GTK dialogs
+    cancel = -6 # Returned by Cancel buttons in GTK dialogs
+    ok = -5 # Returned by OK buttons in GTK dialogs
+    deleteEvent = -4 # Returned if the dialog is deleted
+    accept = -3 # Generic response id, not used by GTK dialogs
+    reject = -2 # Generic response id, not used by GTK dialogs
+    none = -1 # Returned if an action widget has no response id, or if the dialog gets programmatically hidden or destroyed
+----
+
+As the GtkDialog widget class implements the  GtkBuildable interface we can also use XML UI files and
+the GTK builder for building dialogs. We may add an example for that later.
+
+The example program below creates an application window which contains a button widget.
+We connect that button with the dialogCb() callback function. That callback creates the
+dialog, set some properties of the dialog and connects the dialog widget to the responseCb()
+callback function.
+
+[[dialog.nim]]
+[source,nim]
+.dialog.nim
+----
+import gintro/[gtk4, gobject, gio]
+
+proc responseCb(d: Dialog; id: int) =
+  echo "response: ", ResponseType(id)
+  d.destroy
+
+proc dialogCb(b: Button; w: ApplicationWindow) =
+  let dialog = newDialog()
+  dialog.setMargin(10)
+  dialog.title = "Dialog"
+  dialog.setTransientFor(w)
+  # dialog.setDestroyWithParent(true) # not useful for modal dialogs  
+  dialog.setModal(true)
+  let contentArea = dialog.getContentArea
+  let msg = newLabel("Do you like Nim and GTK?")
+  contentArea.append(msg)
+  discard dialog.addButton("Yes", ResponseType.yes.ord)
+  discard dialog.addButton("No", ResponseType.no.ord)
+  dialog.connect("response", responseCb)
+  dialog.show
+
+proc activate(app: gtk4.Application) =
+  let window = newApplicationWindow(app)
+  window.setMargin(50)
+  window.title = "Application Main Window"
+  let b = newButton("Open Dialog")
+  b.connect("clicked", dialogCb, window)
+  window.setChild(b)
+  window.show
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+In the dialogCb() callback function we call the constructor function newDialog() to
+create the dialog widget and set the margins and a title for the dialog window.
+We call setTransientFor() on the dialog widget with our parent window as argument
+to bind the dialog window to the parent window. And we call the function setModal()
+on the dialog widget to freeze the rest of the application from user input.
+Finally we add a label to the content area and two buttons to the action area of our dialog,
+connect it to the response callback function and call show() on it do display the dialog to the user.
+The responseCb() callback function prints the response id and calls destroy on the dialog
+to close its window and return control to the parent application.
+For non modal dialogs it can be useful to call additional setDestroyWithParent(true)
+to ensure that the dialog is closed automatically when the user closes the parent window.
+
+The GtkDialog class offers some more functions: The response() function
+with a dialog widget and an response id as argument can be used to emit
+the "response" signal which will then call a connected callback function.
+An example use case where it can be necessary to call the response function()
+from program code may be when we have an entry widget in our dialog and we want
+to terminate the dialog when the entry is activated. For that we may connect the entry to
+its "activate" callback function and call response() on the dialog to close it with a well defined id result
+from the "activate" callback function.
+The function addActionWidget() can be used to add other widget types
+to the action area of the dialog widget, e.g. an entry widget. That function
+gets an response id as last parameter, that id is passed to the "response"
+callback function when that widget is activated. The function
+setDefaultResponse() called with an response id sets the last widget in the dialog’s action area with the given response id
+as the default widget for the dialog. Pressing “Enter” normally activates the default widget.
+The function setResponseSensitive() called on the dialog instance with a respose id and a boolean
+values as parameters  calls setSensitive(widget, setting) for each widget in the dialog’s action area with the given response id.
+This offers a convenient way to sensitize/desensitize dialog buttons.
+The function getResponseForWidget() queries the response id of a widget in the action area, and
+getWidgetForResponse() returns the widget for a given response id.
+Finally the functions getContentArea() and getHeaderBar() allow access to
+the content area box widget and the header bar of the dialog.
+Note that the headerbar is only used by the dialog if the “use-header-bar” property is true.
+When we set the  “use-header-bar” property of the dialog to true, then
+the dialog uses a GtkHeaderBar for action buttons instead of the action-area
+at the bottom. The GtkFileChooserDialog does this.
+Currently user defined GtkDialogs with a HeaderBar are not supported by the
+gintro bindings, because the use “use-header-bar” property has to be set on
+creation of the dialog, but the only available newDialog() constructor
+does not have a flags argument.footnote:[Creating an overload constructor with a flags
+parameter is not difficult, you may create an github issue if you really should need
+a dialog with buttons in the headerbar.] 
+
+In our example program we used the “response” signal to connect our response callback
+function. The response signal is emitted when an action widget is clicked, the dialog receives a delete event,
+or the application programmer calls the response() function. On a delete event, the response id  is
+ResponseType.deleteEvent. Otherwise, it depends on which action widget was clicked.
+The dialog widget supports also the "close" signal.
+The "close" signal is a keybinding signal which gets emitted when the user uses a keybinding to close the dialog.
+The default binding for this signal is the Escape key.
+
+References:
+
+* https://developer.gnome.org/gtk4/stable/GtkDialog.html
+* https://en.wikipedia.org/wiki/Dialog_box
+
+=== FileChooserDialog
+
+image::filechooserdialog.png[]
+
+The GtkFileChooserDialog is a child of the GtkDialog.
+It works by putting a GtkFileChooserWidget inside a GtkDialog and
+can
+display the user's file system directory structure
+as trees and lists showing the file names and other file properties
+and is used to interactively open or save files.
+
+Note that the displayed screenshot above is taken from an older display
+with low pixel density and enabled font antialiasing , which generates
+a unsharp, washed out look, which some people may prefer.
+
+The  GtkFileChooserDialog offers only one single function, which
+is the constructor for the widget and which is called gtk_file_chooser_dialog_new()
+in the C API and newFileChooserDialog() for the gintro Nim bindings.
+
+But the file chooser dialog exposes the GtkFileChooser interface, so you can use all of the GtkFileChooser functions on the file chooser dialog as well as those for GtkDialog.
+
+The GtkFileChooser interface
+provides a set of useful functions for file handling. One of then is called
+getFile() which returns the selected GFile, which we may use directly
+to load or save data and which provides the file name and path by the
+getPath() function. 
+
+Using the GtkFileChooserDialog is very similar to the use of the
+GtkDialog: We call the constructor to create the widget and connect it by use of the
+"response" signal to our callback function, which checks the response id
+and then opens or saves the file in case of a positive response.
+
+Note that there is also the  GtkFileChooserNative dialog available, which may
+integrate better in the GUI environment when our program may be run
+on Windows or macOS.
+The GtkFileChooserNative will use a platform-specific dialog if available and fall back to GtkFileChooserDialog otherwise.
+As the GtkFileChooserDialog implements the  GtkBuildable interface we also
+could use XML UI files and the GtkBuilder to create the file chooser dialog.
+
+The following program is a minimal example which lets the user
+pic a file to open and prints the file system path of the selected file:
+
+[[filechooserdialog.nim]]
+[source,nim]
+.filechooserdialog.nim
+----
+import gintro/[gtk4, gobject, gio]
+
+proc fileChooserResponseCb(d: FileChooserDialog; id: int) =
+  if ResponseType(id) == ResponseType.accept:
+    let file = d.file
+    echo file.getPath
+  d.destroy
+
+proc dialogCb(b: Button; w: ApplicationWindow) =
+  let dialog = newFileChooserDialog("Open File", w, FileChooserAction.open)
+  discard dialog.addButton("Open", ResponseType.accept.ord)
+  discard dialog.addButton("Cancel", ResponseType.cancel.ord)
+  dialog.connect("response", fileChooserResponseCb)
+  dialog.show
+
+proc activate(app: gtk4.Application) =
+  let window = newApplicationWindow(app)
+  window.title = "Application Main Window"
+  let b = newButton("Open File Chooser Dialog")
+  b.connect("clicked", dialogCb, window)
+  window.setChild(b)
+  window.show
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+Our main window contains a single button for which we connect
+the "clicked" signal with our dialocCB() callback function. That
+function calls the constructor function newFileChooserDialog()
+to create the file chooser dialog widget. We have to pass
+a title string, the dialogs's parent window and the intended
+action as an enum to that function. The C function 
+gtk_file_chooser_dialog_new() has additional a varargs
+parameter which allows to pass a set of button label texts and
+response ids, but that varargs parameter is not available for
+bindings generated by gobject-introspection.
+So we use the function addButton() to add an OK and a Cancel button with matching ids
+to the dialog, which will then appear in the dialogs's header bar.
+Finally we connect a response callback function to the dialog widget.
+In that callback function we check the response id and print the
+path of the selected file.
+
+Instead of the FileChooserAction.open we can use the enum  value
+save to create a dialog to save a file or the enum value selectFolder
+when we intent the user to select a whole directory.
+
+There are various cases in which we may need to use a GtkFileChooserDialog:
+
+* To select a file for opening we use FileChooserAction.open
+
+* To save a file for the first time we use FileChooserAction.save and may suggest a file name by use of setCurrentName()
+
+* To save a file under a different name we use FileChooserAction.save and set the existing file as default with setFile()
+
+* To choose a folder instead of a file we may use FileChooserAction.selectFolder
+
+NOTE: For most dialog boxes we can use our own custom response codes rather than the ones in GtkResponseType,
+but GtkFileChooserDialog assumes that its “accept”-type action, e.g. an “Open” or “Save” button,
+will have one of the following response codes: ResponseType.accept, ok, yes, apply.footnote:[
+From the C API docs: This is because GtkFileChooserDialog must intercept responses and switch to folders if appropriate, rather
+than letting the dialog terminate — the implementation uses these known response codes to know which responses
+can be blocked if appropriate. And from a note of Mr. Bassi in the GTK forum: 
+The file selection widget and dialog is a fairly sizeable finite state machine, and it uses response codes as part
+of the state selection. GtkFileChooserDialog will only recognize affirmative response identifiers for action widgets
+if they are in this list: GTK_RESPONSE_ACCEPT, GTK_RESPONSE_OK, GTK_RESPONSE_YES, GTK_RESPONSE_APPLY.
+As, internally, it has to deal with things like the modal overwrite confirmation dialog, or changing the
+selected folder during navigation, etc. (https://discourse.gnome.org/t/gtk4-gtkfilechooserdialog/5389)]
+To summarize, make sure you use a predefined response code when you use GtkFileChooserDialog to ensure proper operation.
+
+References:
+
+* https://developer.gnome.org/gtk4/stable/GtkFileChooserDialog.html
+* https://developer.gnome.org/gtk4/stable/GtkFileChooser.html
+
+=== FontChooserDialog
+
+image::fontchooserdialog.png[]
+
+The GtkFontChooserDialog is used to ask the user for a custom font.
+We should need it only in rare cases, as generally most widgets should just
+use the users default font. But for applications like text editors, text processing programs
+or CAD tools we should provide a way to change fonts at program runtime dynamically.
+The font chooser dialog offers only the constructor function newFontChooserDialog(), but it
+implements the font chooser interface which provides the necessary functions to interact with fonts.
+
+Functions like gtk_widget_override_font() or gtk_widget_modify_font() which allowed to set
+widget fonts directly from a  PangoFontDescription has already been deprecated in {gtk3}
+and are not available in {gtk4} at all. So we have to use CSS when we really want to modify
+widget fonts. 
+
+The example program below creates a window with a label and a button. When
+the button is clicked a font chooser dialog window pups up and we can select a
+different font for the label widget:
+
+[[fontchooserdialog.nim]]
+[source,nim]
+.fontchooserdialog.nim
+----
+import gintro/[gtk4, gobject, gio, pango]
+
+type
+  FancyLabel = ref object of Label
+    cssPro: CssProvider
+    toplevel: ApplicationWindow
+
+proc fontChooserResponseCb(d: FontChooserDialog; id: int; l: FancyLabel) =
+  if ResponseType(id) == ResponseType.ok:
+    echo "Font: ", d.getFont
+    echo "Features: ", d.getFontFeatures
+    echo "Size: ", d.getFontSize
+    let p: FontDescription = d.getFontDesc
+    var data = "label {font-family: " & p.getFamily
+    data.add("; font-size: " & $(p.getSize div pango.SCALE) & "pt")
+    data.add("; font-style: " & $(p.getStyle))
+    data.add("; font-weight: " & $(p.getWeight.ord))
+    data.add(";}")
+    echo data
+    l.cssPro.loadFromData(data)
+  d.destroy
+
+proc dialogCb(b: Button; l: FancyLabel) =
+  let dialog = newFontChooserDialog("Select a Font", l.topLevel)
+  dialog.connect("response", fontChooserResponseCb, l)
+  dialog.show
+
+proc activate(app: gtk4.Application) =
+  let window = newApplicationWindow(app)
+  window.title = "Application Main Window"
+  let box = newBox(Orientation.vertical)
+  box.setMargin(10)
+  let l = newLabel(FancyLabel, "Some fancy text")
+  l.cssPro = newCssProvider()
+  l.topLevel = window
+  let styleContext = l.getStyleContext
+  assert styleContext != nil
+  addProvider(styleContext, l.cssPro, STYLE_PROVIDER_PRIORITY_USER)
+  let b = newButton("Open Font Chooser Dialog")
+  b.connect("clicked", dialogCb, l)
+  box.append(l)
+  box.append(b)
+  window.setChild(box)
+  window.show
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+We subclass the GtkLabel widget and add two custom fields allowing us to store
+a CssProvider entity and a reference to our application main window. We need
+a reference to the main window in our dialog callback function to set the transient
+window for the font chooser dialog. In {gtk3} we may have used gtk_widget_get_toplevel()
+to get that transient window, but that function is not available in {gtk4} any more.
+
+In the activate() procedure we create our window with a box widget, which contains
+a label and a button widget. We use the "clicked" signal to connect the button
+to our dialogCb() callback function, which then creates the font chooser dialog
+by a call of the newFontChooserDialog() constructor.
+The newFontChooserDialog() constructor gets the dialog's title and the transient window
+as parameters. 
+
+While we had to add buttons to the file chooser dialog our self, the font chooser
+dialog contains a "Select" and a "Cancel" button with ids ResponseType.ok and ResponseType.cancel already.
+We use the "response" signal to connect the dialog to our fontChooserResponseCb() callback function, which then
+calls functions from the font chooser interface to print some information about the selected font
+and then constructs the CSS string which is used as parameter for the loadFromData() function.
+It may be surprising that passing the new CSS string to  loadFromData() is enougth
+to update the label widget.  Indeed it is not necessary to first remove the CssProvider,
+update it and add it again to the label's StyleContext.
+
+We style our label widget by use of CSS similar as we did it earlier for a <<Button>>
+widget. For that we have to create a CssProvider entity and to attach it to our label's StyleContext.
+We keep a references to that CssProvider entity in a field of our label widget, so
+that we can call l.cssPro.loadFromData(data) in the  fontChooserResponseCb()
+callback function to set the desired font attributes. As the font chooser dialog
+does not give us appropriate CSS strings to set the font directly, we have to
+first call getFontDesc() on the dialog object to get the PangoFontDescriptor, and then call
+various functions like getFamily() on the PangoFontDescriptor instance to
+get the needed data. From that data we then construct a string
+containing all needed CSS properties and then use loadFromData() to
+pass the data to the CssProvider entity. Such a constructed CSS string may look like
+
+----
+label {font-family: Source Serif Pro; font-size: 16pt; font-style: italic; font-weight: 700;}
+----
+
+Later in the book we will show how we can style the font of a GtkSourceView widget of a simple text editor program
+and how we can store the selected font permanently by use of GSettings.
+
+References:
+
+* https://developer.gnome.org/gtk4/stable/GtkFontChooserDialog.html
+* https://developer.gnome.org/gtk4/stable/GtkFontChooser.html
+* https://developer.gnome.org/gtk4/stable/ch39s04.html
 
