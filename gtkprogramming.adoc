@@ -1,6 +1,6 @@
 = GTK4 for Graphical User Interfaces
 with the Nim Programming Language (C) Dr. Stefan Salewski 2020, 2021
-//v0.1, 2021-JAN-25
+//v0.1, 2021-SEP-22
 :doctype: book
 :toc: left
 :icons: font
@@ -192,10 +192,13 @@ Pango:: Font rendering
 
 OpenGL, Vulkan:: GPU supported graphics
 
-For Linux there is one more abstraction layer between the GTK toolkit and the
-computer hardware, which is the [.new]#wayland# display server, a modern
-implementation of the original [.new]#X Window System#.
-
+For Linux systems there is one more abstraction layer between the GTK toolkit and the
+computer hardware, called Wayland.
+Wayland is a communication protocol that specifies the communication between a display server and its clients,
+as well as a C library implementation of that protocol. Some older Linux systems may still use instead of modern Wayland the legacy
+[.new]#X Window System#, which was sometimes just called [.new]#X11# or [.new]#X#. The  X Window System
+provided a basic framework for a GUI environment: drawing and moving windows on the display device and interacting with a mouse and keyboard.
+ 
 All these components are written in the C programming language. C is a very old,
 restricted and sometimes unsecure language, which can lead to very verbose code,
 which is difficult to maintain. As GTK has an object-orientated design, but C
@@ -2321,7 +2324,7 @@ to enclose that proc names in backtics, which is sometimes also called
 stropping.footnote:[Indeed we can avoid the backtics when we just use method call
 syntx like s.bind().] The bind proc requires five arguments -- the settings instance,
 a settings property, a widget, a widget property and a set with the bind flags.  For
-the settings propety we use the "like-nim" one, which is the only one which is
+the settings property we use the "like-nim" one, which is the only one which is
 already declared in our XML file. The widgets is our check button with its "active"
 property. Our check button is a subclass of a toggle button, and from
 https://developer.gnome.org/gtk4/stable/GtkToggleButton.html#GtkToggleButton.properties
@@ -2664,7 +2667,7 @@ determines the type of the widget and an id which allows access to that widget f
 our program file. The outermost entity is the GtkWindow, with a GtkGrid as child,
 which again has a label and two buttons as children. If using such XML files has more
 advantages than disadvantages is not always that clear, but the GTK developers
-generally recomment using such files instead of creating the whole GUI structure in
+generally recommend using such files instead of creating the whole GUI structure in
 program code. Indeed the XML UI file looks clean and simple most of the time, but
 creating valid files or debugging corrupted files is not that simple. We took our
 above file from the GTK4 source distribution and added only the label section which
@@ -3474,7 +3477,7 @@ model-view complexity for simple text-only use cases.  That widget behaves simil
 a popup menu. When we click on the widget a list with text strings pops up and we can
 select one string from the list. That widget supports the "changed" signal. The
 connected callback function is called whenever the user selects a different string
-from the list.  We create a comboboxtext with the constructor function
+from the list.  We create a ComboBoxText with the constructor function
 newComboBoxText() and can add entries by use of appendText(), insertText() and
 prependText(). There exists also functions append(), insert() and prepend() which
 allows to additional specify a string id for each entry, but these functions are not
@@ -3547,7 +3550,7 @@ GtkText widget, but we use the function setMaxWidthChars(4) to restrict its size
 exactly 4 characters. Note that GtkText is a direct child of GtkWidget and it
 implements the GtkEditable interface, from which we took the setMaxWidthChars()
 function.  The GtkEntry widget, which uses the functionality of GtkText, is also a
-direct chield of the GtkWidget class but not a chield of GtkText.
+direct child of the GtkWidget class but not a child of GtkText.
 
 [[text.nim]]
 [source,nim]
@@ -3590,7 +3593,7 @@ proc main =
 main()
 ----
 
-In the example program above we put each text widget into a GTtkFrame widget to
+In the example program above we put each text widget into a GtkFrame widget to
 better show its extents. The GtkFrame is a decorative container which is used to
 frame single widgets or to visible group multiple widgets.  The GtkText class
 provides many functions to adapt its appearance or its functionality, which we can
@@ -3598,7 +3601,7 @@ not discuss all here. Whenever you should need some special function you should
 consult the GtkText API as well as the related classes like GtkEditable and
 GtkWidget. As usual we create the text fields with the newText() constructor. For
 each text filed we create a frame widget, put all the frame widets into a horizontal
-box and finally set that box as chield of the main window. We use the "activate"
+box and finally set that box as child of the main window. We use the "activate"
 signal to connect all the text fields to the same callback function, which prints the
 entered text when the user hits the return or enter key. Note that the GtkText widget
 uses an GtkEntryBuffer object to store the actual text content. In our callback
@@ -3790,7 +3793,7 @@ newSpinButton() constructor function. The numeric values are the the climb rate 
 the number of decimal digits to display. Understanding the climb rate is not that
 easy.  When we press the up or down buttons with the mouse or hold the up or down
 array keys of the keyboard pressed for a longer time period, then the numeric values
-continuously increases or decreases.  When we set the clinb rate to zero, than the
+continuously increases or decreases.  When we set the climb rate to zero, than the
 increase or decrease rate is constant. But when we set the climb rate to a value
 greater zero, then the steps with which the contents changes increases in size,
 allowing a faster but less accurate adjustment.
@@ -3805,7 +3808,7 @@ climb rate of zero, which ensures that value changes occur always slowly in 0.01
 increments.
 
 When we launch our program, type the value zero into the first spin button and press
-the "value increase" button of both widgerts for a longer time period we get these
+the "value increase" button of both widgets for a longer time period we get these
 values printed in the terminal window:
 
 ----
@@ -4621,4 +4624,61 @@ References:
 * https://developer.gnome.org/gtk4/stable/GtkFontChooserDialog.html
 * https://developer.gnome.org/gtk4/stable/GtkFontChooser.html
 * https://developer.gnome.org/gtk4/stable/ch39s04.html
+
+== GTK cookbook
+
+At this location of the book we will present some unrelated, but maybe useful code snippets.
+
+=== Get screen resolution, scale factor, width and height in mm for wayland
+
+Retrieving these data is not that easy. In most cases we do not need them, as our apps
+should work everywhere and we should not really care about screen dimensions.
+But for some tools, like CAD or EDA programs, we may need that data,
+because when the user desires an absolute line with of 0.5 mm on the screen then we should be able to
+fulfill that wish. Mr. Bassi gave a rough sketch how we can get the needed data on modern
+wayland systems:
+
+[[screensize.nim]]
+[source,nim]
+.screensize.nim
+----
+# https://discourse.gnome.org/t/get-screen-width-and-height/7245/8
+import gintro/[gtk4, gdk4, gobject, gio]
+
+proc printData(widget: Button; window: ApplicationWindow) =
+  let surface: gdk4.Surface = window.getSurface
+  let display: gdk4.Display = surface.getDisplay
+  let monitor: gdk4.Monitor = display.getMonitorAtSurface(surface)
+  echo monitor.getWidthmm
+  echo monitor.getHeightmm
+  let geometry: gdk4.Rectangle = monitor.getGeometry
+  echo geometry
+  echo monitor.getScaleFactor
+  echo surface.getScaleFactor
+
+proc activate(app: gtk4.Application) =
+  let window = newApplicationWindow(app)
+  let button = newButton("Print Data")
+  button.connect("clicked", printData, window)
+  window.setChild(button)
+  window.show
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  let status = app.run
+  quit(status)
+
+main()
+----
+
+When you run this example you may see some output like
+
+----
+600
+340
+(x: 0, y: 0, width: 3840, height: 2160)
+1
+1
+----
 
