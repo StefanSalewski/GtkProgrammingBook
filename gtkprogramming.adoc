@@ -65,16 +65,16 @@ using the GTK widget tool kit and the Nim programming language. The book has its
 focus on the Linux {os} (OS). While the Nim programming language does support all
 mayor {os}s, GTK has it main emphasis on the Linux OS. {win} and {macos} are
 supported by GTK, but without true native look and feel. Android and {ios} is not
-supported by GTK, but there is some early experimental support for the [.new]#Librem#
-mobile devices manufactured by the [.new]#Purism# company. As GTK is compact and has
+supported by GTK, but there is some early experimental support for the [.ndef]#Librem#
+mobile devices manufactured by the [.ndef]#Purism# company. As GTK is compact and has
 a modular design, it can be also used on devices with restricted resources like the
-[.new]#Raspberry Pi# family. While GTK is generally not used to create web
+[.ndef]#Raspberry Pi# family. While GTK is generally not used to create web
 applications, it may be possible to run GTK applications locally in a web browser by
 using the broadway GTK backend.
 
 The examples in this book uses the Nim implementation of the team around Mr. A. Rumpf
 in version {nimversion}, the first {gtk4} version that is available in late 2020 and
-the Nim GTK bindings provided by the [.new]#gintro# package in version
+the Nim GTK bindings provided by the [.ndef]#gintro# package in version
 {gintroversion}.  For other Nim implementations or different GTK bindings
 modifications of the provided examples can be necessary.
 
@@ -88,8 +88,8 @@ graphical elements like buttons, sliders, drop-down menus and input fields. Thes
 elements are called widgets. Widgets can be grouped to build larger entities like
 file or message dialogs. The top level widget is generally a rectangular container
 called a window that contains all the other widgets. The initial release of GTK
-appeared in the year 1998 named [.new]#GIMP tool kit# and was labeled GTK+. As the
-Name GTK implies it was closely bound to the famous [.new]#GIMP# drawing program (GNU
+appeared in the year 1998 named [.ndef]#GIMP tool kit# and was labeled GTK+. As the
+Name GTK implies it was closely bound to the famous [.ndef]#GIMP# drawing program (GNU
 image manipulation program) and was intended to replace the older Motif Unix GUI for
 GIMP.
 
@@ -106,12 +106,12 @@ displays.
 After the release of GTK that toolkit was used by other software too, and in 2002
 Version 2.0 of GTK appeared. {gtk2} had already a more modular design and was not
 that tight couple to GIMP. In 2011 GTK{nbsp}3.0 appeared, which provided many new
-features. Most important was a new customizable design supported by [.new]#cascading
-style sheets# (CSS), and the use of libraries like [.new]#cairo# for drawing the
-graphical elements and of [.new]#pango# for font rendering. In late 2020 official
+features. Most important was a new customizable design supported by [.ndef]#cascading
+style sheets# (CSS), and the use of libraries like [.ndef]#cairo# for drawing the
+graphical elements and of [.ndef]#pango# for font rendering. In late 2020 official
 release of {gtk4} will appear, which has again an improved internal design, an
-improved [.new]#application programming interface# (API) and which supports
-[.new]#OpenGL# and [.new]#Vulkan# hardware drawing for the widgets to maximize
+improved [.ndef]#application programming interface# (API) and which supports
+[.ndef]#OpenGL# and [.ndef]#Vulkan# hardware drawing for the widgets to maximize
 performance while keeping CPU load low.
 
 //.Smallprint
@@ -137,7 +137,7 @@ and tutorials will appear making learning GTK programming easier and more fun.
 ****
 
 While GTK can be used on {win} and {macos} computers, it is generally used on Linux,
-and there often in conjunction with the [.new]#Gnome desktop environment#. The Gnome
+and there often in conjunction with the [.ndef]#Gnome desktop environment#. The Gnome
 foundation is the most important supporter of GTK development. GTK does not support
 the Android or {ios} {os}s for mobile devices. The GTK related libraries uses the
 LGPL software license, while the Nim compiler and most of Nim's external packages are
@@ -166,7 +166,7 @@ GDK:: The gimp drawing kit. High level drawing related functions and data types.
 
 GdkPixbuf:: Loading and manipulation of images.
 
-GObject:: The GObject module provides an API for [.new]#object orientated programming# (OOP) in the
+GObject:: The GObject module provides an API for [.ndef]#object orientated programming# (OOP) in the
 C programming language.
 
 GLib:: GLib provides many supporting functions and advanced data types.
@@ -179,9 +179,9 @@ Graphene:: Math support like vectors and matrices.
 
 ATK:: Accessibility support like screen readers or text magnifiers.
 
-Other GTK related modules are [.new]#GtkSourceView# for advanced text layout support
-as used for text editors like [.new]#gedit#, the [.new]#rsvg# module for support of
-[.new]#scaleable vector graphics# (SVG) and the [.new]#VTE# module for the creation
+Other GTK related modules are [.ndef]#GtkSourceView# for advanced text layout support
+as used for text editors like [.ndef]#gedit#, the [.ndef]#rsvg# module for support of
+[.ndef]#scaleable vector graphics# (SVG) and the [.ndef]#VTE# module for the creation
 of terminal windows. GtkSourceView and VTE are not yet available for GTK4.
 
 Additional GTK uses these libraries for drawing and font rendering:
@@ -196,18 +196,18 @@ For Linux systems there is one more abstraction layer between the GTK toolkit an
 computer hardware, called Wayland.
 Wayland is a communication protocol that specifies the communication between a display server and its clients,
 as well as a C library implementation of that protocol. Some older Linux systems may still use instead of modern Wayland the legacy
-[.new]#X Window System#, which was sometimes just called [.new]#X11# or [.new]#X#. The  X Window System
+[.ndef]#X Window System#, which was sometimes just called [.ndef]#X11# or [.ndef]#X#. The  X Window System
 provided a basic framework for a GUI environment: drawing and moving windows on the display device and interacting with a mouse and keyboard.
  
 All these components are written in the C programming language. C is a very old,
 restricted and sometimes unsecure language, which can lead to very verbose code,
 which is difficult to maintain. As GTK has an object-orientated design, but C
-language does not support OOP style, a whole object system called [.new]#gobject# was
+language does not support OOP style, a whole object system called [.ndef]#gobject# was
 written for GTK from scratch. And as C does not support high level data structures
 like resizeable strings, hash maps, asynchronous in out operations and much more
 important functionality which modern languages generally provide, this was also
-written from scratch and is provided in supporting libraries like [.new]#glib# and
-[.new]#gio#. As C does not support automatic memory management, in GTK it is
+written from scratch and is provided in supporting libraries like [.ndef]#glib# and
+[.ndef]#gio#. As C does not support automatic memory management, in GTK it is
 sometimes necessary to release memory manually, which may lead to the well known
 problems like memory leaks or use after free issues.
 
@@ -243,7 +243,7 @@ really map to native apps. Qt draws its widgets itself on Linux, but can try to 
 native elements on Windows or {macos} since version 4.0, which may provide a more
 native look and feel.
 
-One more important GUI toolkit is [.new]#wxWidgets#, which uses GTK on Linux and
+One more important GUI toolkit is [.ndef]#wxWidgets#, which uses GTK on Linux and
 native GUI elements on Windows and {macos}. Some people like wxWidgets as it is a
 really cross platform GUI toolkit with native look and feel, but at least for Linux
 it is just one more layer on top of GTK. And it does not support the mobile {os}s
@@ -260,7 +260,7 @@ The fact that GTK is written in C and so is very hard to maintain is at the same
 a large benefit: As C is a simple languages without advanced concepts like classes,
 templates, inheritance or automatic memory managements it is generally very easy to
 create bindings to C libraries from other programming languages. For GTK this fact is
-even supported by the GTK [.new]#gobject-introspection# database which allows to
+even supported by the GTK [.ndef]#gobject-introspection# database which allows to
 create bindings to all the GTK related libraries in a semi-automatic process.
 
 So the majority of all the new modern computer programming languages have bindings to
@@ -270,7 +270,7 @@ automatic bindings generation difficult.
 
 So Qt is mostly used direct from {cpp}, or its well supported Python bindings are
 used. Qt language bindings for many other programming languages exists, but it is
-hard to keep them up to date. Sometimes Qt GUIs are also created with [.new]#QML#,
+hard to keep them up to date. Sometimes Qt GUIs are also created with [.ndef]#QML#,
 which allows to create user interfaces in a declarative manner. QML bindings are
 available for various programming languages.
 
@@ -290,7 +290,7 @@ generally enforce the use of classes and inheritance for GTK apps. {cpp} with it
 gtkmm GTK bindings also push its users to OOP design.
 
 We will use for this book semi-automatic generated {gtk4} and {gtk3} bindings which
-are generated by the [.new]#gintro# package, where g stands for all the gtk related
+are generated by the [.ndef]#gintro# package, where g stands for all the gtk related
 libraries and intro for introspection as the bindings are generated by use of
 gobject-introspection.
 
@@ -337,7 +337,7 @@ neel:: making lightweight Electron-like HTML/JS GUI apps with C, {cpp}, or Objec
 mui:: A tiny, portable, immediate-mode UI library written in ANSI C
 
 Some of these bindings may currently not compile with the latest Nim compiler or may
-not support the new [.new]#ARC# memory management. But we recommend to investigate
+not support the new [.ndef]#ARC# memory management. But we recommend to investigate
 them before you decide to use gintro, maybe one of them fits better you needs. wNim
 should be a good choice when you intent to develop for windows only, nimx may be the
 most fun as it is pure Nim, fidget looks really nice, nigui supports native look for
@@ -384,7 +384,7 @@ call of [.code]#newButton("Sort List")#, or we can decide to create all the widg
 in a declarative fashion in external XML files. In the XML files we can arrange and
 group all of our widgets in hierarchical layouts, and we can attach attributes like
 size, color or textual labels to the widgets. We can create that XML file manually,
-or we can decide to use the interactive [.new]#Glade# tool to create the XML file.
+or we can decide to use the interactive [.ndef]#Glade# tool to create the XML file.
 
 Using XML files and the Glade tool may appear simpler, more intuitive and more
 flexible. When we create GTK programs directly in the C languages that may be true,
@@ -473,8 +473,8 @@ less tested fixes.
 ****
 
 The Nim GTK relation has a long history. It started with low level bindings created
-by the [.new]#c2nim# tool many years ago. In 2015 we then got low level, c2nim
-generated GTK3 bindings, which are still available in the [.new]#oldgtk3# nimble
+by the [.ndef]#c2nim# tool many years ago. In 2015 we then got low level, c2nim
+generated GTK3 bindings, which are still available in the [.ndef]#oldgtk3# nimble
 package. But it was obvious that low level GTK bindings are more than useless -- they
 transfer all the ugly aspects of plain C into the Nim world, without transferring the
 few benefits of the GTK C API like elaborated C GTK macros and well documented and
