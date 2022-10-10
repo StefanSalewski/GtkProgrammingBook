@@ -1,6 +1,6 @@
 = GTK4 for Graphical User Interfaces
-with the Nim Programming Language (C) Dr. Stefan Salewski 2020, 2021
-//v0.1, 2021-SEP-22
+with the Nim Programming Language (C) Dr. Stefan Salewski 2020, 2021, 2022, 2023
+//v0.1, 2022-OCT-10
 :doctype: book
 :toc: left
 :icons: font
@@ -30,8 +30,8 @@ with the Nim Programming Language (C) Dr. Stefan Salewski 2020, 2021
 :gtk4: GTK{nbsp}4
 :gtks: GTK's
 :qtversion: 6
-:gintroversion: 0.8.5
-:nimversion: v1.4
+:gintroversion: 0.9.9
+:nimversion: v1.6
 :ebassi: Emmanuele Bassi
 
 // e.g.  exempli gratia
@@ -4624,6 +4624,501 @@ References:
 * https://developer.gnome.org/gtk4/stable/GtkFontChooserDialog.html
 * https://developer.gnome.org/gtk4/stable/GtkFontChooser.html
 * https://developer.gnome.org/gtk4/stable/ch39s04.html
+
+== Drag and Drop (DND)
+
+The drag-and-drop gesture is used to transfer data between different application programs or
+within different areas of a single app: We click with the mouse on a symbols representing some data,
+move the mouse pointer while holding a mouse button pressed, and finally release the mouse button when the
+mouse pointer hovers over a destination area like a window or a widget. This way, we can easily move or copy
+data. The DND gesture is most often used for transferring whole files or text segments (strings), but it can also be used to
+move widgets, rows of a list display, or other entities. Using of DND is not very difficult in GTK4, the two first links
+at the bottom of this section gives a short introduction.
+
+=== Simple drag sources for text strings and files
+
+For our first tiny example, we will create a drag text source, so that
+you can drag a textual message from our app to another app accepting text, e.g. the gedit text editor:
+
+[[dnd1.nim]]
+[source,nim]
+.dnd1.nim
+----
+import gintro/[gtk4, gdk4, gobject, gio, glib]
+
+proc toStringVal(s: string): Value =
+  discard result.init(gStringGetType())
+  result.setString(s)
+
+proc onDragPrepare(source: DragSource; x, y: float; b: Button): gdk4.ContentProvider =
+  #result = newContentProviderForValue(toStringVal("Also some plain text"))
+  result = newContentProviderForBytes("text/plain", glib.newBytes("Some text"))
+
+proc printMsg(widget: Button) =
+  echo("You can click or drag me")
+
+proc activate(app: gtk4.Application) =
+  let window = newApplicationWindow(app)
+  window.title = "Drag source test"
+  window.defaultSize = (200, 200)
+  let box = newBox(Orientation.horizontal)
+  window.setChild(box)
+  let button = newButton("Drag me into gedit")
+  button.connect("clicked", printMsg)
+  let source = newDragSource()
+  source.connect("prepare", onDragPrepare, button)
+  button.addController(source)
+  box.append(button)
+  window.present
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  discard app.run
+
+main()
+----
+
+In the example above we create a drag source object, connect it to the prepare
+signal and finally use the function addController() to connect our button widget with
+our drag source. In the onDragPrepare() callback function we have to create a content provider
+object filled with our text string. For the textual data type, we can use newContentProviderForValue()
+to which we pass the text string as a GValue, or we can alternatively use newContentProviderForBytes(),
+which accept as arguments a string specifying the data type, and the actual textual message
+wrapped in the GBytes data type. You may compile and run the above example, and then launch additional
+an Gedit instance. Now you can grab the button widget in our app and drag it into the Gedit window -- a copy
+of the text should appear in Gedit. You can repeat this action multiple times. CAUTION: When you click the
+button, so that the message "You can click or drag me" is printed in the terminal window from where you have launched our app,
+the drag action stops to work. We have still to investigate the reason for this, maybe it is a bug in current GTK4.
+Actually most of the time we would not connect drag sources to button widgets, but to other widget types.
+
+Instead of dragging text strings, we may intent to pass whole named files to a destination app
+that can process them, e.g. the Gedit editor. Our program from above can be easily modified to do that,
+but we have to know which data types we have to use. To have a source file for testing, we execute this command first:
+
+----
+echo -e "This is a short \ntext file" > /tmp/myuselesstextfile.txt
+cat /tmp/myuselesstextfile.txt
+----
+
+Our minimal app with a file drag source may look like this one now:
+
+[[dnd2.nim]]
+[source,nim]
+.dnd2.nim
+----
+import gintro/[gtk4, gdk4, gobject, gio, glib]
+
+proc toGFileVal(s: string): Value =
+  discard result.init(g_type_from_name("GFile"))
+  let f = newGFileForPath(s)
+  result.setObject(f)
+
+proc onDragPrepare(source: DragSource; x, y: float; b: Button): gdk4.ContentProvider =
+  #result = newContentProviderForValue(toGFileVal("/tmp/myuselesstextfile.txt"))
+  result = newContentProviderForBytes("text/uri-list", glib.newBytes("file:///tmp/myuselesstextfile.txt"))
+
+proc printMsg(widget: Button) =
+  echo("You can click or drag me")
+
+proc activate(app: gtk4.Application) =
+  let window = newApplicationWindow(app)
+  window.title = "Drag source test"
+  window.defaultSize = (200, 200)
+  let box = newBox(Orientation.horizontal)
+  window.setChild(box)
+  let button = newButton("Drag me into gedit")
+  button.connect("clicked", printMsg)
+  let source = newDragSource()
+  source.connect("prepare", onDragPrepare, button)
+  button.addController(source)
+  box.append(button)
+  window.present
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  discard app.run
+
+main()
+----
+
+We have two options to specify the drag file source. In the callback function
+for the drag signal, we use newContentProviderForBytes("text/uri-list", glib.newBytes("file:///tmp/myuselesstextfile.txt")),
+or we can use newContentProviderForValue(toGFileVal("/tmp/myuselesstextfile.txt")).
+The first variant is the simplest, but we have to know that the string specifying the file data type
+is called "text/uri-list", and that we have to prepend the actual absolute file path with the string
+"file://". For the second solution we have to create a GValue type with GFile content. Again, when we first
+click our button, the drag operation does not work any more. You can find all the details
+for the DND operation in the API docs for the GtkDragSource https://docs.gtk.org/gtk4/class.DragSource.html.
+You should also consult the API docs for the GtkContentProvider at https://docs.gtk.org/gdk4/class.ContentProvider.html
+to learn about all the details and further options.
+
+=== Drag destinations for text strings or files
+
+For creating an app that accept dropped data, we have to create a GtkDropTarget,
+connect its drop signal to a callback function, and finally attach the drop target
+to a widget. As we want to be able to receive also longer text fragments, we use
+a GtkTextView embedded in a GtkScrolledWindow for the final destination:
+
+[[dnd3.nim]]
+[source,nim]
+.dnd3.nim
+----
+import gintro/[gtk4, gdk4, gobject, gio, glib]
+
+proc onDrop(self: DropTarget; val: Value; x, y: float; view: TextView): bool =
+  assert(val.gtype == gStringGetType())
+  let txt = val.getString
+  let buffer = view.getBuffer
+  buffer.setText(txt, txt.len)
+  true
+
+proc activate(app: gtk4.Application) =
+  let window = newApplicationWindow(app)
+  window.title = "Text view, drop some text here"
+  window.defaultSize = (200, 200)
+  let scrolledWindow = newScrolledWindow()
+  let view = newTextView()
+  window.setChild(scrolledWindow)
+  scrolledWindow.setChild(view)
+  let target = newDropTarget(gStringGetType(), {DragFlag.copy})
+  target.connect("drop", onDrop, view)
+  view.addController(target)
+  window.present
+
+proc main =
+  let app = newApplication("org.gtk.example2")
+  app.connect("activate", activate)
+  discard app.run
+
+main()
+----
+
+We create the drop target with the function newDropTarget(), which gets as a
+first parameter the GType of the expected data, and as second argument a drag flag enumeration, which
+may have values like copy or move to indicate if we intent a copy or a move operation.
+Our drop callback function receives the data as a GValue. The provided x, y parameters
+can be used to test if the drop operation occurred in the intended area. If the drop operation
+is accepted, the callback should return true, and false otherwise. In our callback function, we
+use getString() to extract the textual data from the GValue parameter, and set that text as
+content of the buffer of the text view to display it. Note that we can access the gtype field
+of the GValue parameter to verify that the actual data type matches our expectation.
+To test this app, you may compile and run it, and additional launch a Gedit instance, where you
+type in some text. Then you can select a text fragment in the editor and drag it into the window of our app.
+Or, you may launch our first app of this section, which can also be used as a drag source. But in this case, you have
+to ensure that the passed string for newApplication() of both of our apps differ, as otherwise
+the second launched program is identical to the first one, and our tests would fail obviously.
+
+Finally, we can can modify our drop target example app to accept a GFile instance:
+
+[[dnd4.nim]]
+[source,nim]
+.dnd4.nim
+----
+import gintro/[gtk4, gdk4, gobject, gio, glib]
+
+proc onDrop(self: DropTarget; val: Value; x, y: float; view: TextView): bool =
+  assert(val.gtype == g_type_from_name("GFile"))
+  var contents: string
+  var etagOut: string
+  var length: uint64
+  let f: GFile = cast[GFile](val.getObject)
+  if loadContents(f, cancellable = nil, contents, length, etagOut):
+    assert(length.int == contents.len)
+    echo "etag: ", etagOut
+    let buffer = view.getBuffer
+    buffer.setText(contents, contents.len)
+  true
+
+proc activate(app: gtk4.Application) =
+  let window = newApplicationWindow(app)
+  window.title = "Text view, drop some text here"
+  window.defaultSize = (200, 200)
+  let scrolledWindow = newScrolledWindow()
+  let view = newTextView()
+  window.setChild(scrolledWindow)
+  scrolledWindow.setChild(view)
+  let target = newDropTarget(g_type_from_name("GFile"), {DragFlag.copy})
+  target.connect("drop", onDrop, view)
+  view.addController(target)
+  window.present
+
+proc main =
+  let app = newApplication("org.gtk.example2")
+  app.connect("activate", activate)
+  discard app.run
+
+main()
+----
+
+The first argument of newDropTarget() is now the GFile type, and in the onDrop()
+callback function we use val.getObject() to extract the GFile object from
+the GValue container. We can not avoid the ugly and unsafe down-cast in this situation.
+To test our app, you can compile and run it, and them drag files from the Gnome file browser
+(formaly called Nautilus) into out app.
+
+GTK4 offers drag and drop operations for some more data types, and you may connect to
+a few additional signals, e.g. to set the icon which is displayed during the drag operation,
+or to do some cleanup tasks after the operation. Of course, DND can be used inside a single
+app, e.g. to copy files from a ListView to other widgets like a TextView or a DrawingArea.
+
+References:
+
+* https://docs.gtk.org/gtk4/drag-and-drop.html
+* https://blog.gtk.org/2020/01/29/data-transfer-in-gtk4/
+* https://docs.gtk.org/gtk4/class.DragSource.html
+* https://docs.gtk.org/gtk4/class.DropTarget.html
+* https://docs.gtk.org/gdk4/class.ContentProvider.html
+
+
+== GtkListView and GtkColumnView
+
+The ListView and ColumnView widgets are GTK4 replacements for the old GtkTreeView.
+
+This section is still work in progress, but at least we have already a working
+ColumnView example with editable rows:
+
+[[ColumnView1.nim]]
+[source,nim]
+.ColumnView1.nim
+----
+import gintro/[gtk4, gobject, gio, glib, cairo]
+import times
+
+var qt = "GTKLV" & $epochTime()
+if g_quark_try_string(qt) != 0:
+  qt = "NGIQ" & $epochTime()
+let CVquark: int = quark_from_static_string(qt) # caution, do not use name Quark!
+
+const
+  LayerNames = ["Ground", "Power", "Signal", "Remark"]
+
+type
+  LayerRow = object
+    name: string
+    style: string
+    group: string
+    locked: bool
+    visible: bool
+
+var
+  layers = newSeq[LayerRow](LayerNames.len)
+
+proc initLayers =
+  for i, el in mpairs(layers):
+    el.name = LayerNames[i]
+    el.style = "default"
+    el.group = "G"
+    el.visible = true
+
+type
+  ColumnViewGObject = ref object of gobject.Object
+
+proc onSelectionChanged(self: SelectionModel; pos: int; nItems: int) =
+  echo "onSelectionChanged"
+  #echo pos, nItems
+  #echo typeof(cast[SingleSelection](self).getModel)
+  echo "bbb ", self.getSelection.maximum
+
+proc onLayerNameChanged(w: Text) =
+  let row = cast[int](w.getQdata(CVquark))
+  layers[row].name = w.text
+
+proc onStyleNameChanged(w: Text) =
+  let row = cast[int](w.getQdata(CVquark))
+  layers[row].style = w.text
+
+proc onGroupNameChanged(w: Text) =
+  let row = cast[int](w.getQdata(CVquark))
+  layers[row].group = w.text
+
+proc onLockedChanged(w: CheckButton) =
+  let row = cast[int](w.getQdata(CVquark))
+  layers[row].locked = w.active
+  echo layers
+
+proc onVisibilityChanged(w: CheckButton) =
+  let row = cast[int](w.getQdata(CVquark))
+  layers[row].visible = w.active
+
+proc draw(d: DrawingArea; cr: cairo.Context; w, h: int) =
+  echo "draw", w, " ", h
+  cr.setSource(1, 0, 0)
+  cr.paint
+
+proc setup0(f: SignalListItemFactory; item: ListItem) =
+  let l = newLabel()
+  item.setChild(l)
+
+proc setup1(f: SignalListItemFactory; item: ListItem) =
+  let l = newText()
+  l.connect("activate", onLayerNameChanged)
+  item.setChild(l)
+
+proc setup2(f: SignalListItemFactory; item: ListItem) =
+  let l = newText()
+  l.connect("activate", onStyleNameChanged)
+  item.setChild(l)
+
+proc setup3(f: SignalListItemFactory; item: ListItem) =
+  let l = newText()
+  l.connect("activate", onGroupNameChanged)
+  item.setChild(l)
+
+proc setup4(f: SignalListItemFactory; item: ListItem) =
+  let l = newCheckButton()
+  l.connect("toggled", onLockedChanged)
+  item.setChild(l)
+
+proc setup5(f: SignalListItemFactory; item: ListItem) =
+  let l = newCheckButton()
+  l.connect("toggled", onVisibilityChanged)
+  item.setChild(l)
+
+proc setup6(f: SignalListItemFactory; item: ListItem) =
+  let l = newDrawingArea()
+  l.setContentWidth(4)
+  l.setContentHeight(4)
+  l.setDrawFunc(draw)
+  item.setChild(l)
+
+proc bind0(f: SignalListItemFactory; item: ListItem) =
+  let l = Label(item.getChild())
+  l.text = $item.getPosition
+
+proc bind1(f: SignalListItemFactory; item: ListItem) =
+  let l = Text(item.getChild())
+  l.setQdata(CVquark, cast[pointer](item.getPosition))
+  l.text = layers[item.getPosition].name
+
+proc bind2(f: SignalListItemFactory; item: ListItem) =
+  let l = Text(item.getChild())
+  l.setQdata(CVquark, cast[pointer](item.getPosition))
+  l.text = layers[item.getPosition].style
+
+proc bind3(f: SignalListItemFactory; item: ListItem) =
+  let l = Text(item.getChild())
+  l.setQdata(CVquark, cast[pointer](item.getPosition))
+  l.text = layers[item.getPosition].group
+
+proc bind4(f: SignalListItemFactory; item: ListItem) =
+  let l = CheckButton(item.getChild())
+  l.setQdata(CVquark, cast[pointer](item.getPosition))
+  l.setActive(layers[item.getPosition].locked)
+
+proc bind5(f: SignalListItemFactory; item: ListItem) =
+  let l = CheckButton(item.getChild())
+  l.setQdata(CVquark, cast[pointer](item.getPosition))
+  l.setActive(layers[item.getPosition].visible)
+
+proc bind6(f: SignalListItemFactory; item: ListItem) =
+  let l = DrawingArea(item.getChild())
+
+# e.g. double click on item
+proc onColumnViewActivate(cv: ColumnView, pos:int) =
+  echo "onColumnViewActivate"
+
+proc createLayersWidget: ScrolledWindow =
+  initLayers()
+  let cv = newColumnView()
+  cv.setHexpand
+  #cv.setSingleClickActivate(false)
+  cv.addCssClass("data-table") # [.column-separators][.rich-list][.navigation-sidebar][.data-table]
+
+  let c0 = newColumnViewColumn()
+  c0.title = "#"
+  let f0 = newSignalListItemFactory()
+  f0.connect("setup", setup0)
+  f0.connect("bind", bind0)
+  c0.setFactory(f0)
+  cv.appendColumn(c0)
+
+  let c1 = newColumnViewColumn()
+  c1.title = "Layer"
+  let f1 = newSignalListItemFactory()
+  f1.connect("setup", setup1)
+  f1.connect("bind", bind1)
+  c1.setFactory(f1)
+  cv.appendColumn(c1)
+
+  let c2 = newColumnViewColumn()
+  c2.title = "Style"
+  c2.setExpand
+  let f2 = newSignalListItemFactory()
+  f2.connect("setup", setup2)
+  f2.connect("bind", bind2)
+  c2.setFactory(f2)
+  cv.appendColumn(c2)
+
+  let c3 = newColumnViewColumn()
+  c3.title = "Group"
+  let f3 = newSignalListItemFactory()
+  f3.connect("setup", setup3)
+  f3.connect("bind", bind3)
+  c3.setFactory(f3)
+  cv.appendColumn(c3)
+
+  let c4 = newColumnViewColumn()
+  c4.title = "Lock"
+  let f4 = newSignalListItemFactory()
+  f4.connect("setup", setup4)
+  f4.connect("bind", bind4)
+  c4.setFactory(f4)
+  cv.appendColumn(c4)
+
+  let c5 = newColumnViewColumn()
+  c5.title = "Vis."
+  let f5 = newSignalListItemFactory()
+  f5.connect("setup", setup5)
+  f5.connect("bind", bind5)
+  c5.setFactory(f5)
+  cv.appendColumn(c5)
+
+  let c6 = newColumnViewColumn()
+  #c6.title = "Vis."
+  let f6 = newSignalListItemFactory()
+  f6.connect("setup", setup6)
+  f6.connect("bind", bind6)
+  c6.setFactory(f6)
+  cv.appendColumn(c6)
+
+  cv.connect("activate", onColumnViewActivate)
+
+  let gtype = gObjectGetType()
+  var listStore = gio.newListStore(gtype)
+
+  for i in 0 .. LayerNames.high:
+    let o = newObjectv(ColumnViewGObject, gtype, 0, nil)
+    #o.name = Names[i]#.sample
+    #o.age = rand(18 .. 95)
+    listStore.append(o)
+
+  let model = cast[SelectionModel](newSingleSelection(cast[ListModel](listStore)))
+  model.connect("selection-changed", onSelectionChanged)
+  cv.setModel(model)
+  result = newScrolledWindow()
+  result.setChild(cv)
+
+proc activate(app: Application) =
+  let window = newApplicationWindow(app)
+  window.title = "GTK4 & Nim"
+  window.defaultSize = (200, 200)
+  window.setChild(createLayersWidget())
+  window.present
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  connect(app, "activate", activate)
+  discard run(app)
+
+main()
+----
+
+// == GtkDropBox
+
+// == GtkPopoverMenu
+
 
 == GTK cookbook
 
