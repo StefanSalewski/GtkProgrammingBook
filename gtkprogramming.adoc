@@ -1,6 +1,6 @@
 = GTK4 for Graphical User Interfaces
 with the Nim Programming Language (C) Dr. Stefan Salewski 2020, 2021, 2022, 2023
-//v0.1, 2022-OCT-10
+//v0.1, 2022-OCT-24
 :doctype: book
 :toc: left
 :icons: font
@@ -4872,9 +4872,356 @@ References:
 * https://docs.gtk.org/gdk4/class.ContentProvider.html
 
 
-== GtkListView and GtkColumnView
+== GtkListView, GtkColumnView, GtkGridView and GtkDropDown
 
-The ListView and ColumnView widgets are GTK4 replacements for the old GtkTreeView.
+The ListView and ColumnView widgets are the modern GTK4 replacements
+for the old GtkTreeView widget. The DropDown widget can replace
+the old GtkComboBox(text) widget, and the GridView allows to display widgets
+in some form of a floating grid, e.g. a color palette or a set of pictograms. 
+All these widgets can be used to display
+a number of similar elements, like a list of names, numbers, or files.
+The two main advantages of these widget classes over the old GtkTreeView are,
+that they can have most ordinary widgets as child elements, and that they work
+well even with very large numbers of child rows. This last property is based on the fact,
+that these widgets create only as many widgets as are needed for the current
+view, and reuse these widgets to display all the data. A disadvantage of these
+widgets compared to the traditional GtkTreeView is, that some used child widgets may be not
+suitable for building compact presentations. For example, the SpinButton or the
+ComboBoxText are bulky by design, and do not integrate well in compact lists.
+But that may change with new GTK4 releases, maybe by CSS styling.
+The same is true for the Entry widget, but we can use the more compact GtkText or
+the EditableLabel widget instead. It is not clear, if these widgets can fully replace
+the GtkTreeView, with its support for deeply nested tree-like displays with
+expandable views, but for not too complicated views these widgets should work fine.
+These widgets support also sorting and drag-and-drop operations.
+
+The ListView and ColumnView widgets have some similarity with the GtkBox or the GtkGrid containers -- 
+Boxes and Grids are most often used for static displays with a small number of cildreen, while
+ListView and ColumnView both support addition and deletion of childreen well, and should work
+fine with thousands of data items.
+
+The ListView is used to display simple lists like file names, or for compound
+objects like a name and a check box. The ColumnView can display data with multiple
+formated columns, where each column can contain text strings or arbitrary widgets like
+Checkboxes, Switches, or Spinbuttons. Each column in a ColumnView can have a heading.
+The DropDown widget finally is a widget, which on click pops up a list from which the user can
+select an item, like a filename, a style or a drawing mode.
+
+All these widgets are designed to support a variant of the 
+Model–view–controller (MVC) software architectural pattern,
+which separates the data storage, the actual display, and possible
+controllers to modify the data.
+The mentioned widgets create a view built of a number of ordinary
+widgets, and use various model objects that may store the data.
+The models are subclasses of the GObject class.
+GTK4 provides some ready models to use, like the GtkStringObject, which
+has a single string property. When we need more complex models, we would have to
+subclass the GObject data type ourselves -- which is relatively easy in C
+language, but not yet supported for the gintro Nim bindings. But for Nim
+we have other ways to bind data to widgets, so this is not a too serious restriction, and
+later gintro versions may support C like GObject subclassing including the
+creation
+of new properties.
+
+For initially creating the set of child widgets that are needed to display the currently visible data, and
+for connecting the data stored in a model (or elsewhere) with
+the widgets used for the display, GTK4 uses a special data type called GtkFactory.
+
+In C creating a Listview instance looks like 
+
+```
+view = gtk_list_view_new (model, factory);
+```
+
+The first parameter, the model, is a GListModel containing GObjects or GObject subclasse like GtkStringObject containing some data.
+This is a first notable difference from GtkTreeview, which is using GtkTreeModels directly containing basic types.
+For some simple cases, GTK provides ready-made models, such as GtkStringList. 
+
+The list item factory is a simple tool which produces all the row widgets needed for the actual display, and
+which connects the widgets to the items in the model, so that always the correct data is shown.
+
+GTK provides two variants of a list item factory: The GtkSignalListItemFactory, for which we have to provide
+only a few calback functions, and the GtkBuilderListItemFactory, which works with XML UI files.
+We will start with the  GtkSignalListItemFactory, which is easier to understand.
+
+In C we would create an instance of a GtkSignalListItemFactory by a plain call of
+
+```
+factory = gtk_signal_list_item_factory_new ();
+
+```
+
+and then connect its signals, at least the "setup" and the "bind" signals, to appropriate callback functions.
+The "setup" signal is emitted when the factory needs to create a new row widget, and "bind" is emitted when a row widget needs to be connected to an item from the model.
+
+The ListView will create a few more rows than it needs to fill its visible area, to get a better estimate for the size of the scrollbars, and in order to have some "buffer" for when we decide to scroll the view. When we scroll the list, then the factory will not create new widgets, but only reconnect
+visible widgets to new data. 
+
+=== A tiny ListView example
+
+We will start with a very simple ListView example, which only displays a
+numbered list of strings:
+
+[[ListView1.nim]]
+[source,nim]
+.ListView1.nim
+----
+import gintro/[gtk4, gobject, gio, glib]
+
+proc onSetup(f: SignalListItemFactory; item: Object) =
+  let l = newLabel()
+  cast[ListItem](item).setChild(l)
+
+proc onBind(f: SignalListItemFactory; item: Object) =
+  let item = cast[ListItem](item)
+  let l = Label(item.getChild())
+  let strObj = cast[StringObject](item.getItem)
+  l.text = $item.getPosition & " " & strObj.getString
+
+proc createList(): ListView =
+  let sl = newStringList("zero", "one", "two", "three", "four", "five", "six", "seven")
+  let ns = newNoSelection(cast[ListModel](sl))
+  let factory = newSignalListItemFactory()
+  factory.connect("setup", onSetup)
+  factory.connect("bind", onBind)
+  return newListView(ns, factory)
+
+proc activate(app: Application) =
+  let window = newApplicationWindow(app)
+  window.title = "Listview"
+  window.defaultSize = (200, 200)
+  let sw = newScrolledWindow()
+  let lv = createList()
+  sw.setChild(lv)
+  window.setChild(sw)
+  window.present
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  discard app.run
+
+main()
+----
+
+The list-like widgets are generally put into a ScrolledWindow, so we create
+a new ScrolledWindow instance in the activate proc. Then we call our own
+createList proc, which returns a ListViewWidget, which we then can set as child of
+the ScrolledWindow instance. In the createList() proc, we intent to call
+newListView() to create a ListView widget instance, which we can return. For
+this, we need a GtkSelectionModel, and a GtkListItemFactory. We create a
+GtkSelectionModel instance with a call of newNoSelection(), which requires
+a ListModel as parameter, and returns a GtkSelectionModel -- in this case
+a model which does not allow to select rows. A GtkStringList is a list model that wraps an array of strings.
+We can pass the initial strings as paramter to newStringList(), or we can
+use procs like append() or remove() to add or to remove single strings.
+The cast of our string list to a ListModel instance is currently necessary --
+the actual reason for this is, that newNoSelection() is a proc of the gio module,
+while the GtkNoSelection data type is defined in the gtk4 module. So
+the gintro bindings do currently not match these types automatically.
+The proc newSignalListItemFactory() takes no parameters, and its actual name
+is a result of the fact, that a similar proc exists, which works with XML UI files --
+we will give an example for that in one of the following section.
+The factory instance supports a set of signals -- the most important of these are the 
+"setup" and "bind" signals. The "setup" signal is very easy to understand, it is used with a callback
+proc that has to provides the widgets which are needed to display single rows of
+our list view. Our onSetup() proc just creates a new label widget, and 
+calls item.setChild to set it as child widget of a list item. The onSetup()
+proc is automatically called whenever GTK needs more widgets to display the actual visible data, e.g.
+when the initial list view is created, or when we resize the listview widget.
+Adding more strings to our list or scrolling the list typically does not call onSetup, as this does not
+increase the number of needed widgets -- the visible widgets are just filled
+with new data when we scroll the list. This action is performed in the onBind() proc.
+Our onBind() proc first extracts the child of the actual list item, which is
+a Label in our case. Then we call item.getItem() to extract the wrapped string object,
+and finally we use the string of this string object to set the label text to display.
+Additional, we use item.getPosition() to attch a row number to the label text.
+
+Typically, our rows will be more complicated than a single label.
+We may create complex widgets and group them in containers, as needed.
+
+When our "bind" handler connects to signals on the item or does other things that require cleanup, then we can use the "unbind" signal to do that cleanup. The "setup" signal has a similar counterpart called "teardown".
+
+==== The builder way
+
+In the previous example, we used a SignalListItemFactory and
+connected the "setup" and "bind" handlers manually.
+
+GTK also offers a BuilderListItemFactory, which works with XML UI files
+and does not require us to connect signals to handler callbacks.
+
+Mr. Clasen has described the method in his blog post as:
+
+Our "setup" handler is basically a recipe for creating a small widget hierarchy. GTK has a more declarative way of doing this: GtkBuilder ui files. That is the way GtkBuilderListItemFactory works: you give it a ui file, and it instantiates that ui file whenever it needs to create a row.
+
+----
+ui = "<interface><template class="GtkListItem">...";
+bytes = g_bytes_new_static (ui, strlen (ui));
+gtk_builder_list_item_factory_new_from_bytes (scope, bytes);
+----
+
+And he provides an example for an XML UI files that we can use for our plain list:
+
+
+[[ListView2.nim]]
+[source,nim]
+.ListView2.nim
+----
+import gintro/[gtk4, gobject, gio, glib]
+
+const UI = """
+<interface>
+  <template class="GtkListItem">
+    <property name="child">
+      <object class="GtkLabel">
+        <binding name="label">
+          <lookup name="string" type="GtkStringObject">
+            <lookup name="item">GtkListItem</lookup>
+          </lookup>
+        </binding>
+      </object>
+    </property>
+  </template>
+</interface> """
+
+proc createList(): ListView =
+  let sl = newStringList("zero", "one", "two", "three", "four", "five", "six", "seven")
+  let ns = newNoSelection(cast[ListModel](sl))
+  let bytes = newBytes(UI)
+  let factory = newBuilderListItemFactoryFromBytes(BuilderScope(nil), bytes)
+  return newListView(ns, factory)
+
+proc activate(app: Application) =
+  let window = newApplicationWindow(app)
+  window.title = "Listview"
+  window.defaultSize = (200, 200)
+  let sw = newScrolledWindow()
+  let lv = createList()
+  sw.setChild(lv)
+  window.setChild(sw)
+  window.present
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  discard app.run
+
+main()
+----
+
+If you should intend to use this UI file approach, you may read the blog post of
+M. Clasen linked below -- it would not make much sense to cite it completely here, and
+we are not able to explain it in a simpler way.
+
+==== Special list models, and closures in XML UI files
+
+Beside the simple GtkStringList, GTK provides some more implementations of the GListModel, like
+the GtkDirectoryList, which is used to display lists of files in a directory.
+We can find a C example for the use of a GtkDirectoryList in section 26 of the GTK4 C tutorial of Mr.
+ToshioCP. The provided C example uses a closure tag in the XML UI file, which instructs the GtkBuilder
+to call a C function defined in our source file. Unfortunately handling such closure tags is not really easy for our Nim programs, for
+various reasons: GTK calls the closure with C calling convention with the original (unwrapped) data types, while
+our Nim procs work generally with proxy data types. An additional problem is, that Nim does name mangling,
+so we have to ensure that the C linker can find our closure proc. The following program shows a simple but ugly
+solution. It is a plain conversion of the C program from the  C tutorial of Mr.
+ToshioCP:
+
+[[ListView3.nim]]
+[source,nim]
+.ListView3.nim
+----
+import gintro/[gtk4, gobject, gio, glib]
+
+proc getFileName(item: ptr ListItem00; info: ptr FileInfo00) : ptr cchar {.cdecl, exportc, dynlib.} =
+  if info == nil:
+    return
+  var fi = FileInfo(impl: info)
+  fi.ignoreFinalizer = true
+  if not typeCheckInstanceIsA(fi, gfileInfoGetType()):
+    return nil
+  let h = fi.getName
+  return cast[ptr cchar](g_strdup(h))
+
+const UI = """
+<interface>
+  <template class="GtkListItem">
+    <property name="child">
+      <object class="GtkLabel">
+        <binding name="label">
+          <closure type="gchararray" function="getFileName">
+            <lookup name="item">GtkListItem</lookup>"
+          </closure>
+        </binding>
+      </object>
+    </property>
+  </template>
+</interface> """
+
+proc createList(): ListView =
+  let file = newGFileForPath(".")
+  let dl = newDirectoryList("standard::name", file)
+  let ns = newNoSelection(cast[ListModel](dl))
+  let bytes = newBytes(UI)
+  let factory = newBuilderListItemFactoryFromBytes(BuilderScope(nil), bytes)
+  return newListView(ns, factory)
+
+proc activate(app: Application) =
+  let window = newApplicationWindow(app)
+  window.title = "Listview"
+  window.defaultSize = (200, 200)
+  let sw = newScrolledWindow()
+  let lv = createList()
+  sw.setChild(lv)
+  window.setChild(sw)
+  window.present
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  discard app.run
+
+main()
+----
+
+In our createList() proc we call newDirectoryList() to create a GtkDirectoryList.
+The UI file contains the entry "<closure type="gchararray" function="getFileName">"
+which instructs the GtkBuilder to call a function with name "getFileName".
+To allow GTK calling this function directly, we have to annotate our proc with
+{.cdecl, exportc, dynlib.}. This ensures that the C calling convention is available for
+this function, and the original file name is visible for the C linker. As parameters
+of the function we have to use the original GTK data types, which have the
+00 postfix for the gintro bindings. While the gintro bindings contain all the functions
+that work on the unwrapped data types, these functions are not exported. For this reason
+we create a faked proxy object, which we then can pass to getName() to get the file name.
+We create a FileInfo proxy object, with its impl field pointing to the original
+GTK file info, and we set the ignoreFinalizer field of our proxy object to true,
+as the file info is owned by GTK, so the Nim memory management should not free it.
+Finally, as GTK will free the returned C string, we use g_strdup() to create
+a copy of our Nim string, which GTK is allowed to free.
+
+When we compile our program, we have to specify "--passL:-rdynamic" so
+that the C linker finds our getFileName() proc:
+
+----
+nim c --passL:-rdynamic listview3.nim # or
+nim c --passL:-export-dynamic listview3.nim
+----
+
+When we run our program from the command line, we should get a
+listing of the files in the current directory. Of course, this example is
+very ugly. But it shows you some ways to do low level C-like stuff with the
+gintro Nim bindings. When we should find out that we really need these closure
+tags, then we may try to write some Nim macros to encapsulate the ugly
+low level details.
+
+References:
+
+* https://docs.gtk.org/gtk4/section-list-widget.html
+* https://blog.gtk.org/2020/09/05/a-primer-on-gtklistview/
+* https://docs.gtk.org/gtk4/class.DropDown.html
+* https://github.com/ToshioCP/Gtk4-tutorial/blob/main/gfm/sec26.md
+
+=== GtkColumnView
 
 This section is still work in progress, but at least we have already a working
 ColumnView example with editable rows:
@@ -4947,72 +5294,79 @@ proc draw(d: DrawingArea; cr: cairo.Context; w, h: int) =
   cr.setSource(1, 0, 0)
   cr.paint
 
-proc setup0(f: SignalListItemFactory; item: ListItem) =
+proc setup0(f: SignalListItemFactory; item: Object) =
   let l = newLabel()
-  item.setChild(l)
+  cast[ListItem](item).setChild(l)
 
-proc setup1(f: SignalListItemFactory; item: ListItem) =
+proc setup1(f: SignalListItemFactory; item: Object) =
   let l = newText()
   l.connect("activate", onLayerNameChanged)
-  item.setChild(l)
+  cast[ListItem](item).setChild(l)
 
-proc setup2(f: SignalListItemFactory; item: ListItem) =
+proc setup2(f: SignalListItemFactory; item: Object) =
   let l = newText()
   l.connect("activate", onStyleNameChanged)
-  item.setChild(l)
+  cast[ListItem](item).setChild(l)
 
-proc setup3(f: SignalListItemFactory; item: ListItem) =
+proc setup3(f: SignalListItemFactory; item: Object) =
   let l = newText()
   l.connect("activate", onGroupNameChanged)
-  item.setChild(l)
+  cast[ListItem](item).setChild(l)
 
-proc setup4(f: SignalListItemFactory; item: ListItem) =
+proc setup4(f: SignalListItemFactory; item: Object) =
   let l = newCheckButton()
   l.connect("toggled", onLockedChanged)
-  item.setChild(l)
+  cast[ListItem](item).setChild(l)
 
-proc setup5(f: SignalListItemFactory; item: ListItem) =
+proc setup5(f: SignalListItemFactory; item: Object) =
   let l = newCheckButton()
   l.connect("toggled", onVisibilityChanged)
-  item.setChild(l)
+  cast[ListItem](item).setChild(l)
 
-proc setup6(f: SignalListItemFactory; item: ListItem) =
+proc setup6(f: SignalListItemFactory; item: Object) =
   let l = newDrawingArea()
   l.setContentWidth(4)
   l.setContentHeight(4)
   l.setDrawFunc(draw)
-  item.setChild(l)
+  cast[ListItem](item).setChild(l)
 
-proc bind0(f: SignalListItemFactory; item: ListItem) =
+proc bind0(f: SignalListItemFactory; item: Object) =
+  let item = cast[ListItem](item)
   let l = Label(item.getChild())
   l.text = $item.getPosition
 
-proc bind1(f: SignalListItemFactory; item: ListItem) =
+proc bind1(f: SignalListItemFactory; item: Object) =
+  let item = cast[ListItem](item)
   let l = Text(item.getChild())
   l.setQdata(CVquark, cast[pointer](item.getPosition))
   l.text = layers[item.getPosition].name
 
-proc bind2(f: SignalListItemFactory; item: ListItem) =
+proc bind2(f: SignalListItemFactory; item: Object) =
+  let item = cast[ListItem](item)
   let l = Text(item.getChild())
   l.setQdata(CVquark, cast[pointer](item.getPosition))
   l.text = layers[item.getPosition].style
 
-proc bind3(f: SignalListItemFactory; item: ListItem) =
+proc bind3(f: SignalListItemFactory; item: Object) =
+  let item = cast[ListItem](item)
   let l = Text(item.getChild())
   l.setQdata(CVquark, cast[pointer](item.getPosition))
   l.text = layers[item.getPosition].group
 
-proc bind4(f: SignalListItemFactory; item: ListItem) =
+proc bind4(f: SignalListItemFactory; item: Object) =
+  let item = cast[ListItem](item)
   let l = CheckButton(item.getChild())
   l.setQdata(CVquark, cast[pointer](item.getPosition))
   l.setActive(layers[item.getPosition].locked)
 
-proc bind5(f: SignalListItemFactory; item: ListItem) =
+proc bind5(f: SignalListItemFactory; item: Object) =
+  let item = cast[ListItem](item)
   let l = CheckButton(item.getChild())
   l.setQdata(CVquark, cast[pointer](item.getPosition))
   l.setActive(layers[item.getPosition].visible)
 
-proc bind6(f: SignalListItemFactory; item: ListItem) =
+proc bind6(f: SignalListItemFactory; item: Object) =
+  let item = cast[ListItem](item)
   let l = DrawingArea(item.getChild())
 
 # e.g. double click on item
@@ -5118,6 +5472,8 @@ main()
 // == GtkDropBox
 
 // == GtkPopoverMenu
+
+
 
 
 == GTK cookbook
