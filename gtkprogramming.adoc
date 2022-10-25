@@ -5362,6 +5362,112 @@ gintro Nim bindings. When we should find out that we really need these closure
 tags, then we may try to write some Nim macros to encapsulate the ugly
 low level details.
 
+==== Editable cells
+
+Sometimes we may use a ListView widget not only to display data, but want to allow
+the user to edit rows. The rows may be only string widgets, or maybe compound
+elements containing CheckBoxes or SpinButtons for example.
+When we intend to allow the user to modify the state of widerts in a row
+of a ListView widget, then we have to remember the fact that the number of widgets
+is generally smaller than the size of the actual data set may require, as widgets
+are reused when we scroll the content of the ListView widget.
+So there is no fixed relation between widgets used to display the data and the ListModel
+storing the data. For example, when we use a GtkEntry in the ListView to display editable strings,
+it is not trivial to store the changed content in the ListModel, as there may be no permanent
+relation between an entry widget and a string stored in the model. In one of the next sections, when we
+introduce the GtkColumnView widget, we will show one possible solution to this problem: We assign integer numbers
+to the row widgets whenever they are instantiated or recycled, and with this id numbers it is possible
+to store the modified data in the correct index position in the ListModel or another storage.
+In this section, we will use a different approach: Property binding. GObjects, and derived objects like widgets,
+can have properties (attributes) which we can query and set. And GObject subclasses supports binding
+a property of one object instance to another one, even when the two instances have a different data type and when
+the property data types differ. In this section we will create a ListView widget with rows of editable strings, displayed
+with GtkEntry widgets, and stored in a ListModel. The basic idea is, that we use property binding between
+the text property of the GtkEntry and a Gobject subclass that is stored in the ListModel. A list model
+containing GtkStringObjects may look like the ideal storage, but unfortunately the GtkStringModel
+has a string property that is read-only. So we can not bind the text property of a GtkEntry to the string
+propetty of the GtkStringObject entity. We would have to create a new GObject subclass, with a
+read/write string property for our task. Unfortunately, the gintro bindings do currently not support
+the creation of new GObjects. So, to show a basic sketch of how property binding may be used for
+editable ListViews, we just use an arbitrary existing GObject subclass with a read/write text property.
+The GtkLabel is a possible candidate:
+
+[[ListView4.nim]]
+[source,nim]
+.ListView4.nim
+----
+import gintro/[gtk4, gobject, gio, glib]
+
+type MyEntry = ref object of Entry
+  b: Binding
+
+proc onSetup(f: SignalListItemFactory; item: Object) =
+  let l = newEntry(MyEntry)
+  cast[ListItem](item).setChild(l)
+
+proc onBind(f: SignalListItemFactory; item: Object) =
+  let item = cast[ListItem](item)
+  let l = MyEntry(item.getChild())
+  let strObj = cast[Label](item.getItem)
+  l.text = strObj.getText
+  l.b = bindProperty(l, "text", strObj, "label", {})# {syncCreate})
+
+proc onUnbind(f: SignalListItemFactory; item: Object) =
+  let item = cast[ListItem](item)
+  let l = MyEntry(item.getChild())
+  if l.b != nil:
+    l.b.unbind
+
+proc createList(): ListView =
+  #let gtype = gObjectGetType()
+  let gtype = gtkLabelGetType()
+  var listStore = gio.newListStore(gtype)
+  for i in 0 .. 255:
+    let o = newLabel("Label " & $i)
+    listStore.append(o)
+  let model = cast[SelectionModel](newNoSelection(cast[ListModel](listStore)))
+  let factory = newSignalListItemFactory()
+  factory.connect("setup", onSetup)
+  factory.connect("bind", onBind)
+  factory.connect("unbind", onUnbind)
+  return newListView(model, factory)
+
+proc activate(app: Application) =
+  let window = newApplicationWindow(app)
+  window.title = "Editable Listview"
+  window.defaultSize = (200, 200)
+  let sw = newScrolledWindow()
+  let lv = createList()
+  sw.setChild(lv)
+  window.setChild(sw)
+  window.present
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  discard app.run
+
+main()
+----
+
+In the createList() proc of the above example, we create a ListStore with GtkLabel GType, and
+append to it 256 numbered labels. We use such a large number of entries, so that we can really verify
+that the widget recycling process works. With only a few dozen list entries, GTK may just allocate
+all the needed widgets at startup, and newer do some rebinding of data to widgets.
+We connect the "setup", "bind" and "unbind" signals to our SignalListItemFactory.
+The "setup" handler just creates new GtkEntry widgets and sets that widget as child of the ListItem.
+The "bind" handler does two things: It sets the text string of the label wrapped in the ListItem
+as text of the entry widget, and it binds the text property of the entry to the string property of the label.
+The first action is necessary to fill the text buffers of the GtkEntry widgets at program startup, and the second action
+ensures, that the data stored in the list model get updated whenever an entry widget is modified.
+As the GtkEntry widgets are recycled, it is necessary to undo the property binding before
+the widgets can be reused. This unbind operation is done in our onUnbind() proc.
+Of course, using GtkLabels as children of the ListModel is a stupid idea, as a GtkLabel
+is a heavy entity. But at least you get the idea. Note: When we run this program and scroll the list,
+we get currently some GTK warnings like "GtkText - unexpected blinking selection. Removing"
+Currently we have no idea if this indicates a bug in our app -- maybe it is a result of misusing
+the label instances for data storage.
+
 References:
 
 * https://docs.gtk.org/gtk4/section-list-widget.html
