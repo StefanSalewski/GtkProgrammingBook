@@ -1,6 +1,6 @@
 = GTK4 for Graphical User Interfaces
 with the Nim Programming Language (C) Dr. Stefan Salewski 2020, 2021, 2022, 2023
-//v0.1, 2022-OCT-24
+//v0.1, 2022-OCT-26
 :doctype: book
 :toc: left
 :icons: font
@@ -14,15 +14,31 @@ with the Nim Programming Language (C) Dr. Stefan Salewski 2020, 2021, 2022, 2023
 :rouge-style: molokai
 //https://spsarolkar.github.io/rouge-theme-preview/
 
-
 //:pygments-style: monokai
-:stylesheet: nimbook.css
+//:stylesheet: nimbook.css
 
-:cpp: C++
-:ios: iOS
+// all terms in lower case letters!
+:wirth: Prof. Niklaus Wirth
 :macos: macOS
-:win: Windows
+:uc: microcontroller
+:us: micro-second
+:oop: Object-Oriented-Programming
 :os: operating system
+:proc: proc
+:procs: procs
+:profus: procedures and functions
+:curnim: Nim v1.6
+:twocom: two's complement
+:cpp: C++
+//:plus: +
+// asterisk
+:hashtag: #
+:dhashtag: ##
+:pp: ++
+:behav: behavior
+:cdefine: #define
+:ios: iOS
+:win: Windows
 :proc: procedure
 :app: application
 :gtk2: GTK{nbsp}2
@@ -39,16 +55,38 @@ with the Nim Programming Language (C) Dr. Stefan Salewski 2020, 2021, 2022, 2023
 
 ////
 
-asciidoctor -a stylesheet=asciidoctor.css gtkprogramming.adoc
+asciidoctor -a stylesheet=adoc.css gtkprogramming.adoc
 
-we are using these custom roles for clean semantic markup:
+We are using these custom roles for clean semantic markup:
+(Seems that we have to define these styles at the end of asciidoctor.css, as nimbook.css seems to be ignored?)
 
 [.new]##
+[.recent] recently added
 [.term] terminal text
 [.user] user input
-[.ndef] new unknown entity
+[.code]
+[.italic]
+[.ndef] new unknown entity like stack
 [.code] inline source code segment
 [.imp] important
+[.key] Nim keyword
+[.op] Nim operator
+[.var] Variable
+[.const] Constant
+[.proc] Procedure
+[.mac] macro keyword in text
+[.lit] Literal
+[.func] Function
+[.type] Data type
+[.str] String type
+[.array] Array type
+[.tup] Tuple type
+[.obj] Object type
+[.mod] Module
+[.lib] Library
+[.plain]
+[.name]
+[.unit]
 
 We use
 
@@ -58,22 +96,32 @@ We use
 +->+ disable replacements
 GDK_DPI_SCALE=0.5 ./simplegtk3
 
+
+sed -E 's/ä([a-zA-Z]+) /\[\.\]\#\1\# /g' nimprogramming.adoc > hhh.adoc
+~/.local/bin/pylanguagetool h.txt
+~/.local/bin/pylanguagetool --pwl PWL h.txt
+
+Intern references:
+* https://docs.asciidoctor.org/asciidoctor/latest/html-backend/default-stylesheet/
+
 ////
 
-This book gives an introduction into design and creation of graphical user interfaces
-using the GTK widget tool kit and the Nim programming language. The book has its
+== About this book
+
+This book gives an introduction to design and creation of graphical user interfaces
+using the GTK widget tool-kit and the Nim programming language. The book has its
 focus on the Linux {os} (OS). While the Nim programming language does support all
-mayor {os}s, GTK has it main emphasis on the Linux OS. {win} and {macos} are
-supported by GTK, but without true native look and feel. Android and {ios} is not
+major {os}s, GTK has it main emphasis on the Linux OS. {win} and {macos} are
+supported by GTK, but without a true native look and feel. Android and {ios} are not
 supported by GTK, but there is some early experimental support for the [.ndef]#Librem#
 mobile devices manufactured by the [.ndef]#Purism# company. As GTK is compact and has
-a modular design, it can be also used on devices with restricted resources like the
+a modular design, it can also be used on devices with restricted resources like the
 [.ndef]#Raspberry Pi# family. While GTK is generally not used to create web
 applications, it may be possible to run GTK applications locally in a web browser by
 using the broadway GTK backend.
 
-The examples in this book uses the Nim implementation of the team around Mr. A. Rumpf
-in version {nimversion}, the first {gtk4} version that is available in late 2020 and
+The examples in this book use the Nim implementation of the team around Mr. A. Rumpf
+in version {nimversion}, the first {gtk4} version that is available in late 2020, and
 the Nim GTK bindings provided by the [.ndef]#gintro# package in version
 {gintroversion}.  For other Nim implementations or different GTK bindings
 modifications of the provided examples can be necessary.
@@ -82,80 +130,81 @@ modifications of the provided examples can be necessary.
 
 == Graphical User Interfaces
 
-GTK is the name of a toolkit for the design and the creation of graphical user
-interfaces (GUIs) that allows users to interact with computer programs by use of
-graphical elements like buttons, sliders, drop-down menus and input fields. These
+GTK is the name of a toolkit for the design and creation of graphical user
+interfaces (GUIs) that allow users to interact with computer programs through the use of
+graphical elements like buttons, sliders, drop-down menus, and input fields. These
 elements are called widgets. Widgets can be grouped to build larger entities like
-file or message dialogs. The top level widget is generally a rectangular container
+file or message dialogs. The top-level widget is generally a rectangular container
 called a window that contains all the other widgets. The initial release of GTK
-appeared in the year 1998 named [.ndef]#GIMP tool kit# and was labeled GTK+. As the
+appeared in the year 1998, named [.ndef]#GIMP tool-kit# and was labeled GTK+. As the
 Name GTK implies it was closely bound to the famous [.ndef]#GIMP# drawing program (GNU
 image manipulation program) and was intended to replace the older Motif Unix GUI for
 GIMP.
 
 Graphical user interfaces were introduced already a few decades after the invention
 of computers with the goal to simplify the interaction between humans and computers
-by replacing the traditional terminal based textual user interfaces. GUIs allowed
+by replacing the traditional terminal-based textual user interfaces. GUIs allowed
 even untrained people the intuitive interaction with computers without the need to
-learn and remember many textual command. Closely coupled to graphical user interfaces
+learn and remember many textual commands. Closely coupled to graphical user interfaces
 is the computer mouse, a small gadget that rests on the table and maps its movements
-to a pointer drawn on the computer screen allowing the interaction with the widgets.
-Today the computer mouse is often supported or substituted by touch pads or touch
+to a pointer drawn on the computer screen, allowing the interaction with the widgets.
+Today, the computer mouse is often supported or substituted by touchpads or touch
 displays.
 
-After the release of GTK that toolkit was used by other software too, and in 2002
+After the release of GTK, that toolkit was used by other software too, and in 2002,
 Version 2.0 of GTK appeared. {gtk2} had already a more modular design and was not
-that tight couple to GIMP. In 2011 GTK{nbsp}3.0 appeared, which provided many new
+that tight couple to GIMP. In 2011, GTK{nbsp}3.0 appeared, which provided many new
 features. Most important was a new customizable design supported by [.ndef]#cascading
-style sheets# (CSS), and the use of libraries like [.ndef]#cairo# for drawing the
-graphical elements and of [.ndef]#pango# for font rendering. In late 2020 official
+style sheets# (CSS), and the use of libraries like [.ndef]#Cairo# for drawing the
+graphical elements and of [.ndef]#Pango# for font rendering. In late 2020, the official
 release of {gtk4} will appear, which has again an improved internal design, an
-improved [.ndef]#application programming interface# (API) and which supports
+improved [.ndef]#application programming interface# (API), and which supports
 [.ndef]#OpenGL# and [.ndef]#Vulkan# hardware drawing for the widgets to maximize
 performance while keeping CPU load low.
 
 //.Smallprint
 ****
 
-Unfortunately GTK is currently not in a very active state. There seems to be one
-or two paid full-time developers which try to finish official release 4.0 and a few
-volunteers which support the development. The number of active GTK programmers,
+Unfortunately, GTK is currently not in a very active state. There seems to be one
+or two paid full-time developers who are trying to finish official release 4.0 and a few
+volunteers who are supporting the development. The number of active GTK programmers,
 partly mirrored by the traffic of the GTK/Gnome forum, seems to be tiny, and most of
-them use GTK still direct from C. Maybe because they have learned C decades ago and
+them use GTK still directly from C. Maybe because they have learned C decades ago and
 never tried a modern language, maybe because GTK itself is written in C and its
-native API documentation and examples are based on C language, or maybe because some
-bindings to other languages are of bad quality or have not enough documentation and
-examples. Writing tiny GTK apps in plain C may be OK, but for larger programs plain C
+native API documentation and examples are based on the C language, or maybe because some
+bindings to other languages are of poor quality or do not have enough documentation and
+examples. Writing tiny GTK apps in plain C may be OK, but for larger programs, plain C
 becomes unmaintainable very fast. At least for Python, JavaScript, Rust, {cpp} and D
-there seems to exists a few GTK users. But still the number of non trivial GTK apps
-which appeared in the last decade is very small, and some existing apps did not
+there seems to exists a few GTK users. But still, the number of non-trivial GTK apps
+that appeared in the last decade is very small, and some existing apps did not
 manage to move from {gtk2} to {gtk3} at all. But there is some hope that with the new
-{gtk4} things will improve. Maybe with the official release of {gtk4} at the end of
-2020 the quality of languages bindings will increase and maybe some new good books
-and tutorials will appear making learning GTK programming easier and more fun.
+{gtk4}, things will improve. Maybe with the official release of {gtk4} at the end of
+2020, the quality of language bindings will increase and maybe some new good books
+and tutorials will appear, making learning GTK programming easier and more fun.
 
 ****
 
 While GTK can be used on {win} and {macos} computers, it is generally used on Linux,
 and there often in conjunction with the [.ndef]#Gnome desktop environment#. The Gnome
 foundation is the most important supporter of GTK development. GTK does not support
-the Android or {ios} {os}s for mobile devices. The GTK related libraries uses the
+the Android or {ios} {os}s for mobile devices. The GTK related libraries use the
 LGPL software license, while the Nim compiler and most of Nim's external packages are
-using the MIT software license. Both licenses allows the creation of proprietary
+using the MIT software license. Both licenses allow the creation of proprietary
 closed source software, as long as for the LGPL licensed libraries dynamic linking is
 used.
 
-Like most traditional GUI toolkits GTK uses a retained mode, where the graphical
+Like most traditional GUI toolkits, GTK uses a retained mode, where the graphical
 scene is updated and redrawn only when necessary. In contrast to retained mode GUIs
-in the last years immediate mode GUIs has become popular. These GUIs often have their
+in the last years immediate mode GUIs have become popular. These GUIs often have their
 origin in simple GUIs for games and redraw the whole scene permanently, generally
 synchronized with the screen refresh rate. The permanent redraws create some CPU load
 of course, but for games that does generally not matter, as CPU and GPU load are
-dominated by the game itself, and with OpenGL or Vulkan hardware support drawing the
-GUI does not cause high CPU load. And finally the modern retained mode GUIs like GTK
+dominated by the game itself, and with OpenGL or Vulkan hardware support, drawing the
+GUI does not cause high CPU load. And finally, the modern retained mode GUIs like GTK
 are not really that static any more as they contain many animations.  So the
-distinction between retained and immediate mode GUIs is not that sharp.
+distinction between retained and immediate-mode GUIs is not that sharp.
 
+//puh
 The GTK toolkit has a modular design with these main components:
 
 // description list
@@ -298,43 +347,47 @@ You should be aware that for the Nim programming language many more GUI toolkits
 available, some based also on GTK but with a different API design, and some based on
 other libraries or written directly in Nim like the NimX module.
 
-wNim:: Nim's Microsoft Windows GUI Framework
+Winim:: Nim's Windows API and COM Library (https://github.com/khchen/winim)
 
-wxnim:: Nim wrapper for wxWidgets
+wNim:: Nim's Microsoft Windows GUI Framework (https://github.com/khchen/wNim)
 
-fidget:: Figma based cross platform UI library
+wxnim:: Nim wrapper for wxWidgets (https://github.com/PMunch/wxnim)
 
-nigui:: Cross-platform desktop GUI toolkit
+Fidget:: Fidget - A cross platform UI library for nim (https://github.com/treeform/fidget)
 
-genui:: Cross-platform native UI toolkit
+Fidgetty:: Widget library built using a fork of Fidget written in pure Nim and OpenGL rendered. (https://github.com/elcritch/fidgetty)
 
-nimx:: Cross-platform GUI framework in pure Nim
+NiGui:: Cross-platform desktop GUI toolkit written in Nim (https://github.com/simonkrauter/NiGui)
 
-webgui:: Web Technologies based Crossplatform GUI Framework
+GenUI:: This is what might become a really kick-ass cross-platform native UI toolkit (https://github.com/PMunch/genui)
 
-nimgui:: Cimgui bindings (dear imgui immediate mode lib)
+nimx:: Cross-platform GUI framework in Nim (https://github.com/yglukhov/nimx)
 
-nfltk:: A wrapper for the Fast Light Toolkit
+WebGui:: Web Technologies based Crossplatform GUI Framework with Dark theme (https://github.com/juancarlospaco/webgui)
 
-iup:: Iup wrapper for Nim
+nimgui:: cimgui bindings for Nim (https://github.com/zacharycarter/nimgui)
 
-nimqml:: Qt Qml bindings
+nfltk:: Nimized Fast Light Toolkit  (https://github.com/Skrylar/nfltk)
 
-ui:: Beginnings of what might become Nim's official UI library
+IUP:: iup wrapper for Nim. Used to be part of the stdlib, now a Nimble package. (https://github.com/nim-lang/iup)
 
-uibuilder:: UI prototyping with Glade
+NimQML:: Qt Qml bindings for the Nim programming language (https://github.com/filcuc/nimqml)
 
-sciter:: Nim bindings are work in progress
+ui:: Beginnings of what might become Nim's official UI library (https://github.com/nim-lang/ui)
 
-nanovg:: Nim wrapper for the C NanoVG antialiased vector graphics rendering library for OpenGL
+uibuilder:: UI prototyping with Glade (https://github.com/ba0f3/uibuilder.nim)
 
-rdgui:: A modular GUI toolkit for rapid
+sciter:: Nim bindings are work in progress (https://sciter.com/forums/topic/nim-bindings-for-sciter/)
 
-nodesnim:: The Nim GUI/2D framework based on OpenGL and SDL2
+nim-nanovg:: Nim wrapper for the NanoVG vector graphics library for OpenGL (https://github.com/johnnovak/nim-nanovg)
 
-neel:: making lightweight Electron-like HTML/JS GUI apps with C, {cpp}, or Objective-C backends
+rdgui:: A modular GUI toolkit for rapid (https://github.com/liquidev/rdgui)
 
-mui:: A tiny, portable, immediate-mode UI library written in ANSI C
+nodesnim:: The Nim GUI/2D framework, based on OpenGL and SDL2 (https://github.com/Ethosa/nodesnim)
+
+neel:: A Nim library for making Electron-like HTML/JS GUI apps (https://github.com/Niminem/Neel)
+
+mui:: microui, a tiny immediate-mode ui library (https://github.com/Angluca/mui)
 
 Some of these bindings may currently not compile with the latest Nim compiler or may
 not support the new [.ndef]#ARC# memory management. But we recommend to investigate
