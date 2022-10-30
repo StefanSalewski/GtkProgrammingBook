@@ -1,6 +1,6 @@
 = GTK4 for Graphical User Interfaces
 with the Nim Programming Language (C) Dr. Stefan Salewski 2020, 2021, 2022, 2023
-//v0.1, 2022-OCT-28
+//v0.1, 2022-OCT-30
 :doctype: book
 :toc: left
 :icons: font
@@ -346,8 +346,6 @@ You should be aware that for the Nim programming language many more GUI toolkits
 available, some based also on GTK but with a different API design, and some based on
 other libraries or written directly in Nim like the NimX module.
 
-//puh
-
 Winim:: Nim's Windows API and COM Library (https://github.com/khchen/winim)
 
 wNim:: Nim's Microsoft Windows GUI Framework (https://github.com/khchen/wNim)
@@ -357,6 +355,8 @@ wxnim:: Nim wrapper for wxWidgets (https://github.com/PMunch/wxnim)
 Fidget:: Fidget - A cross-platform UI library for nim (https://github.com/treeform/fidget)
 
 Fidgetty:: Widget library built using a fork of Fidget written in pure Nim and OpenGL rendered. (https://github.com/elcritch/fidgetty)
+
+Owlkettle:: A declarative user interface framework based on GTK 4 (https://github.com/can-lehmann/owlkettle)
 
 NiGui:: Cross-platform desktop GUI toolkit written in Nim (https://github.com/simonkrauter/NiGui)
 
@@ -392,11 +392,11 @@ mui:: microui, a tiny immediate-mode ui library (https://github.com/Angluca/mui)
 
 Some of these bindings may currently not compile with the latest Nim compiler or may
 not support the new [.ndef]#ARC# memory management. But we recommend to investigate
-them before you decide to use gintro, maybe one of them fits better you needs. wNim
-should be a good choice when you intent to develop for windows only, nimx may be the
+them before you decide to use gintro, maybe one of them fits better your needs. wNim
+should be a good choice when you intend to develop for windows only, nimx may be the
 most fun as it is pure Nim, fidget looks really nice, nigui supports native look for
 Windows, and finally nimgui is a bindings to the dear imgui immediate mode library.
-Most of above bindings are hosted at github, you can use github, google or nimble
+Most of the above bindings are hosted at GitHub, you can use GitHub, Google or Nimble
 search to locate the packages.
 
 == Introducing GTK
@@ -407,7 +407,7 @@ able to open a terminal window and to enter and execute some commands. Some basi
 knowledge of the C language would also help, as we sometimes use C code as a starting
 point for our Nim programs.
 
-GTK is an event driven toolkit. That is we create widgets like buttons or text entry
+GTK is an event-driven toolkit. That is, we create widgets like buttons or text entry
 fields and connect them with one or multiple functions, which are then automatically
 called when an input event like a button press or a text entry is discovered by GTK.
 
@@ -418,19 +418,19 @@ widgets, or by removing widgets or by adding new widgets.
 
 Generally GTK does manage the actual layout of the widgets automatically for us, that
 is widgets are automatically arranged and resized to create a clean nice look, and
-when we resize the top level window or add or remove widgets, the layout adapts
+when we resize the top-level window or add or remove widgets, the layout adapts
 itself automatically. This behavior is archived by the boxes in boxes concept
 represented by GtkBox -- we create vertical or horizontal boxes, which we can fill
 with widgets, and we can put these boxes again in other larger boxes in a recursive
-manner. In this way we can specify the desired layout, but the concrete layout is
-done automatically. For example buttons can resize automatically when the label text
-or font size change. The horizontal or vertical boxes are supported by two
-dimensional grids or by special containers like header bars. We can tune the layout
+manner. In this way, we can specify the desired layout, but the concrete layout is
+done automatically. For example, buttons can resize automatically when the label text
+or font size change. The horizontal or vertical boxes are supported by
+two-dimensional grids or by special containers like header bars. We can tune the layout
 by specifying margins or distances between widgets, or we can modify the visual
-appearance with CSS. But generally we do not create layouts where we specify exact
+appearance with CSS. But generally, we do not create layouts where we specify exact
 pixel positions for GUI elements. GTK also offers a fixed positioning and sizing
 model, using the GtkFixed and the GtkLayout containers, but that is used only in rare
-cases. Recently GTK also got a new constraint-based layout manager developed by
+cases. Recently, GTK also got a new constraint-based layout manager developed by
 {ebassi}, which may allow to easily create even more flexible layouts.
 
 We can create the desired widgets directly in our Nim source code, for example by a
@@ -444,22 +444,23 @@ Using XML files and the Glade tool may appear simpler, more intuitive and more
 flexible. When we create GTK programs directly in the C languages that may be true,
 as C is a cryptic and verbose languages, which makes changes really difficult. For
 high-level languages like Nim or Python that is not really the case, so it is not
-always clear if use of external XML files really have a benefit. XML based layouts
+always clear, if the use of external XML files really have a benefit. XML based layouts
 have the advantage that the GUI layout can be modified without recompiling the
 program source code, so even users that do not have the source code of a program can
 modify the GUI layout. But this is only an advantage when we do ship our software
 without source code, and when we use the XML files in its original form as external
-text files. But in most cases we integrate the XML files again into our main
+text files. But in most cases, we integrate the XML files again into our main
 executable to simplify the deployment. An additional disadvantage of the use of XML
 files is that the Glade tool may not support all widget types and their properties
 well, so that manual modifications of the XML files can be necessary.
 
-So for the first part of this book we will create our GUI layout directly in the Nim
+So for the first part of this book, we will create our GUI layout directly in the Nim
 source code. Later we will introduce the use and layout of the XML files, and we will
 describe how the GTK builder library component is used to import the XML files and to
 access the widgets.
 
 === Installation of GTK
+//puh
 
 When you are interested in using GTK with Nim, them we should assume that you have
 both already installed on your computer and played with them.
@@ -504,7 +505,7 @@ internet forum:
 
 https://discourse.gnome.org/
 
-In the rest of this book we assume that you have also installed the Nim compiler and
+In the rest of this book, we assume that you have also installed the Nim compiler and
 a C compiler like gcc or clang.
 
 When you have not yet installed the Nim GTK bindings then you may enter in a terminal
@@ -676,7 +677,7 @@ which is executed at program startup automatically and a callback function calle
 hello(). As usual for C programs the main() function has two parameters, an array of
 optional command line parameters and the number of parameters. These two parameters
 are passed to the gtk_init() function which has to be called at the beginning of an
-old style GTK program. In the main() function a new top level window instance is
+old style GTK program. In the main() function a new top-level window instance is
 created by calling gtk_window_new(). Then we set the window title and we set the
 resizable property to false to give that window a fixed size. Then the function
 g_signal_connect() is called to connect the "destroy" signal to the predefined
@@ -690,7 +691,7 @@ the button to the window. We have to call gtk_widget_show_all() to make the wind
 and its parents visible. Finally we call gtk_main() to transfer control to the GTK
 main loop. That loop now runs as some form of supervisor waiting for user actions and
 calling the connected callback when appropriate. When the user clicks the close
-button of the window the program terminates, the top level window is closed, the GTK
+button of the window the program terminates, the top-level window is closed, the GTK
 main loops stops and the last line of the C main() function returns the value 0 to
 the {os} to indicate that no error has occurred.
 
@@ -720,7 +721,7 @@ like gtk_button_new() we get an instance which is market as "floating" indicatin
 that the instance is not already owned by someone. Generally we insert each widget
 that we create into another widget, like a window or another container widget, and
 that container widget then takes ownership of its child. When we destroy a container
-or when our program terminates and the top level window is destroyed, then all its
+or when our program terminates and the top-level window is destroyed, then all its
 children are automatically freed. So we have not to care about all that memory
 management in this case. But there are exceptions to this process, so C programmers
 sometimes have to carefully check when they have to ref() and unref() resources.
@@ -821,7 +822,7 @@ g_main_context_iteration function.
 
 Other less important differences are that gtk_init() and gtk_window_new() do not have
 function parameters in GTK4, that gtk_window_set_child() is used instead of
-gtk_container_add() to set the child widget of the top level window, and that
+gtk_container_add() to set the child widget of the top-level window, and that
 gtk_widget_show() is used instead of gtk_widget_show_all() to make the widgets
 visible.
 
@@ -920,7 +921,7 @@ GTK signals the parameter list of the callbacks consists only of the object itse
 and optional one more parameter, but there exists some signals which have more
 parameters. One way to learn about these signals is to inspect the GTK C API. But we
 have to remember that the GTK widget family build a hierarchy, so we may have to look
-for the signals also in parent classes. For example when we inspect the GtkButton API
+for the signals also in parent classes. For example, when we inspect the GtkButton API
 we will find only two signals, clicked and activate:
 https://developer.gnome.org/gtk4/stable/GtkButton.html#GtkButton.signals. But as
 GtkButton is a child of GtkWidget we could also use signals from
@@ -1067,7 +1068,7 @@ result of the program execution. In the C code g_object_unref(app) is called bef
 the status value is returned to the OS and the program is terminated. Earlier we said
 that even in C code we generally do not have to free objects or resources, because
 most objects like widgets are initially unowned after creation, and when we add them
-to containers the container takes ownership. For top level windows or the GTK
+to containers the container takes ownership. For top-level windows or the GTK
 application that is not the case, so their constructors return a none floating object
 with reference count set to one, and we have to destroy() or unref() them.
 
@@ -1087,11 +1088,11 @@ button in a very special fashion: We want that our application window is closed 
 the program terminates when we click on the button. For that we want to directly call
 the gtk_window_destroy() function on our application window as a callback function.
 The problem is, that when we connect a callback function to a button, then GTK would
-pass the button instance to the callback as first parameter. But we intent to call
+pass the button instance to the callback as first parameter. But we intend to call
 gtk_window_destroy() as callback with our application window as parameter. For this
 rarely used special case GTK offers a variant of g_signal_connect() which is called
 g_signal_connect_swapped() and which passes the optional user_data parameter to the
-callback. In this way we can pass the application window as user_data parameter
+callback. In this way, we can pass the application window as user_data parameter
 directly to the gtk_window_destroy() function. In Nim this form of swapped parameter
 passing is currently not supported, so we have to define our own function, which gets
 the window as optional parameter and then calls destroy() on it. After we have
@@ -1166,7 +1167,7 @@ the empty set. Finally we used the quit {proc} of system module to return the st
 result to the OS. The only small difference of the Nim code to the C code is that we
 do not use connectSwapped() but call an intermediate destroyWindow() {proc} that
 obtains the application window as an additional parameter and calls destroy() on it
-to close the top level window and to terminate the program. Providing a type safe
+to close the top-level window and to terminate the program. Providing a type safe
 connectSwapped() {proc} for the Nim bindings seems to be hard, and we would need it
 only in rare cases in real world code. Note that for the connect() macro the type of
 the optional parameter has to match exactly the data type used in the callback
@@ -1221,7 +1222,7 @@ signature for {proc}. Copying the C comments verbatim would not make much sense,
 rewriting all comments for Nim would be a gigantic effort. Generally the best
 solution for Nim is to follow the C API docs, which are generated by GTK directly
 from the GTK C source code. The C API docs are in most cases of good quality and not
-outdated, and the differences to the Nim API are generally obvious. For example if
+outdated, and the differences to the Nim API are generally obvious. For example, if
 you are interested in using GTK buttons, you can enter "GtkButton", "GTKButton gtk4"
 or "GTKButton API" into the search field of an internet search engine and you should
 get the matching GTK API page like
@@ -1687,6 +1688,61 @@ input again.
 
 + https://developer.gnome.org/gtk4/stable/GtkWidget.html
 
+=== The notify signal
+
+We said, that each GTK widget provides a set of signals, which we can use to
+catch user actions like pressing a button, or entering some text, when
+we connect a handler (callback) proc to the named signal.
+For example, a button provides the "clicked" signal, or a text entry widget
+provides the "activate" signal, which is emitted when the user has entered some text and
+terminates the input by pressing the ENTER or RETURN key. Most widgets have also
+a set of properties (attributes). Whenever a property of a widget is changed, then
+the "notify" signal is emitted. When we connect to this "notify" signal, then we get
+informed whenever one of the widget properties is changed. In the callback handler
+we can use the function paramSpec.getName() to get the actual name of the changed property.
+Typically we are only interested in changes of a single property. In that case, we can
+use a so called detailed "notify" signal of the form "notify::detail". In the following example, we
+will use an entry widget, and connect to the "notify::cursor-position" signal.
+The entry widget implements the editable interface, and this interface provides a set of properties,
+including the "cursor-position" property. We connect our notify() callback to the detailed signal
+"notify::cursor-position". When the cursor position in the entry changes, because the user
+types in new characters or moves the cursor, our callback is called. Notify callbacks have
+as second parameter an instance of type ParamSpec. This data type is not used that often --
+in a notify callback we may use the getName() function on the parameter to get the name of
+the changed property. This may be needed when we connect to the plain "notify" signal
+and have to decide which property was actually changed. We will learn some more details
+about the GtkEntry widget in a later section, and we will use the notify signal of a more
+useful property later in the book, when we introduce the GtkDropDown list widget.
+
+[[notify.nim]]
+[source,nim]
+.notify.nim
+----
+import gintro/[gtk4, gobject, gio, glib]
+
+proc activate(e: Entry) =
+  echo "You entered: ", e.buffer.text
+
+proc notify(e: Entry; paramSpec: ParamSpec) =
+  echo "notify:", paramSpec.getName
+  echo e.getPosition
+
+proc activate(app: gtk4.Application) =
+  let window = newApplicationWindow(app)
+  let entry = newEntry()
+  entry.connect("activate", activate)
+  # entry.connect("notify", notify) # this would give us a lot of notifications
+  entry.connect("notify::cursor-position", notify)
+  window.setChild(entry)
+  window.present
+
+proc main =
+  let app = newApplication("org.gtk.example")
+  app.connect("activate", activate)
+  discard app.run
+
+main()
+----
 
 === GtkGrid
 
@@ -2631,15 +2687,15 @@ signals or map them to GActions. You should also study the C API documentation o
 these simple widgets to learn about all the other functionality that is also
 available, like provided functions, available signals or widget properties.  Remember
 that GTK widgets build a class hierarchy so functionality may be provided by parent
-classes.  For example the GtkCheckButton is a subclass of GtkToggleButton and both
+classes.  For example, the GtkCheckButton is a subclass of GtkToggleButton and both
 are of course widgets, so you may have to consult all that API documentation to find
 functions or properties that you may desire. Also consider using the devhelp tool to
 navigate the C API docs. For the more advanced and complicated widgets like
 GtkTreeView, GtkListView and GtkDrawingArea we will give only minimal examples in
 this chapter to give you a basic feeling what they are and how they can be used.
 GtkTreeView and GtkListView are powerfull widgets to display larger textual and other
-data sets. And the GtkDrawingArea is a widget where we can draw arbitrary two
-dimensional graphics by using drawing functions of the cairo graphics library. We can
+data sets. And the GtkDrawingArea is a widget where we can draw arbitrary
+two-dimensional graphics by using drawing functions of the cairo graphics library. We can
 use the GtkDrawingArea for pure display purpose, or we can combine it with user input
 activities to create advanced CAD tools. One more advanced GTK widget is the
 GtkGLArea which can be used to display three-dimensional OpenGL graphics.  But as
@@ -3354,7 +3410,7 @@ loadFromPath() can be used to load the data from an external CSS text file. The 
 string starts with the name of the widget that we want to modify followed by the
 necessary information enclosed in curly braces. As we have direct access to our
 widget we call getStyleContext() to gets its style context and then call
-addProvider() to add our new CSS information. This way we can change the size,
+addProvider() to add our new CSS information. This way, we can change the size,
 margins and padding of widgets and many other styling properties. But these form of
 styling is not always that easy and may sometimes not work as expected at all. For
 styling widgets which are not directly accessible but contained deeply nested in
@@ -3582,7 +3638,7 @@ its new state. Note that for the radio buttons one click on a button to activate
 automatically releases the formerly pressed button in the group, resulting in one
 additional call of our callback function. We create a new check or radio button with
 a call of newCheckButton(). When we give a string argument the button gets a label
-next to the active area. In most cases we need a label to inform the user about the
+next to the active area. In most cases, we need a label to inform the user about the
 purpose of that button, but when our check button has a neighborhood relation to
 another widget a label may not be necessary. We can later set or modify the label
 text with setLabel() or retrieve the label text with getLabel(). As for most widgets
@@ -4000,7 +4056,7 @@ increase or decrease rate is constant. But when we set the climb rate to a value
 greater zero, then the steps with which the contents changes increases in size,
 allowing a faster but less accurate adjustment.
 
-For our first spin button we intent a valid input range from zero to 100 with a start
+For our first spin button we intend a valid input range from zero to 100 with a start
 value of 50, and we do want no fractional results, so we set the last parameter
 digits in the newSpinButton() call to zero. To allow fast modifications of the input
 value with the mouse or with the arrow keys, we use a climb rate of 5.
@@ -4672,7 +4728,7 @@ path of the selected file.
 
 Instead of the FileChooserAction.open we can use the enum  value
 save to create a dialog to save a file or the enum value selectFolder
-when we intent the user to select a whole directory.
+when we intend the user to select a whole directory.
 
 There are various cases in which we may need to use a GtkFileChooserDialog:
 
@@ -4894,7 +4950,7 @@ button, so that the message "You can click or drag me" is printed in the termina
 the drag action stops to work. We have still to investigate the reason for this, maybe it is a bug in current GTK4.
 Actually most of the time we would not connect drag sources to button widgets, but to other widget types.
 
-Instead of dragging text strings, we may intent to pass whole named files to a destination app
+Instead of dragging text strings, we may intend to pass whole named files to a destination app
 that can process them, e.g. the Gedit editor. Our program from above can be easily modified to do that,
 but we have to know which data types we have to use. To have a source file for testing, we execute this command first:
 
@@ -4999,7 +5055,7 @@ main()
 
 We create the drop target with the function newDropTarget(), which gets as a
 first parameter the GType of the expected data, and as second argument a drag flag enumeration, which
-may have values like copy or move to indicate if we intent a copy or a move operation.
+may have values like copy or move to indicate if we intend a copy or a move operation.
 Our drop callback function receives the data as a GValue. The provided x, y parameters
 can be used to test if the drop operation occurred in the intended area. If the drop operation
 is accepted, the callback should return true, and false otherwise. In our callback function, we
@@ -5074,7 +5130,8 @@ References:
 * https://docs.gtk.org/gdk4/class.ContentProvider.html
 
 
-== GtkListView, GtkColumnView, GtkGridView and GtkDropDown
+//== GtkListView, GtkColumnView, GtkGridView and GtkDropDown
+== ListView, ColumnView, GridView and DropDown
 
 The ListView and ColumnView widgets are the modern GTK4 replacements
 for the old GtkTreeView widget. The DropDown widget can replace
@@ -5159,7 +5216,7 @@ The "setup" signal is emitted when the factory needs to create a new row widget,
 The ListView will create a few more rows than it needs to fill its visible area, to get a better estimate for the size of the scrollbars, and in order to have some "buffer" for when we decide to scroll the view. When we scroll the list, then the factory will not create new widgets, but only reconnect
 visible widgets to new data. 
 
-=== A tiny ListView example
+=== A few ListView examples
 
 We will start with a very simple ListView example, which only displays a
 numbered list of strings:
@@ -5209,7 +5266,7 @@ main()
 The list-like widgets are generally put into a ScrolledWindow, so we create
 a new ScrolledWindow instance in the activate proc. Then we call our own
 createList proc, which returns a ListViewWidget, which we then can set as child of
-the ScrolledWindow instance. In the createList() proc, we intent to call
+the ScrolledWindow instance. In the createList() proc, we intend to call
 newListView() to create a ListView widget instance, which we can return. For
 this, we need a GtkSelectionModel, and a GtkListItemFactory. We create a
 GtkSelectionModel instance with a call of newNoSelection(), which requires
@@ -5524,6 +5581,28 @@ the label instances for data storage.
 
 === GtkDropDown
 
+The DropDown widget is a replacement for the old GtkComboBox(text). It looks like a plain button,
+and pops up a list of choices, from which the user can select. Internally, the DropDown works
+similar as the GtkList, using a ListModel and a factory. In this section, we will only
+present an example for the simplest use of a DropDown widget, with a set of textual strings from which
+the user can pick one. This should be the typical use of the widget, and we do not have to provide
+an explicit factory or "setup" and "bind" callbacks, as the widget has already a default factory implementation.
+To create this form of simple DropDown widget, we just have to call  newDropDownFromStrings().
+
+This widget has no special signals which get emitted when the user makes a selection, so we have
+to use the general "notify" signal for widget properties, which was already introduced earlier in the book.
+In our example, we connect to the "notify::selected" signal. "Selected" is a numerical property, specifying the
+ordinal value of the selected item. We may have connected our callback-handler to the "notify::selected-item" signal
+instead -- selected-item is a property for the selected item.
+In the callback, we use getSelectedItem() to
+get the item from the model, and we use the GTK function typeCheckInstanceIsA() to ensure
+that the item is really a GtkStringObject. Finally, we have to cast the item from the original GObject
+type to the GtkStringObject type, before we can call getString() on the item to read out the wrapped string.
+Note that in this case an ugly cast is really needed, a Nim test like "o of StringObject" or
+a Nim type conversion like StringObject(o) would not work, because GTK stores the items as plain GObjects internally
+(so getSelectedItem() always returns a plain GObject).
+
+
 [[DropDown1.nim]]
 [source,nim]
 .DropDown1.nim
@@ -5544,8 +5623,11 @@ proc activate(app: Application) =
   let box = newBox(Orientation.vertical)
   let label = newLabel("Initial Text")
   let dd = newDropDownFromStrings("zero", "one", "two", "three", "four", "five", "six", "seven")
+  let m = dd.getModel # get the model and 
+  cast[gtk4.StringList](m).append("many") # add more items
+  # dd.showArrow = false # supress the downwards pointing  arrow 
   # dd.connect("notify", notify, label) # all properties
-  dd.connect("notify::selected", notify, label)
+  dd.connect("notify::selected-item", notify, label)
   box.append(label)
   box.append(dd)
   window.setChild(box)
@@ -5558,6 +5640,11 @@ proc main =
 
 main()
 ----
+
+After creating the initial list with newDropDownFromStrings(), we can always use
+getModel() to get the list model, and then call append() to append more strings.
+And sometimes it is useful to call setArrow(false) on the drop down widget
+to suppress the arrow symbol at the right of the button text.
 
 References:
 
