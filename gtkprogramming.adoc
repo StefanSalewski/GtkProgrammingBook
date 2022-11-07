@@ -1,6 +1,6 @@
 = GTK4 for Graphical User Interfaces
 with the Nim Programming Language (C) Dr. Stefan Salewski 2020, 2021, 2022, 2023
-//v0.1, 2022-OCT-30
+//v0.1, 2022-NOV-07
 :doctype: book
 :toc: left
 :icons: font
@@ -460,18 +460,17 @@ describe how the GTK builder library component is used to import the XML files a
 access the widgets.
 
 === Installation of GTK
-//puh
 
-When you are interested in using GTK with Nim, them we should assume that you have
-both already installed on your computer and played with them.
+When you are interested in using GTK with Nim, then we should assume that you have
+both already installed on your computer and have played with them.
 
-For Nim you will find detailed installation instructions on the Nim homepage:
+For Nim, you will find detailed installation instructions on the Nim homepage:
 https://nim-lang.org/install.html
 
-On Linux computers GTK is generally installed by default, or at least available by
-the package manager of your Linux distribution. If you should still have an old Linux
-system which does not yet provide GTK4, you may install it beside your GTK3. For
-example you may install the latest GTK4 from git which these commands entered in a
+On Linux computers, GTK is generally installed by default, or at least made available by
+the package manager of your Linux distribution. If you still have an old Linux
+system that does not yet provide GTK4, you may install it beside your GTK3. For
+example, you may install the latest GTK4 from git with these commands entered in a
 Linux terminal window:
 
 ----
@@ -500,15 +499,15 @@ and for {macos}:
 
 https://www.gtk.org/docs/installations/macos/
 
-If you have problems with the installation then you may ask for support at the GTK
-internet forum:
+If you have problems with the installation, then you may ask for support at the GTK
+Internet forum:
 
 https://discourse.gnome.org/
 
 In the rest of this book, we assume that you have also installed the Nim compiler and
 a C compiler like gcc or clang.
 
-When you have not yet installed the Nim GTK bindings then you may enter in a terminal
+When you have not yet installed the Nim GTK bindings, then you may enter in a terminal
 window:
 
 ----
@@ -516,104 +515,104 @@ nimble install gintro
 ----
 
 The gintro package generates the bindings between the GTK libraries and the Nim
-language locally on your computer by querying the gobject-introspection data base.
+language locally on your computer by querying the gobject-introspection database.
 The generated modules depend on your {os} (Linux, Windows, Mac, 32 bit, 64 bit) and
-on the available GTK version. If you update your GTK system it may be necessary to
+on the available GTK version. If you update your GTK system, it may be necessary to
 update gintro by [.term]#nimble uninstall gintro; nimble install gintro#. Executing
 that sequence is also recommended when a new gintro release is available. You can
-also use [.term]#nimble install gintro@head# to get the latest gintro with latest,
+also use [.term]#nimble install gintro@head# to get the latest gintro with the latest,
 less tested fixes.
 
 .The GTK Nim Bindings
 ****
 
-The Nim GTK relation has a long history. It started with low level bindings created
-by the [.ndef]#c2nim# tool many years ago. In 2015 we then got low level, c2nim
+The Nim GTK relationship has a long history. It started with low level bindings created
+by the [.ndef]#c2nim# tool many years ago. In 2015, we then got low level, c2nim-
 generated GTK3 bindings, which are still available in the [.ndef]#oldgtk3# nimble
 package. But it was obvious that low level GTK bindings are more than useless -- they
 transfer all the ugly aspects of plain C into the Nim world, without transferring the
-few benefits of the GTK C API like elaborated C GTK macros and well documented and
+few benefits of the GTK C API like elaborated C GTK macros and a well documented and
 tested API. Nim coding using low level GTK bindings is a pain compared to using C
 directly. So it was considered to use GTK's gobject-introspection API to generate
 high-level Nim bindings. A first experimental attempt was made already in 2015 by Mr.
 Jason Mansour (https://github.com/jdmansour/nim-smartgi), but the project was aborted
-soon. At the same time Mr. Jonne Haß started to create gobject-introspection based
+soon. At the same time, Mr. Jonne Haß started to create gobject-introspection based
 bindings for the new Crystal programming language
 (https://github.com/jhass/crystal-gobject), and the Rust project spent much work in
-creating gobject-introspection based bindings to the Rust language. In 2016 Dr.
-Salewski started a second try to write a gobject-introspection based bindings
+creating gobject-introspection based bindings to the Rust language. In 2016, Dr.
+Salewski started a second atempt to write a gobject-introspection based bindings
 generator in Nim and for Nim from scratch, with the initial goal to create some
-working bindings similar to the oldgtk3 ones. In the following years work on the new
+working bindings similar to the oldgtk3 ones. In the following years, work on the new
 bindings continued, with the goal to provide really high-level and high quality
 bindings covering nearly all GTK related functions and data types. The nimble package
 containing the bindings generator was called gintro, and in 2020 support for Nim's
 new ARC memory management and for GTK4 was added.
 
-From time to time there are request to provide pre-built bindings instead of
+From time to time, there are requests to provide pre-built bindings instead of
 generating them locally for each nimble package install. One often raised argument is
-quality insurance and audit support. Well we would have to provide at least 6
-different sets of the bindings -- for Linux, Windows, Mac, each in 32 and 64 bit
+quality insurance and audit support. Well, we would have to provide at least six
+different sets of the bindings -- for Linux, Windows, and Mac, each in a 32. and 64-bit
 variant. And as {gtk4} is actively developed, we would have to update and test all of
-them regularly. Still it would be possible that the newest modules would not work for
+them regularly. Still, it would be possible that the newest modules would not work for
 people with older GTK versions. This does not mean that this solution is bad and will
-not be supported in future, but the required work load to maintain it would be really
-large. Maybe a group of really active volunteers using various {os} could manage it.
-Another often requested solution is providing machine independent bindings similar as
+not be supported in the future, but the required work load to maintain it would be really
+large. Maybe a group of really active volunteers using various {os}s could manage it.
+Another often requested solution is providing machine independent bindings similar to what
 the c2nim program tries to provide. But the fact is that gobject-introspection is
 designed to provide machine dependent information only. So the solution would be to
 generate machine dependent files for all supported targets first, and then to compare
 the files for differences and try to unify them by including machine sensitive when
-statements. Maybe that would be possible.  Unfortunately the initial
+statements. Maybe that would be possible.  Unfortunately, the initial
 gobject-introspection based files vary drastically with each new GTK release, so we
 would need a permanent unifying and testing process.  Maybe we could fully automate
-that in some way? If not then again the work load for the maintainers would be very
+that in some way? If not, then again, the work load for the maintainers would be very
 high.
 
-Maybe in future we will get also high-level GTK bindings from other sources as an
-alternative to the gintro based ones. Besides gobject-introspection based ones other C
-header based approaches using libclang or using the tree-sitter library would be
+Maybe in the future we will also get high-level GTK bindings from other sources as an
+alternative to the gintro based ones. Besides the gobject-introspection based ones, other C
+header-based approaches using libclang or using the tree-sitter library would be
 possible. Such ideas have been discussed, but we should not have too high
-expectations. The information which can be extracted from header files is generally
+expectations. The information that can be extracted from header files is generally
 not sufficient for high-level bindings, and using gobject-introspection is not really
-easy and much work. But maybe someone will convert a well working
-gobject-introspection based bindings generator to Nim, maybe one which is used by
-languages like Go or Rust. As gintro generates high quality idiomatic bindings, all
-bindings generated in alternative manner should be fully compatible, but maybe would
+easy and requires much work. But maybe someone will convert a well-working
+gobject-introspection based bindings generator to Nim, maybe one that is used by
+languages like Go or Rust. As gintro generates high-quality idiomatic bindings, all
+bindings generated in an alternative manner should be fully compatible, but maybe would
 detect some hidden bugs.
 
-Instead of using gobject-introspection it was suggested also to directly inspect the
+Instead of using gobject-introspection, it was suggested also to directly inspect the
 XML GIR files to gain information for the binding generation process. But that seems
 to be a bad idea, even considering the fact that the gobject-introspection API is not
 well explained and difficult to use.
 
-Finally one may ask why the bindings are at all generated during the install process,
-and not on the fly during the compilation of user programs. Theoretically on the fly
+Finally, one may ask why the bindings are generated at all during the installation process,
+and not on the fly during the compilation of user programs. Theoretically, on the-fly
 generation may be possible -- Nim macros may be able to query the
 gobject-introspection database during the compile process for required data types and
-functions. The benefit would be that always the latest GIR files where used, the user
+functions. The benefit would be that the latest GIR files would always be used, the user
 would never have to update the gintro nimble package. And for each compile of the
-user program only the really needed data would be processed, while with the
-pre-generated module files the whole GTK interface is compiled each time. But for
-statically typed languages on the fly bindings generation seems to be strange and
+user program, only the really needed data would be processed, while with the
+pre-generated module files, the whole GTK interface is compiled each time. But for
+statically typed languages, on-the-fly bindings generation seems to be strange and
 probably is impossible. Compiling an average Nim GTK program takes about 3 seconds
-with current Nim compiler, and will become faster when the experimental incremental
+with the current Nim compiler and will become faster when the experimental incremental
 compilation will work reliable. So, there is no real reason to complain.
 
 ****
 
 === Legacy Program Layout
 
-{gtk3} introduces the GtkApplication framework, which is continued by {gtk4} and is
+{gtk3} introduces the GtkApplication framework, which is continued in {gtk4} and is
 generally the recommended way to create GTK applications. Programs based on
-GtkApplication seems to be a bit more complicated than the ones with legacy {gtk2}
+GtkApplication seem to be a bit more complicated than the ones with legacy {gtk2}
 startup code, but the GtkApplication style offers some benefits like management of
 multiple program instances, parameter passing, and it enables new modern layouts with
 header bars and hamburger menus. So we will use the GtkApplication style in the rest
 of this book.
 
-As you will still find many example programs that still uses the old {gtk2} program
-startup code, we will present that program shape here first. The following C program
-called simplegtk3.c uses the old {gtk2} style and can be compiled with this command:
+As you will still find many example programs that still use the old {gtk2} program
+startup code, we will present that program shape here first. The following C program,
+called simplegtk3.c, uses the old {gtk2} style and can be compiled with this command:
 
 ----
 gcc -o simplegtk3 simplegtk3.c `pkg-config --libs --cflags gtk+-3.0`
@@ -627,7 +626,7 @@ You can run it from a terminal window with this command:
 
 The program will open a tiny window containing a single push button. Clicking that
 button will write a message to the terminal window. You can terminate the program by
-clicking with the mouse on the cross on the upper right corner of the program window.
+clicking with the mouse on the cross in the upper right corner of the program window.
 
 // GDK_DPI_SCALE=0.5 ./simplegtk3
 image::simplegtk3c.png[]
@@ -672,90 +671,90 @@ main (int argc, char *argv[])
 
 The source code has the typical structure of {gtk2} programs written in C language:
 The first two lines are only comments, it follows an include directive to make the
-gtk library available. The program consists of two functions, the C main() function
-which is executed at program startup automatically and a callback function called
-hello(). As usual for C programs the main() function has two parameters, an array of
-optional command line parameters and the number of parameters. These two parameters
-are passed to the gtk_init() function which has to be called at the beginning of an
-old style GTK program. In the main() function a new top-level window instance is
-created by calling gtk_window_new(). Then we set the window title and we set the
+gtk library available. The program consists of two functions: the C main() function
+which is executed automatically at program startup, and a callback function called
+hello(). As usual for C programs, the main() function has two parameters: an array of
+optional command-line parameters and the number of parameters. These two parameters
+are passed to the gtk_init() function, which has to be called at the beginning of an
+old style GTK program. In the main() function, a new top-level window instance is
+created by calling gtk_window_new(). Then we set the window title, and we set the
 resizable property to false to give that window a fixed size. Then the function
 g_signal_connect() is called to connect the "destroy" signal to the predefined
 callback function gtk_main_quit() provided by gtk. The destroy signal is emitted for
 the window by GTK when we click with the mouse on the window close symbol. In this
-case gtk_main_quit() terminates the whole program. After this we create a button
-instance and set some properties of the button like its label text and its margins to
+case gtk_main_quit() terminates the whole program. After this, we create a button
+instance and set some properties of the button, like its label text and its margins, to
 reserve some space between the button and the border of the enclosing window. We
 connect the "clicked" signal of the button instance to our hello() callback and add
 the button to the window. We have to call gtk_widget_show_all() to make the window
-and its parents visible. Finally we call gtk_main() to transfer control to the GTK
-main loop. That loop now runs as some form of supervisor waiting for user actions and
+and its parents visible. Finally, we call gtk_main() to transfer control to the GTK
+main loop. That loop now runs as some form of supervisor, waiting for user actions and
 calling the connected callback when appropriate. When the user clicks the close
-button of the window the program terminates, the top-level window is closed, the GTK
-main loops stops and the last line of the C main() function returns the value 0 to
+button of the window, the program terminates, the top-level window is closed, the GTK
+main loop stops, and the last line of the C main() function returns the value 0 to
 the {os} to indicate that no error has occurred.
 
-A few remarks to above program: All the GTK widgets are objects which GTK creates for
-us by calls like gtk_button_new(). These "constructor" calls returns a pointer to the
-widget and we use this pointer to access and interact with the widget later.  The GTK
+A few remarks about the above program: All the GTK widgets are objects, which GTK creates for
+us by calls like gtk_button_new(). These "constructor" calls return a pointer to the
+widget, and we use this pointer to access and interact with the widget later.  The GTK
 widgets build a hierarchy with parent/child inheritance in OOP fashion. The basic GTK
-widget is a sub class of the gobject object, and other widgets like windows or
-buttons are again sub classes of widget. In GTK C code the widget is generally used
+widget is a subclass of the gobject object, and other widgets like windows or
+buttons are again subclasses of widget. In GTK C code, the widget is generally used
 as the static base type. So when a button widget is used, then a variable of type
-widget is declared and gtk_button_new() returns not a button instance, but the plain
+widget is declared and gtk_button_new() returns not a button instance but the plain
 widget type. This has the consequence that whenever we use a button function on that
-instance, we have to cast the widget to a button type as in
+instance, we have to cast the widget to a button type, as in
 [.code]#gtk_button_set_label (GTK_BUTTON (button), "hello world)"#. That is a
 convention chosen by the initial GTK creators.  Note that in C casts like
 GTK_BUTTON() do type checks at runtime and give runtime warnings when the types do
 not match. We may wonder if we have to free widgets when we do not need them any
-longer. Indeed, in C code that can be necessary in some cases.  GTK uses reference
-counting for its objects, that is that each object has a reference counter. In C we
-can increase that counter to reference an object, that is to ensure that it is kept
-alive and is not destroyed by GTK. When we do not need that object any more we can
-decrease the reference counter. If the reference counter drops to zero then GTK
+longer. Indeed, in C code, that can be necessary in some cases.  GTK uses reference
+counting for its objects, meaning that each object has a reference counter. In C, we
+can increase that counter to "reference" an object, that is, to ensure that it is kept
+alive and is not destroyed by GTK. When we do not need that object any more. we can
+decrease the reference counter. If the reference counter drops to zero, then GTK
 destroys the object, that is GTK frees its memory and closes related resources. But
 often we do not have to really care for that. The reason for that is that GTK uses a
 special variant of reference counting: When we create a widget with a constructor
-like gtk_button_new() we get an instance which is market as "floating" indicating
-that the instance is not already owned by someone. Generally we insert each widget
+like gtk_button_new(), we get an instance that is marked as "floating". indicating
+that the instance is not already owned by someone. Generally, we insert each widget
 that we create into another widget, like a window or another container widget, and
 that container widget then takes ownership of its child. When we destroy a container
 or when our program terminates and the top-level window is destroyed, then all its
 children are automatically freed. So we have not to care about all that memory
 management in this case. But there are exceptions to this process, so C programmers
 sometimes have to carefully check when they have to ref() and unref() resources.
-Fortunately high-level languages like Nim or Python have a garbage collector which
-frees all objects when appropriate, so we have not to care for this. Nim with gintro
+Fortunately, high-level languages like Nim or Python have a garbage collector that
+frees all objects when appropriate, so we do not have to worry about this. Nim with gintro
 supports even the new ARC memory management, which is deterministic and scope based:
-When a widget or another object goes out of scope it is immediately freed and all
+When a widget or another object goes out of scope, it is immediately freed, and all
 related resources are closed or released.
 
-In the code above we use the function g_signal_connect() to connect widgets to a user
-defined callback function. The signal type like "clicked" is not an enumeration type
-as we may have expected but a string. The string data type shall enable extending of
-the signal system -- with enums that would not be possible. The g_signal_connect()
-function allows to pass additional user data in form of a plain void pointer to the
-callback functions. If there is no data parameter then NULL is passed. Fortunately in
-Nim we can do the optional parameter passing in a type save way.
+In the code above, we use the function g_signal_connect() to connect widgets to a user
+defined callback function. The signal type like "clicked" is not an enumeration type,
+as we may have expected, but a string. The string data type shall enable the extension of
+the signal system -- with enums, that would not be possible. The g_signal_connect()
+function allows additional user data to be passed in the form of a plain void pointer to the
+callback functions. If there is no data parameter, then NULL is passed. Fortunately, in
+Nim, we can do the optional parameter passing in a type-safe way.
 
-Another aspect that we should discuss is the margin size which we have specified for
+Another aspect that we should discuss is the margin size that we have specified for
 our button. The margin is the void area around a widget. The literal value 10 used in
-the set_margin() functions is a pixel size, as the GTK API is for historic reason
-pixel based. Today where displays with very high DPI resolution are available, the
+the set_margin() functions is a pixel size, as the GTK API is for historic reasons
+pixel based. Today, where displays with very high DPI resolution are available, the
 pixel is not always a good size unit. Distances like margins are generally related to
 text size, so size units like em or ex for the size of letters as used in HTML and
 CSS would be a more flexible size unit. To allow using of GTK on screens with very
-high DPI value GTK3 and GTK4 use logical pixels, as opposed to physical ones. This
-is, the user can configure the desktop environment to scale the pixel size, generally
+high DPI values, GTK3 and GTK4 use logical pixels, as opposed to physical ones. This
+means the user can configure the desktop environment to scale the pixel size, generally
 by factor 1 for ordinary displays and by 2 for high DPI displays. Fractional scaling
 factors are not yet supported, so this does not really allow a fine tuning of the
-visual layout. Generally you should know that what really matters is not the DPI
-value but viewing angle: When you have a large display with low DPI value and you
-move it away from your eyes, it will appear like a smaller display with higher DPI
+visual layout. Generally, you should know that what really matters is not the DPI
+value but the viewing angle: When you have a large display with a low DPI value and you
+move it away from your eyes, it will appear like a smaller display with a higher DPI
 value.
 
-Now let us investigate how above C program looks for GTK4:
+Now let us investigate how the above C program looks for GTK4:
 
 [[simple.c]]
 [source,c]
@@ -806,6 +805,7 @@ main (int argc, char *argv[])
 }
 ----
 
+//puh
 The most important difference is the fact that gtk_main() is not called at the end of
 the C main() function, but g_main_context_iteration() is called in a loop. The user
 has to provide a way to terminate that loop to exit the program. Above program does
