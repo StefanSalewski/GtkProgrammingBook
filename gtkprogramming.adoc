@@ -1,6 +1,6 @@
 = GTK4 for Graphical User Interfaces
 with the Nim Programming Language (C) Dr. Stefan Salewski 2020, 2021, 2022, 2023
-//v0.1, 2022-NOV-07
+//v0.1, 2022-NOV-09
 :doctype: book
 :toc: left
 :icons: font
@@ -805,18 +805,17 @@ main (int argc, char *argv[])
 }
 ----
 
-//puh
 The most important difference is the fact that gtk_main() is not called at the end of
 the C main() function, but g_main_context_iteration() is called in a loop. The user
-has to provide a way to terminate that loop to exit the program. Above program does
-that by calling an additional function called quit_cb(), that is called when the top
-level window is going to be destroyed (user clicks on the x symbol of the main
-window) and that sets the done variable of the C main() function to the value true.
-The function g_main_context_iteration() has two parameters, a GMainContext for which
-we pass NULL to get the default one and a boolean value which determines if that
-function may block or not. In the quit_cb() callback the function
-g_main_context_wakeup() is called. That functions also has a parameter named context
-of type GMainContext -- here NULL is again passed to use the default one. The
+has to provide a way to terminate that loop to exit the program. The above program does
+that by calling an additional function called quit_cb() that is called when the top-
+level window is going to be destroyed (the user clicks on the x symbol of the main
+window), and that sets the done variable of the C main() function to the value true.
+The function g_main_context_iteration() has two parameters: a GMainContext, for which
+we pass NULL to get the default one, and a boolean value that determines if that
+function may block or not. In the quit_cb() callback, the function
+g_main_context_wakeup() is called. That function also has a parameter named context
+of type GMainContext; here NULL is again passed to use the default one. The
 function g_main_context_wakeup() ensures that context is not blocking in the
 g_main_context_iteration function.
 
@@ -827,7 +826,7 @@ gtk_widget_show() is used instead of gtk_widget_show_all() to make the widgets
 visible.
 
 Now let us create a Nim version of the C code above: We may use the tool c2nim to
-generate a nimified version of the C source code, and tune it a bit manually
+generate a nimified version of the C source code, and tune it a bit manually,
 resulting in this program:
 
 [[simple.nim]]
@@ -870,8 +869,8 @@ main()
 
 The program structure follows closely the C program, there is no need to press the
 code in classes. The first two lines are only comments. It follows an import
-statement, we import the modules gtk4, glib and gobject unqualified into the global
-name space, as common for Nim.footnote:[You may wonder why the gtk module itself has
+statement; we import the modules gtk4, glib and gobject unqualified into the global
+name space, as is common for Nim.footnote:[You may wonder why the gtk module itself has
 a numeric suffix, but other companion modules like glib and gobject do not. The
 reason for this is that the main libraries gtk and gdk are available each in version
 2, 3 and 4, and are not backward compatible. But for the companion libs like glib,
@@ -880,57 +879,59 @@ gtk4 together. For the gintro Nim bindings the gtk3 module was just called gtk f
 historic reasons.] We have decided to call the function that contains the largest
 code part main(), but that name can be freely selected in Nim. And we have to call
 that function explicitly, there is no function that is called automatically in Nim.
-Most statements in the Nim program directly corresponds to the statements in the C
+Most statements in the Nim program directly correspond to the statements in the C
 code. We use method call syntax for most function calls as common in Nim, that is
 instead of setChild(window, button) we write window.setChild(button). That may look
 like OOP style, but it is at the end just a syntax variant. The gintro module uses
-generally short unqualified function names, that is newWindow() instead of
+generally short unqualified function names, that is, newWindow() instead of
 gtk_window_new(). We could use a module qualifier like gtk4.newWindow(), but that is
-only necessary if some of the imported modules export the same symbol (with same
+only necessary if some of the imported modules export the same symbol (with the same
 signature) so that name conflicts occur. The Nim compiler reports the rare name
-conflicts as errors, and we can add module prefixes in our Nim source code then. For
-the init() function of the gtk4 module we have decided to use a module prefix from
-the beginning -- for functions without parameters and with very short trivial names
-the chance for name conflicts increase. And sometimes it is useful to indicate the
+conflicts as errors, and we can add module prefixes to our Nim source code then. For
+the init() function of the gtk4 module, we have decided to use a module prefix from
+the beginning; for functions without parameters and with very short trivial names,
+the chance for name conflicts increases. And sometimes it is useful to indicate the
 origin of a function by use of a module qualifier.  GTK widgets and the other gobject
 based types in GTK are objects that are dynamically created on the heap and accessed
-by pointers in C code.  The gintro Nim bindings creates a Nim proxy object for each
-instance of these types.  Nim constructors like newWindow() or newButton() creates a
-Nim proxy object on the heap and return its reference --  the proxy objects is
-automatically destroyed when it is not needed any longer by our Nim code and by GTK
+by pointers in the C code.  The gintro Nim bindings create a Nim proxy object for each
+instance of these types.  Nim constructors like newWindow() or newButton() create a
+Nim proxy object on the heap and return its reference; the proxy object is
+automatically destroyed when it is no longer needed by our Nim code or by GTK
 itself. The proxy object contains a pointer to the GTK object and some more fields
 for internal use. While the internal relationship between Nim's proxy objects and
 GTK's widgets and other gobject based types is not trivial, for the gintro user these
 types behave like ordinary Nim objects handled by Nim's memory management system.
 
-Opposite to GTK itself the gintro constructors do not always return a reference to a
-plain widget, but they return the actual ref type like Button or Window. For
-connecting GTK signals the type safe connect() macro call is used, which accepts an
-optional typed argument. Currently that optional argument can be a plain value like
+Contrary to GTK itself, the gintro constructors do not always return a reference to a
+plain widget, but they return the actual ref type, like Button or Window. For
+connecting GTK signals, the type safe connect() macro call is used, which accepts an
+optional typed argument. Currently, that optional argument can be a plain value like
 int or a reference to an arbitrary type, but var parameters are currently not
 supported. So we had to use a ref bool for the parameter of the quit_cb() callback
 function, as we want to modify the boolean value in the quit_cb() callback and access
-the modified value in the main() {proc}. We have to de-reference the done variable by
+the modified value in the main() {proc}. We have to de-reference the done variable with
 the dereference operator [] to access the content. The var parameter type should be
 needed only in very rare cases as the optional parameter of the connect macro --
-maybe gintro will support them later. The gintro connect macro is type safe, the data
+maybe gintro will support them later. The gintro connect macro is type safe; the data
 types of all parameters have to match with the data types used in the connected
 callback function. That is we have to pass a window or button parameter in the code
 above. The data type of the optional parameter has to match also of course. For most
-GTK signals the parameter list of the callbacks consists only of the object itself
-and optional one more parameter, but there exists some signals which have more
+GTK signals, the parameter list of the callbacks consists only of the object itself
+and optional one more parameter, but there are some signals that have more
 parameters. One way to learn about these signals is to inspect the GTK C API. But we
 have to remember that the GTK widget family build a hierarchy, so we may have to look
-for the signals also in parent classes. For example, when we inspect the GtkButton API
+for the signals also in parent classes. For example, when we inspect the GtkButton API,
 we will find only two signals, clicked and activate:
 https://developer.gnome.org/gtk4/stable/GtkButton.html#GtkButton.signals. But as
 GtkButton is a child of GtkWidget we could also use signals from
 https://developer.gnome.org/gtk4/stable/GtkWidget.html#GtkWidget.signals for our
 button.
 
-When we set properties or attributes we have generally various options, we can use
-function or method call syntax and we can assign the value using the equal sign. For
-the setter {proc} we can generally use the short name without the set name component:
+When we set properties or attributes, we have several options: we can use function or method call syntax,
+or we can use the equal sign to assign the value.
+//When we set properties or attributes we have generally various options, we can use
+//function or method call syntax and we can assign the value using the equal sign.
+For the setter {proc}, we can generally use the short name without the set name component:
 
 ----
 setTitle(window, "Hello")
@@ -940,8 +941,8 @@ window.title("Hello")
 window.title = "Hello"
 ----
 
-For setting some properties like the default size of widgets we can use also tuple
-assignment as in the last two lines of this code:
+For setting some properties, like the default size of widgets, we can also use tuple
+assignment, as in the last two lines of this code:
 
 [source,nim]
 ----
@@ -960,23 +961,25 @@ window.defaultSize = (width: 200, height: 200) # <6>
 <5> tupel assignment
 <6> tupel assignment with named members
 
-The Nim program above looks a bit bloated still due to the 4 set margin calls, each
-with the same literal value 10. Well that program shape is a result of the initial C
-code, and often the 4 values may be not really all identical. But when such code
+The Nim program above still looks a bit bloated due to the four set margin calls, each
+with the same literal value of 10. Well, that program shape is a result of the initial C
+code, and often the 4 values are not really all identical. But when such code
 fragments should occur often in our code then we would define our own setMargin()
 {proc} that would get one parameter and assign all four values for us, and we may
 define another {proc} with four parameters to assign all 4 margins, we could call it
 with button.setMartin(10) and button.setMargin(top = 5, bottom = 5, left = 20, right
-= 20). Note that Nim support default values for {proc} parameters. The gintro package
-uses that fact for boolean properties which generally have the default value true, so
+= 20). Note that Nim supports default values for {proc} parameters. The gintro package
+uses that fact for boolean properties, which generally have the default value true, so
 we can use a plain window.setResizable instead of window.setResizable(true).  To set
-that property to false we still have to use window.setResizable(false) or
+that property to false, we still have to use window.setResizable(false) or
 window.resizable = false.
 
 === Application Style
 
-Now let us investigate the new application program style that was introduced with
-{gtk3} and is continued in {gtk4} nearly unchanged. We start with the {gtk4} variant
+Let us now look at the new application program style that was introduced with {gtk3} and is nearly unchanged in {gtk4}.
+//Now let us investigate the new application program style that was introduced with
+//{gtk3} and is continued in {gtk4} nearly unchanged.
+We start with the {gtk4} variant
 of the example that is presented at the GTK homepage, its C code has this shape:
 
 [[hello-world.c]]
@@ -1024,13 +1027,13 @@ main (int argc, char **argv)
 }
 ----
 
-The main difference of the new application program style to the old {gtk2} style is,
+The main difference between the new application program style and the old {gtk2} style is,
 that the C main() function now creates an application, connects the application to
-various callbacks and then calls g_application_run() to execute it. The most
-important callback is the activate callback that creates the application window with
+various callbacks, and then calls g_application_run() to execute it. The most
+important callback is the activate callback, which creates the application window with
 all its widgets and connects callback functions to the widgets.
 
-We can compile and run above C program when we enter these commands in the terminal
+We can compile and run the above C program when we enter these commands in the terminal
 window:
 
 ----
@@ -1048,7 +1051,7 @@ gtk_box_append(GTK_BOX(box), button) by gtk_container_add(GTK_CONTAINER(box),
 button). Another small difference is that GTK3 uses gtk_widget_destroy() instead of
 gtk_window_destroy() and gtk_widget_show_all() instead of gtk_widget_show().
 
-After applying that modifications you could compile the program for GTK3 with
+After applying those modifications, you could compile the program for GTK3 with
 
 ----
 gcc -Wall hello-world-gtk3.c -o hello-world-gtk3 `pkg-config --cflags --libs gtk+-3.0`
@@ -1056,64 +1059,70 @@ gcc -Wall hello-world-gtk3.c -o hello-world-gtk3 `pkg-config --cflags --libs gtk
 
 Note that we do not have to call gtk_init() when we use the application style.
 
-In the C main() function we create our application by calling the function
-gtk_application_new(). We pass a string which is used as an application id and some
-flag parameter. After we have connected the application variable to our activate
-callback function we run the application by calling g_application_run() of the gio
+In the C main(), function we create our application by calling the function
+gtk_application_new(). We pass a string that is used as an application id and some
+flag parameters. After we have connected the application variable to our activate
+callback function, we run the application by calling g_application_run() of the gio
 library. The application then runs until the application window is closed or until we
 call gtk_window_destroy() on it. We can pass the command line arguments as parameters
-to g_application_run(). The function returns an integer value as status result, which
+to g_application_run(). The function returns an integer value as the status result, which
 is used as the return value of the main() function and passed to the {os} as the
-result of the program execution. In the C code g_object_unref(app) is called before
-the status value is returned to the OS and the program is terminated. Earlier we said
-that even in C code we generally do not have to free objects or resources, because
-most objects like widgets are initially unowned after creation, and when we add them
-to containers the container takes ownership. For top-level windows or the GTK
-application that is not the case, so their constructors return a none floating object
-with reference count set to one, and we have to destroy() or unref() them.
+result of the program execution. In the C code, g_object_unref(app) is called before
+the status value is returned to the OS and the program is terminated. Earlier, we said
+that even in C code, we generally do not have to free objects or resources because
+most objects, like widgets, are initially unowned after creation, and when we add them
+to containers, the container takes ownership. For top-level windows or the GTK
+application, that is not the case, so their constructors return a none floating object
+with a reference count set to one, and we have to destroy() or unref() them.
 
-In the activate() callback we call gtk_application_window_new(app) to create a top
+In the activate() callback, we call gtk_application_window_new(app) to create a top
 level application window, which is a subclass of a GTK window. In the activate()
-callback we create a box as a container for our button widget. Containers like boxes
+callback, we create a box as a container for our button widget. Containers like boxes
 are used to arrange and group widgets. The GTK box constructor gtk_box_new() has two
-parameters, an orientation and a spacing value. The orientation determines if the
+parameters: an orientation and a spacing value. The orientation determines if the
 contained widgets should be arranged vertically or horizontally. The spacing is an
-integer value which determines the distance between the contained widgets, the value
+integer value that determines the distance between the contained widgets, the value
 is given in logical pixels. The box widget is then set as a child of the application
-window by calling the function gtk_window_set_child(). After that we create a button
+window by calling the function gtk_window_set_child(). After that, we create a button
 widget with a "Hello World" label text and connect that button to a callback function
-called print_hello() which shall print a message to the terminal window when we click
+called print_hello(), which shall print a message to the terminal window when we click
 with the mouse on that button. This program connects another callback function to our
-button in a very special fashion: We want that our application window is closed and
-the program terminates when we click on the button. For that we want to directly call
+button in a very special fashion:
+//We want that our application window is closed and
+//the program terminates when we click on the button.
+When we click the button, we want our application window to close and the program to terminate.
+For that, we want to directly call
 the gtk_window_destroy() function on our application window as a callback function.
-The problem is, that when we connect a callback function to a button, then GTK would
-pass the button instance to the callback as first parameter. But we intend to call
-gtk_window_destroy() as callback with our application window as parameter. For this
-rarely used special case GTK offers a variant of g_signal_connect() which is called
+The problem is that when we connect a callback function to a button, then GTK would
+pass
+the button instance as the first parameter to the callback.
+//the button instance to the callback as first parameter.
+But we intend to call
+gtk_window_destroy() as a callback with our application window as a parameter. For this
+rarely used special case, GTK offers a variant of g_signal_connect() which is called
 g_signal_connect_swapped() and which passes the optional user_data parameter to the
 callback. In this way, we can pass the application window as user_data parameter
-directly to the gtk_window_destroy() function. In Nim this form of swapped parameter
+directly to the gtk_window_destroy() function. In Nim, this form of swapped parameter
 passing is currently not supported, so we have to define our own function, which gets
 the window as optional parameter and then calls destroy() on it. After we have
-connected all the callback functions to our button we call gtk_box_append() to insert
-the button widget into the box. Finally we call gtk_widget_show() on our application
-window to make it and all of its children visible and we are done.
+connected all the callback functions to our button, we call gtk_box_append() to insert
+the button widget into the box. Finally, we call gtk_widget_show() on our application
+window to make it and all of its children visible, and we are done.
 
-We have created our application window, a box widget and a button widget. We inserted
-the box as child into the window, and we inserted the button widget into the box.
-Note that the order in which we build that hierarchy is not important, we can first
-insert the button into the box, or first insert the box into the window. Also note
-that we can connect multiple callback functions to the same widget. In this case the
-order is important, as the callback functions are called in the order as they were
+We have created our application window, a box widget, and a button widget. We inserted
+the box as a child into the window, and we inserted the button widget into the box.
+Note that the order in which we build that hierarchy is not important; we can first
+insert the button into the box or first insert the box into the window. Also note
+that we can connect multiple callback functions to the same widget. In this case, the
+order is important, as the callback functions are called in the order in which they were
 connected. For our button, if we had connected the print_hello() callback function
-last, that one would never get called, as the window would be destroyed before. Also
-note that we can connect different widgets to the same callback function, i.e. we
+last, that one would never get called, as the window would have been destroyed before. Also
+note that we can connect different widgets to the same callback function, i.e., we
 could create multiple button widgets and connect them all to our print_hello()
 callback function.
 
-Now let use see how the above program looks in the Nim programming language by using
-the gintro bindings. We applied the conversion tool c2nim on above C code and
+Now let us see how the above program looks in the Nim programming language by using
+the gintro bindings. We applied the conversion tool c2nim on the above C code and
 slightly edited the result manually:
 
 ----
@@ -1156,33 +1165,36 @@ proc main =
 main()
 ----
 
-The Nim source code fully matches the C code. We use in most cases method call
-syntax, and for window title and default size we use an assignment instead of a
-{proc} call to set the properties. For the newApplication() call we explicitly
-specify the empty set for the flag parameter, but we could have leave that out as it
-is the default. In the C code gtk_application_new() passes plain integer flag values
-which can be combined by bit wise or operations, and G_APPLICATION_FLAGS_NONE is
-passed when no bit flag should be set. In Nim we use a bitset with a {} default for
-the empty set. Finally we used the quit {proc} of system module to return the status
-result to the OS. The only small difference of the Nim code to the C code is that we
-do not use connectSwapped() but call an intermediate destroyWindow() {proc} that
+The Nim source code fully matches the C code. In most cases, we use method call
+syntax, and for window title and default size, we use an assignment instead of a
+{proc} call to set the properties. For the newApplication() call, we explicitly
+specify the empty set for the flag parameter, but we could have left that out as it
+is the default. In the C code, gtk_application_new() passes plain integer flag values,
+which can be combined by bitwise or operations, and G_APPLICATION_FLAGS_NONE is
+passed when no bit flag should be set. In Nim, we use a bitset with a {} default for
+the empty set. Finally, we used the quit {proc} of the system module to return the status
+result to the OS. The only small difference between the Nim code and the C code is that we
+do not use connectSwapped() but instead call an intermediate destroyWindow() {proc} that
 obtains the application window as an additional parameter and calls destroy() on it
 to close the top-level window and to terminate the program. Providing a type safe
 connectSwapped() {proc} for the Nim bindings seems to be hard, and we would need it
-only in rare cases in real world code. Note that for the connect() macro the type of
+only in rare cases in real world code. Note that for the connect() macro, the type of
 the optional parameter has to match exactly the data type used in the callback
 signature, that is while the body of the destroyWindow() {proc} would work with a
 plain GTK window, which is a parent type of GTK application window, we have to use
 still GTK application window in the {proc} signature, otherwise the compiler would
-complain about incompatible types. That is a limitation of current gintro bindings
-and results from the fact that the connect macro simple enforce type matching, it
-does not actually invest the actual types of the provided callback function and
-checks for type compatibility. If we have to use a plain GTK window type for the
+complain about incompatible types.
+This is a limitation of current gintro bindings, and it stems from the fact that the connect macro simply enforces type matching without investing the actual types of the provided callback function and checking for type compatibility.
+//That is a limitation of current gintro bindings
+//and results from the fact that the connect macro simple enforce type matching, it
+//does not actually invest the actual types of the provided callback function and
+//checks for type compatibility.
+If we have to use a plain GTK window type for the
 second parameter of the destroyWindow() callback for some reason, then we can make it
 work again with a type conversion like button.connect("clicked", destroyWindow,
 gtk4.Window(window)).
 
-We can compile and run our Nim program with following commands from a terminal
+We can compile and run our Nim program with the following commands from a terminal
 window:
 
 ----
@@ -1190,6 +1202,7 @@ nim c hello_world.nim
 ./hello_world
 ----
 
+//puh
 The above compiler invocation builds the executable in the default debug mode with a
 lot of runtime checks enabled and without enabled optimizations for the C compiler
 back end, so the executable size is large and the program would run not very fast.
