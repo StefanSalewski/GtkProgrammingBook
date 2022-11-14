@@ -1,6 +1,6 @@
 = GTK4 for Graphical User Interfaces
 with the Nim Programming Language (C) Dr. Stefan Salewski 2020, 2021, 2022, 2023
-//v0.1, 2022-NOV-12
+//v0.1, 2022-NOV-14
 :doctype: book
 :toc: left
 :icons: font
@@ -2331,48 +2331,50 @@ proc radio(action: gio.SimpleAction; parameter: glib.Variant; label: Label) =
   label.setLabel(str)
 ----
 
-//puh
-The most important point is, that we have to call action.changeState(newState) to set
-the new state. Without that call the state is not updated and the check mark and the
-radio buttons would not update their visual appearance. Unfortunately changeState()
-needs again a parameter of variant type. For the toggleMenuItem() proc the provided
+The most important point is that we have to call action.changeState(newState) to set
+the new state. Without that call, the state is not updated, and the check mark and the
+radio buttons would not update their visual appearance. Unfortunately, changeState()
+needs again a parameter of variant type. For the toggleMenuItem() procedure, the provided
 variant parameter is not used, as it is a plain boolean toggle action. So we extract
-the actual state from the action itself, invert the boolean state and create a new
-boolean variant of that state which we pass to the changeState() function. For the
-radio() callback it is similar, but the variant parameter contains already the actual
+the actual state from the action itself, invert the boolean state, and create a new
+boolean variant of that state, which we pass to the changeState() function. For the
+radio() callback, it is similar, but the variant parameter already contains the actual
 new state, which we specified in the menu items in the XML string.  We can pass that
 variant parameter directly to changeState() to change the visual appearance of the
 radio menu items, or we can extract the actual string from the variant parameter by
 calling getString() on it to extract the string. We use that string to update our
 label widget.  You may wonder why the getString() procedure has an additional
-parameter of type uint64.  In C this is an optional out parameter which is used to
+parameter of type uint64.  In C, this is an optional out parameter, which is used to
 retrieve the actual string length.footnote:[ C strings are plain character arrays
 terminated with \x00 to indicate its end, and in C the length of strings is not
 directly available but determined by searching for the terminating \x00 character.
 For long text strings that search has some costs, so it can be useful to provide the
-actual string length by a function out parameter.] In C for such out parameters a
-pointer to a storage location is passed where the library can store the value, and
-GTK allows passing NULL (nil) in case that the parameter should not be used. The
-gobject-introspection generated gintro bindings map such out parameters to Nim's var
-parameter, which avoid ugly and dangerous use of pointers. But unfortunately the
-optionality of parameters is lost in the process of conversion to var type. There is
-an open issue about this topic in the gintro github issue tracker, but still there is
-no good solution. One suggestion was to convert procs with optional var parameters to
-functions which returns these data as function results, where the function result is
-a tuple in case of more than one optional var parameter or in case that there is
-already a non void function result in the C library. But doing that conversion fully
+actual string length by a function out parameter.]
+//In C, for such out parameters, a
+//pointer to a storage location is passed, where the library can store the value, and
+//GTK allows passing NULL (nil) in case that the parameter should not be used.
+In C, a pointer to a storage location where the library can store the value is passed for such parameters, and GTK allows passing NULL (nil) if the parameter should not be used.
+//
+The gobject-introspection-generated gintro bindings map such out parameters to Nim's var
+parameter, which avoids the ugly and dangerous use of pointers. But unfortunately, the
+optionality of parameters is lost in the process of conversion to the var type. There is
+an open issue about this topic in the gintro github issue tracker, but still, there is
+no good solution. One suggestion was to convert procedures with optional var parameters to
+functions that return these data as function results, where the function result is
+a tuple in the case of more than one optional var parameter or in the case that there is
+already a non-void function result in the C library. But doing that conversion fully
 automatically is not that easy, and the result may be confusing for the user. So we
 may create some overloaded functions manually when necessary.
 
-For connecting the actions to our callback functions we used the "activate" signal
+For connecting the actions to our callback functions, we used the "activate" signal,
 which is provided by the GSimpleAction class. GSimpleAction provides also a
-"change-state" signal and we may be tempted to use that one instead for stateful
-actions. But that signal is a bit problematic as it may lead to infinite recursion
-when we call changeState() in our callback functions. As a final note we should
-mention that stateful actions can be also used when no callback is actually
-connected, as for this case GTK calls changeState() directly and we may query the
+"change-state" signal, and we may be tempted to use that one instead for stateful
+actions. But that signal is a bit problematic, as it may lead to infinite recursion
+when we call changeState() in our callback functions. As a final note, we should
+mention that stateful actions can also be used when no callback is actually
+connected; in this case, GTK calls changeState() directly, and we may query the
 actual state then from the action variable. But whenever we connect our own callback
-function, then we have to call changeState() our self to update the state.
+function, then we have to call changeState() ourselves to update the state.
 
 References:
 
@@ -2388,8 +2390,8 @@ menus also to other widgets. This may be useful for tools using a GtkDrawingArea
 a GtkTextView, where the user may pop up a context menu at the current mouse cursor position.
 Adding a PopoverMenu to the label widget from our previous example is easy:
 We reuse the menu data structure and the related procedures.
-To our previously passive label widget, we add a GestureClick, and connect
-this gesture object to a handler proc called pressed(), which pops up the
+To our previously passive label widget, we add a GestureClick and connect
+this gesture object to a handler function called pressed(), which pops up the
 menu at the current mouse pointer position. 
 
 [[popovermenu.nim]]
@@ -2532,14 +2534,14 @@ main()
 
 == GSettings
 
-The GSettings class provides a convenient way to permanently storing configuration
-data, and to bind them to properties of widgets or other gobject based data types.
-The configuration data are described in a XML file which is then converted into a
+The GSettings class provides a convenient way to permanently store configuration
+data and bind it to properties of widgets or other gobject-based data types.
+The configuration data is described in an XML file, which is then converted into a
 binary database.
 
-For using GSettings in our own programs, we have first to create a XML file which
-defines name and type of each configuration entry, and additional provides a default
-value and optionally a summary and a description. The file name of such XML files
+For using GSettings in our own programs, we have first to create an XML file that
+defines the name and type of each configuration entry, and additional provides a default
+value, and optionally a summary and a description. The file name of such XML files
 must always end with ".gschema.xml". The following example has only one field called
 like-nim of type boolean (b):
 
@@ -2563,13 +2565,13 @@ like-nim of type boolean (b):
 </schemalist>
 ----
 
-To use such a configuration we have to install it properly on our computer. But
-before we describe that installation process in more detail let us see how we can use
+To use such a configuration, we have to properly install it on our computer. But
+before we describe that installation process in more detail, let us see how we can use
 the gsettings configuration in our app. The code below creates a check button and
-binds its boolean state to the "like-nim" property of above configuration.  When you
-run the app you can click on the check button to toggle its state.  The new state is
+binds its boolean state to the "like-nim" property of the above configuration.  When you
+run the app, you can click on the check button to toggle its state.  The new state is
 automatically stored in the gsettings configuration.  If you terminate the app and
-launch it again the check button shows its previous state, even after a reboot of
+launch it again, the check button shows its previous state, even after a reboot of
 your computer.
 
 [[gsettings.nim]]
@@ -2610,48 +2612,52 @@ proc main =
 main()
 ----
 
-Above program has again the well know application style.  In the activate() proc we
+//Above program has again the well know application style.
+The above program uses the well-known application style once more.
+In the activate() procedure, we
 first create our application window and a new check button.  Then we load our
-gsetting with the newSettings() function to which we pass the id string
+gsetting with the newSettings() function, to which we pass the id string
 "org.gnome.Recipes" which we specified in our XML file.  We can query the boolean
-state of the "like-nim" property with a call of s.getBoolean().  Finally we bind that
-property to our check button using the bind() proc. As bind is a Nim keyword we have
-to enclose that proc names in backtics, which is sometimes also called
+state of the "like-nim" property with a call to s.getBoolean().  Finally, we bind that
+property to our check button using the bind() procedure. As bind is a Nim keyword, we have
+to enclose that procedure name in backticks, which is sometimes also called
 stropping.footnote:[Indeed, we can avoid the backtics when we just use method call
-syntx like s.bind().] The bind proc requires five arguments -- the settings instance,
-a settings property, a widget, a widget property and a set with the bind flags.  For
-the settings property we use the "like-nim" one, which is the only one which is
-already declared in our XML file. The widgets is our check button with its "active"
+syntx like s.bind().] The bind procedure requires five arguments -- the settings instance,
+a settings property, a widget, a widget property, and a set with the bind flags.  For
+the settings property, we use the "like-nim" one, which is the only one that is
+already declared in our XML file. The widget is our check button with its "active"
 property. Our check button is a subclass of a toggle button, and from
 https://developer.gnome.org/gtk4/stable/GtkToggleButton.html#GtkToggleButton.properties
-we know that it has this property which is mapped to its boolean state and the
-visibility of its check mark.  Finally we set the set and get flags in the bind flags
-parameter to bind our check button bidirectional to that settings property. This
-simple bind call does only work due to the fact that the settings property as well as
+we know that it has this property, which is mapped to its boolean state and the
+visibility of its check mark.  Finally, we set the set and get flags in the bind flags
+parameter to bind our check button bidirectionally to that settings property. This
+simple bind call only works due to the fact that the settings property as well as
 the check button property have the same data type, boolean in this case. If we want
-to bind properties with different data types, then we have to use converter procs,
-which you may find in the gsettings C API docs.  If the plain binding of a gesettings
+to bind properties with different data types, then we have to use converter procedures,
+which you may find in the gsettings C API documentation.  If the plain binding of a gesettings
 property to a widget property is not sufficient for a more advanced use case, then
-you can connect your widget to ordinary signals like the "toggled" signal and a
-matching callback functions which can retieve and set the gsettings properties
-directly as shown in the commented out toggle() proc in above code example.
+you can connect your widget to ordinary signals like the "toggled" signal and
+matching callback functions that can retrieve and set the gsettings properties
+directly, as shown in the commented-out toggle() proc in the above code example.
 
 Now let us investigate how we can install the configuration file on our computer.  At
 runtime, GSettings looks for configurations in the glib-2.0/schemas subdirectories of
 all directories specified in the XDG_DATA_DIRS environment variable. The usual
 location to install schema files is /usr/share/glib-2.0/schemas.  But gsettings loads
-not the XML files directly, but a "compiled binary" called gschemas.compiled which is
-generated from all XML files in that directory.  In principle we could copy our XML
-file into /usr/share/glib-2.0/schemas directory, cd into that directory and type
-"glib-compile-schemas ." to "compile" all the XML files including our own to the
+not the XML files directly but a "compiled binary" called gschemas.compiled, which is
+generated from all the XML files in that directory.  In principle, we could copy our XML
+file into the /usr/share/glib-2.0/schemas directory, cd into that directory, and type
+"glib-compile-schemas ." to "compile" all the XML files, including our own, into the
 "gschemas.compiled" database.  We would need root privileges for that. But that is a
-dangerous operation, if for some reason the resulting gschemas.compiled database is
-corrupted then most of our GTK/Gnome programs would not work any more. So we better
-keep our own database separate. For that there exists at least two ways, which we can
-do as ordinary user without root privileges.
+dangerous operation; if for some reason the resulting gschemas.compiled database is
+corrupted, then most of our GTK/Gnome programs would not work any more. So we better
+keep our own database separate.
+//For that there exists at least two ways, which we can
+//do as ordinary user without root privileges.
+There are at least two ways for us to act as ordinary users without requiring root privileges.
 
-Unfortunately it is not enough to put our XML file or the compiled version of that
-file just into the same directory where our executable is located, as gsettings does
+Unfortunately, it is not enough to just put our XML file or the compiled version of that
+file into the same directory where our executable is located, as gsettings does
 not load schema files from the current directory automatically. But we can tell
 gsettings to load additional schemas from a specific directory by setting the
 GSETTINGS_SCHEMA_DIR environment variable, which is generally empty by default. So
@@ -2666,21 +2672,25 @@ glib-compile-schemas testdir
 testdir/gsettings
 ----
 
-We create a new directory, copy our nim source code and the XML file there and call
-glib-compile-schemas for the whole directory. Finally we can launch our application.
+We create a new directory, copy our Nim source code and the XML file there, and call
+glib-compile-schemas for the whole directory. Finally, we can launch our application.
 
-In a similar way we can create a directory which shall permanently store our own
-schema files, maybe named mySchemas. For that you have to make an entry like
+In a similar way, we can create a directory that will permanently store our own
+schema files, maybe named mySchemas.
+//For that, you have to make an entry like
+You must include an entry like
 
 ----
 export GSETTINGS_SCHEMA_DIR="~/mySchemas"
 ----
 
-in one of your shell startup scripts like .bashrc or similar which are automatically
-executed at computer startup. Of course you have to execute "glib-compile-schemas"
+//in one of your shell startup scripts like .bashrc or similar which are automatically
+//executed at computer startup.
+in one of your shell startup scripts, such as.bashrc or similar, which are automatically executed when the computer boots.
+Of course, you have to execute "glib-compile-schemas"
 for that directory whenever you add more XML files.
 
-Finally a similar method is to add one more custom path to the XDG_DATA_DIRS
+Finally, a similar method is to add one more custom path to the XDG_DATA_DIRS
 environment variable. But then we have to respect the fact that the actual path is
 the glib-2.0/schemas subdirectory of the entries.
 
@@ -2701,9 +2711,9 @@ glib-compile-schemas ~/myGsettingsStore/glib-2.0/schemas
 
 ****
 
-Unfortunately these explanations about storing the gsetting configurations are valid
-only for Linux systems and you have to know which startup script is used by your
-Linux distribution. For other operating systems you may have to consult internet
+Unfortunately, these explanations about storing the gsetting configurations are valid
+only for Linux systems, and you have to know which startup script is used by your
+Linux distribution. For other operating systems, you may have to consult internet
 search engines or the GTK/Gnome forum for more details.
 
 ****
@@ -2717,73 +2727,78 @@ References:
 
 == GTK Basic Widgets
 
-In this chapter we will introduce simple but useful basic widgets and explain the
-widgets which we introduced earlier in more detail. All these widgets are really easy
-to use. We have constructor functions with names which starts with "new" like
-newButton(), we can add these widgets to containers, and connect them directly to
-signals or map them to GActions. You should also study the C API documentation of
+In this chapter, we will introduce simple but useful basic widgets and explain the
+widgets that we introduced earlier in more detail. All these widgets are really easy
+to use.
+//We have constructor functions with names which starts with "new" like
+//newButton(), we can add these widgets to containers, and connect them directly to
+//signals or map them to GActions.
+We have constructor functions that begin with "new," such as newButton(), and we can add these widgets to containers and connect them to signals directly or map them to GActions.
+You should also study the C API documentation of
 these simple widgets to learn about all the other functionality that is also
-available, like provided functions, available signals or widget properties.  Remember
-that GTK widgets build a class hierarchy so functionality may be provided by parent
-classes.  For example, the GtkCheckButton is a subclass of GtkToggleButton and both
-are of course widgets, so you may have to consult all that API documentation to find
+available, like provided functions, available signals, or widget properties.  Remember
+that GTK widgets build a class hierarchy, so functionality may be provided by parent
+classes.  For example, the GtkCheckButton is a subclass of the GtkToggleButton, and both
+are, of course, widgets, so you may have to consult all that API documentation to find
 functions or properties that you may desire. Also consider using the devhelp tool to
 navigate the C API docs. For the more advanced and complicated widgets like
-GtkTreeView, GtkListView and GtkDrawingArea we will give only minimal examples in
-this chapter to give you a basic feeling what they are and how they can be used.
-GtkTreeView and GtkListView are powerfull widgets to display larger textual and other
+GtkTreeView, GtkListView, and GtkDrawingArea, we will give only minimal examples in
+this chapter to give you a basic sense of what they are and how they can be used.
+GtkTreeView and GtkListView are powerful widgets for displaying large textual and other
 data sets. And the GtkDrawingArea is a widget where we can draw arbitrary
-two-dimensional graphics by using drawing functions of the cairo graphics library. We can
-use the GtkDrawingArea for pure display purpose, or we can combine it with user input
+two-dimensional graphics by using drawing functions from the Cairo graphics library. We can
+use the GtkDrawingArea for pure display purposes, or we can combine it with user input
 activities to create advanced CAD tools. One more advanced GTK widget is the
-GtkGLArea which can be used to display three-dimensional OpenGL graphics.  But as
+GtkGLArea, which can be used to display three-dimensional OpenGL graphics.  But as
 creating graphics with OpenGL is a wide area for which many whole books have been
 written, we will not try to cover that topic in this book.
 
-The GTK widgets can be grouped into container widgets which arrange other widgets
-like GtkBox or GtkGrid, into mostly passive widgets for displaying data like the
-GtkLabel, and into the active widgets which accept user input like GtkEntry. For an
-overview you may visit the widget gallery page:
+The GTK widgets can be grouped into three types: container widgets that arrange other widgets,
+like GtkBox or GtkGrid; into mostly passive widgets for displaying data, like the
+GtkLabel; and active widgets that accept user input, like GtkEntry. For an
+overview, you may visit the widget gallery page:
 
 * https://developer.gnome.org/gtk4/stable/ch08.html
 
 === Label
 
 The GtkLabel is a simple widget that can display some text. The text can have
-multiple lines when desired, can wrap automatically and can support style attributes
+multiple lines when desired, can wrap automatically, and can support style attributes
 like italic or boldface. The label widget is mostly used to label other widgets or to
-display some textual messages to the user.  GtkButtons use a label widgets to display
-its text.  For the actual text display the pango library is used, which supports many
-advanced text renderings like right to left text and many attributes like
-strike-though, underline, overline (since pango v 1.46) and many more.  GtkLabels
-like all GTK widgets support utf8 unicode text which allows display of glyphs of
+display some textual messages to the user.  GtkButtons use label widgets to display
+their text.  For the actual text display, the Pango library is used, which supports many
+advanced text renderings like right-to-left text and many attributes like
+strike-through, underline, overline (since Pango version 1.46), and many more.  GtkLabels,
+like all GTK widgets, support utf-8 unicode text, which allows display of glyphs from
 exotic languages as well as a large range of symbols.
 
-The GtkLabel is one of the simplest GTK widgets and the C API documentation should be
-easy to understand and can be used in Nim straight forward:
+The GtkLabel is one of the simplest GTK widgets, and the C API documentation should be
+easy to understand and can be used in Nim straightforward:
 
 * https://developer.gnome.org/gtk4/stable/GtkLabel.html
 
 ==== Properties
 
 GTK uses the concept of properties to set or modify the internal state of GTK widgets
-or other entities.  For most properties GTK offers setter and getter functions which
-we use when available, so we have not to deal with properties that often. But in some
-cases it is necessary, so we will introduce the basics at this point already. GTK
-properties have textual names like "wrap" or "gtk-application-prefer-dark-theme" and
-a typed state like boolean true/false, integer states or states of other types. In C
-code most often the function g_object_set() is used to set one or multiple
-properties. That function uses multiple untyped arguments. As it is not type safe it
+or other entities.  For most properties, GTK offers setter and getter functions, which
+we use when available, so we don't have to deal with properties that often.
+//But in some
+//cases it is necessary, so we will introduce the basics at this point already.
+However, in some cases, it is necessary, so we will cover the fundamentals right away.
+GTK properties have textual names like "wrap" or "gtk-application-prefer-dark-theme" and
+a typed state like boolean true or false, integer states, or states of other types. In C
+code, most often the function g_object_set() is used to set one or multiple
+properties. That function uses multiple untyped arguments. As it is not type safe, it
 is not provided by gobject-introspection and is not available in most high-level GTK
-bindings including Nim. Instead we use g_object_set_property() called just
-setProperty() to set single properties in Nim.  Unfortunately that procedure needs a
-GValue as third parameter which makes it use a bit complicated.
+bindings, including Nim. Instead, we use g_object_set_property(), called just
+setProperty(), to set single properties in Nim.  Unfortunately, that procedure needs a
+GValue as a third parameter, which makes its use a bit complicated.
 
 The following example program defines a helper procedure called toBoolVal() to create
-a GValue with matching type and content from a Nim bool value. We use the resulting
+a GValue with a matching type and content from a Nim bool value. We use the resulting
 GValue to set the wrap property of our label and the
 "gtk-application-prefer-dark-theme" property of our whole application. Both
-properties expects a boolean GValue.
+properties expect a boolean GValue.
 
 image::label.png[]
 
@@ -2823,39 +2838,39 @@ proc main =
 main()
 ----
 
-In our toBoolVal() proc we have to create a GType variable first. For this we can use
-the typeFromName() proc to which we have to pass the correct GTK type name, or with
-recent gintro versions we could use getType() procs like gBooleanGetType() directly.
-Guessing the right name is not always easy -- for string types we would have to use
-gStringGetType() or typeFromName("gchararray"). With that GType we can first init() a
-GValue variable and then set its value. GValues are used a lot in gtkListView and
-GtkThreeView widgets, we will learn more about GTypes the GValue variables later when
-we explain these widgets.  In the above example program we use the function
-setProperty() two times. First we set the property
-"gtk-application-prefer-dark-theme" for our whole application to true. To do that we
-query the default settings with a call of getDefaultSettings() and then set that
+In our toBoolVal() procedure, we have to create a GType variable first. For this, we can use
+the typeFromName() proc, to which we have to pass the correct GTK type name, or, with
+recent gintro versions, we could use getType() procs like gBooleanGetType() directly.
+Guessing the right name is not always easy -- for string types, we would have to use
+gStringGetType() or typeFromName("gchararray"). With that GType, we can first init() a
+GValue variable and then set its value. GValues are used a lot in the GtkListView and
+GtkThreeView widgets; we will learn more about GTypes and GValue variables later when
+we explain these widgets.  In the above example program, we use the function
+setProperty() two times. First, we set the property
+"gtk-application-prefer-dark-theme" for our whole application to true. To do that, we
+query the default settings with a call to getDefaultSettings() and then set that
 boolean value. The result is that our whole app uses a dark color scheme when
 available. The second use of setProperty(), again for a boolean variable, is to set
-the "wrap" property of one of our label widgets. For this the label class provides
-the function setWrap() which we generally would use. We used a GtkBox to arrange our
+the "wrap" property of one of our label widgets. For this, the label class provides
+the function setWrap(), which we generally would use. We used a GtkBox to arrange our
 two labels vertically in our window. We will learn more details about the GtkBox
 containers in the next section.
 
 While GtkLabels are most of the time passive entities, they provide some signals like
-"activate-link" and "move-cursor".  By default label text can not be copied to the
+"activate-link" and "move-cursor".  By default, label text can not be copied to the
 clipboard, but we can call setSelectable() on a label widget to make it selectable.
-Then we can click with the mouse on the text, we can select all or part of the text
-and the label widget will get a popup menu which pops up when we press the right
-mouse button allowing to select and copy the label text to the clipboard. This can be
-useful when a label displays messages which we may want to copy elsewhere.  One of
-the many useful functions offered by labels is setEllipsize() which determines how
-text not fitting into the available are is handled. That function is often used in
+Then we can click with the mouse on the text, select all or part of the text,
+and the label widget will get a popup menu that pops up when we press the right
+mouse button, allowing us to select and copy the label text to the clipboard. This can be
+useful when a label displays messages that we may want to copy elsewhere.  One of
+the many useful functions offered by labels is setEllipsize(), which determines how
+text not fitting into the available area is handled. That function is often used in
 conjunction with setMaxWidhChars() or setWidhChars().  Our second example program
-below displays some chess pieces using utf8 unicode glyphs, and an ordinary text
-which is displayed in a small font and which is shortened by showing ellipsis when
+below displays some chess pieces using utf8 unicode glyphs and an ordinary text
+that is displayed in a small font and that is shortened by showing an ellipsis when
 the enclosing window is small. The label widget with the chess pieces is made
 selectable, so you can copy the content into another window, maybe into an instance
-of the the gedit text editor.
+of the the Gedit text editor.
 
 image::label2.png[]
 
@@ -2889,16 +2904,16 @@ proc main =
 main()
 ----
 
-In both label texts we use html tags like <big> or <small> to modify the text
-display. Currently we have to additional call setUseMarkup() on the label to tell it
-that html tags should be used. We may expect that for the case that we use
-setMarkup() that should be not necessary -- maybe it is a bug of early {gtk4}
-release? Modifying the label display with enclosed tags directly is convenient, but
-restricted to only a few attributes. In the next section we will lean how we can use
+In both label texts, we use HTML tags like <big> or <small> to modify the text
+display. Currently, we have to additionally call setUseMarkup() on the label to tell it
+that HTML tags should be used. We may expect that in the case that we use
+setMarkup(), that should not be necessary -- maybe it is a bug of the early {gtk4}
+release? Modifying the label display directly with enclosed tags is convenient but
+limited to only a few attributes. In the next section, we will learn how we can use
 XML UI files to do more advanced text customization.
 
 ==== GtkLabels and XML UI files
-
+//puh
 Earlier in this book, we used already XML files to describe the structure of popup
 menus.  And we said at the beginning of the book that GTK allows to declare the whole
 GUI or parts of it with XML UI files which is then loaded by the GTK builder. Below
